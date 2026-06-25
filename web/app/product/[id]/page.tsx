@@ -46,7 +46,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               </div>
 
               <div className="flex items-baseline gap-3 mt-5">
-                <span className="font-display text-[30px] text-accent">{money(product.price)}</span>
+                <span className="font-display text-[30px] text-accent-deep">{money(product.price)}</span>
                 {product.was && <span className="text-subtle line-through num-tabular">{money(product.was)}</span>}
                 {product.was && (
                   <span className="bg-accent-soft text-accent-deep px-2.5 py-1 rounded-pill text-xs font-semibold">

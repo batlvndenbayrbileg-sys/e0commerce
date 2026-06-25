@@ -115,7 +115,7 @@ export function QuickViewModal() {
               </div>
 
               <div className="flex items-baseline gap-3 mt-4">
-                <span className="font-display text-[26px] text-accent">{money(product.price)}</span>
+                <span className="font-display text-[26px] text-accent-deep">{money(product.price)}</span>
                 {product.was && <span className="text-subtle line-through num-tabular">{money(product.was)}</span>}
               </div>
 
