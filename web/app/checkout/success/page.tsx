@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckIcon } from "@/components/Icons";
+import { useT } from "@/components/LangProvider";
 
 function Success() {
+  const t = useT();
   const params = useSearchParams();
   const id = params.get("id");
   const total = params.get("total");
@@ -27,18 +29,18 @@ function Success() {
           <CheckIcon width={42} height={42} className="text-white"/>
         </div>
 
-        <h1 className="font-display text-[28px] sm:text-[34px] uppercase tracking-tight leading-none mt-6 mb-3">Order placed</h1>
-        <p className="text-muted text-[15px] leading-relaxed">A confirmation has been sent to your email. Your gear is being packed — tracking arrives within 24 hours.</p>
+        <h1 className="font-display text-[28px] sm:text-[34px] uppercase tracking-tight leading-none mt-6 mb-3">{t("ok.title")}</h1>
+        <p className="text-muted text-[15px] leading-relaxed">{t("ok.desc")}</p>
 
         <div className="bg-surface-2 rounded-xl p-5 my-7 text-left">
-          <div className="flex justify-between mb-1.5"><span className="tiny">Order number</span><span className="font-mono font-semibold">{id ?? "—"}</span></div>
-          <div className="flex justify-between mb-1.5"><span className="tiny">Estimated delivery</span><span className="font-medium">{eta}</span></div>
-          <div className="flex justify-between"><span className="tiny">Total</span><span className="font-medium">{total ? `₮${Number(total).toLocaleString()}` : "—"}</span></div>
+          <div className="flex justify-between mb-1.5"><span className="tiny">{t("ok.orderNo")}</span><span className="font-mono font-semibold">{id ?? "—"}</span></div>
+          <div className="flex justify-between mb-1.5"><span className="tiny">{t("ok.eta")}</span><span className="font-medium">{eta}</span></div>
+          <div className="flex justify-between"><span className="tiny">{t("ok.total")}</span><span className="font-medium">{total ? `₮${Number(total).toLocaleString()}` : "—"}</span></div>
         </div>
 
         <div className="flex justify-center gap-2.5">
-          <Link href="/account" className="btn btn-primary">View orders</Link>
-          <Link href="/" className="btn btn-ghost">Continue shopping</Link>
+          <Link href="/account" className="btn btn-primary">{t("ok.viewOrders")}</Link>
+          <Link href="/" className="btn btn-ghost">{t("ok.continue")}</Link>
         </div>
       </div>
     </div>

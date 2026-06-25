@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { CheckIcon, LockIcon } from "@/components/Icons";
 import { useCart, useToast } from "@/lib/store";
+import { useT } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { medusa } from "@/lib/medusa";
 import { wire } from "@/lib/wire";
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const t = useT();
   const items = useCart(s => s.items);
   const clear = useCart(s => s.clear);
   const showToast = useToast(s => s.show);
@@ -27,9 +29,9 @@ export default function CheckoutPage() {
 
   async function place(e: React.FormEvent) {
     e.preventDefault();
-    if (items.length === 0) return showToast("Cart is empty");
+    if (items.length === 0) return showToast(t("toast.cartEmpty"));
     const lineItems = items.filter(i => i.variantId).map(i => ({ variantId: i.variantId!, quantity: i.qty }));
-    if (lineItems.length === 0) return showToast("Please re-add items to your bag");
+    if (lineItems.length === 0) return showToast(t("toast.readd"));
 
     const fd = new FormData(e.target as HTMLFormElement);
     const address = {
@@ -55,7 +57,7 @@ export default function CheckoutPage() {
       }
       router.push(`/checkout/processing?pi=${encodeURIComponent(intent.intentId)}`);
     } catch (err: any) {
-      showToast(err.message || "Payment could not be started");
+      showToast(err.message || t("toast.payFailed"));
       setBusy(false);
     }
   }
@@ -67,75 +69,75 @@ export default function CheckoutPage() {
           <Nav />
 
         <div className="text-[11px] font-mono tracking-wider text-subtle flex items-center gap-2 mt-6">
-          <Link href="/cart" className="hover:text-ink">CART</Link><span className="opacity-40">/</span><span className="text-ink">CHECKOUT</span>
+          <Link href="/cart" className="hover:text-ink uppercase">{t("bc.cart")}</Link><span className="opacity-40">/</span><span className="text-ink uppercase">{t("bc.checkout")}</span>
         </div>
 
-        <h1 className="font-display text-[30px] sm:text-[44px] uppercase tracking-tight leading-[.95] mt-3 mb-5">Check<span className="text-accent">out</span></h1>
+        <h1 className="font-display text-[30px] sm:text-[44px] uppercase tracking-tight leading-[.95] mt-3 mb-5">{t("co.titlePre")}<span className="text-accent">{t("co.titleAccent")}</span></h1>
 
         <div className="flex gap-1.5 sm:gap-2 mb-7 text-[12px] overflow-x-auto no-scrollbar">
-          <Step n={1} label="Cart" done/>
+          <Step n={1} label={t("co.cart")} done/>
           <Sep/>
-          <Step n={2} label="Information" active/>
+          <Step n={2} label={t("co.information")} active/>
           <Sep/>
-          <Step n={3} label="Payment"/>
+          <Step n={3} label={t("co.payment")}/>
           <Sep/>
-          <Step n={4} label="Confirm"/>
+          <Step n={4} label={t("co.confirm")}/>
         </div>
 
         <form onSubmit={place} className="grid lg:grid-cols-[1.4fr_1fr] gap-5 lg:gap-8 pb-10">
           <div>
-            <FormCard title="Contact">
+            <FormCard title={t("co.contact")}>
               <div className="grid gap-3.5">
-                <Field label="Email" required>
-                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com"/>
+                <Field label={t("co.email")} required>
+                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("news.placeholder")}/>
                 </Field>
               </div>
             </FormCard>
 
-            <FormCard title="Shipping address">
+            <FormCard title={t("co.shippingAddress")}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <Field label="First name"><input name="first_name" placeholder="Bat" defaultValue="Bat" required/></Field>
-                <Field label="Last name"><input name="last_name" placeholder="Erdene" defaultValue="Erdene" required/></Field>
-                <Field label="Address" full><input name="address_1" placeholder="District, street, building" defaultValue="Sukhbaatar District, 1-r khoroo" required/></Field>
-                <Field label="City"><input name="city" placeholder="Ulaanbaatar" defaultValue="Ulaanbaatar" required/></Field>
-                <Field label="Postal code"><input name="postal_code" placeholder="14200" defaultValue="14200" required/></Field>
-                <Field label="Country">
-                  <select name="country"><option value="mn">Mongolia</option></select>
+                <Field label={t("co.firstName")}><input name="first_name" placeholder="Bat" defaultValue="Bat" required/></Field>
+                <Field label={t("co.lastName")}><input name="last_name" placeholder="Erdene" defaultValue="Erdene" required/></Field>
+                <Field label={t("co.address")} full><input name="address_1" placeholder="District, street, building" defaultValue="Sukhbaatar District, 1-r khoroo" required/></Field>
+                <Field label={t("co.city")}><input name="city" placeholder="Ulaanbaatar" defaultValue="Ulaanbaatar" required/></Field>
+                <Field label={t("co.postal")}><input name="postal_code" placeholder="14200" defaultValue="14200" required/></Field>
+                <Field label={t("co.country")}>
+                  <select name="country"><option value="mn">{t("co.mongolia")}</option></select>
                 </Field>
-                <Field label="Phone"><input name="phone" placeholder="+976 …" defaultValue="+976 9911 2233"/></Field>
+                <Field label={t("co.phone")}><input name="phone" placeholder="+976 …" defaultValue="+976 9911 2233"/></Field>
               </div>
             </FormCard>
 
-            <FormCard title="Shipping method">
+            <FormCard title={t("co.shippingMethod")}>
               <Radio name="ship" checked={shipMethod === "standard"} onChange={() => setShipMethod("standard")}
-                title="Standard — 3 to 5 business days" sub="Tracked, insured" right="Free"/>
+                title={t("co.standard")} sub={t("co.standardSub")} right={t("common.free")}/>
               <Radio name="ship" checked={shipMethod === "express"} onChange={() => setShipMethod("express")}
-                title="Express — 1 to 2 business days" sub="Priority handling" right="₮62,100"/>
+                title={t("co.express")} sub={t("co.expressSub")} right="₮62,100"/>
             </FormCard>
 
-            <FormCard title="Payment">
+            <FormCard title={t("co.payment")}>
               <div className="border-2 border-ink rounded-xl p-4 flex items-center gap-3.5 bg-surface-2">
                 <input type="radio" name="pay" checked readOnly className="accent-ink"/>
                 <div className="flex-1">
-                  <div className="font-semibold">Wire — QPay & bank apps</div>
-                  <div className="tiny">Scan with QPay or pay from any Mongolian bank app</div>
+                  <div className="font-semibold">{t("co.wireTitle")}</div>
+                  <div className="tiny">{t("co.wireSub")}</div>
                 </div>
                 <span className="px-2.5 h-7 grid place-items-center rounded-pill bg-ink text-white text-[11px] font-bold tracking-wide">QPay</span>
               </div>
               <div className="mt-3 flex items-center gap-2 text-[12px] text-muted">
-                <LockIcon width={14} height={14}/> You'll confirm payment securely on Wire, then return here.
+                <LockIcon width={14} height={14}/> {t("co.wireNote")}
               </div>
             </FormCard>
 
             <button disabled={busy} type="submit" className="btn btn-primary w-full justify-center h-[60px] text-base disabled:opacity-50">
-              {busy ? "Starting payment…" : "Pay with Wire"}
+              {busy ? t("co.starting") : t("co.payWire")}
               <span className="arrow-cap"><CheckIcon width={14} height={14}/></span>
             </button>
-            <p className="tiny text-center mt-3.5">By placing this order you agree to our <a href="#" className="underline">Terms</a> & <a href="#" className="underline">Privacy</a>.</p>
+            <p className="tiny text-center mt-3.5">{t("co.terms")}</p>
           </div>
 
           <aside className="card p-7 h-fit lg:sticky lg:top-6">
-            <h3 className="h-3">Order</h3>
+            <h3 className="h-3">{t("co.order")}</h3>
             <div className="my-3.5 py-3.5 border-t border-b border-border">
               {mounted && items.map(i => (
                 <div key={i.id} className="flex justify-between py-2 text-muted">
@@ -144,14 +146,14 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            <Row k="Subtotal" v={money(subtotal)}/>
-            <Row k="Shipping" v={shipping === 0 ? "Free" : money(shipping)}/>
-            <Row k="Tax (est.)" v={money(tax)}/>
+            <Row k={t("cart.subtotal")} v={money(subtotal)}/>
+            <Row k={t("cart.shipping")} v={shipping === 0 ? t("common.free") : money(shipping)}/>
+            <Row k={t("cart.tax")} v={money(tax)}/>
             <div className="flex justify-between border-t border-border pt-4.5 mt-3 text-[18px] font-semibold">
-              <span>Total</span><span>{money(total)}</span>
+              <span>{t("cart.total")}</span><span>{money(total)}</span>
             </div>
             <div className="flex items-center gap-2.5 mt-4 p-3 bg-surface-2 rounded-xl text-[13px] text-muted">
-              <LockIcon width={14} height={14}/> 256‑bit SSL · PCI compliant
+              <LockIcon width={14} height={14}/> {t("co.secure")}
             </div>
           </aside>
         </form>

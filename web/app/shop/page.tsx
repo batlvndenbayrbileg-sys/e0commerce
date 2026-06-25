@@ -4,14 +4,17 @@ import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { ArrowRight } from "@/components/Icons";
 import { api } from "@/lib/api";
+import { getServerT } from "@/lib/lang";
 
 export const dynamic = "force-dynamic";
 
 const cats = ["all", "Outerwear", "Tops", "Bottoms", "Base Layers", "Accessories"];
+const techTags = [["Stretch", "shop.tStretch"], ["Thermal", "shop.tThermal"], ["Wicking", "shop.tWicking"], ["Water-repellent", "shop.tWater"]] as const;
 
 export default async function ShopPage({
   searchParams,
 }: { searchParams: { category?: string; sort?: string; q?: string } }) {
+  const t = getServerT();
   const { data: products, total } = await api.products.list({
     category: searchParams.category,
     sort: searchParams.sort,
@@ -27,11 +30,11 @@ export default async function ShopPage({
           {/* Title */}
           <header className="mt-6 sm:mt-8">
             <div className="text-[11px] font-mono tracking-wider text-subtle flex items-center gap-2">
-              <Link href="/" className="hover:text-ink">HOME</Link><span className="opacity-40">/</span>
-              <span className="text-ink">SHOP</span><span className="opacity-40 mx-1">·</span><span>{total} items</span>
+              <Link href="/" className="hover:text-ink uppercase">{t("bc.home")}</Link><span className="opacity-40">/</span>
+              <span className="text-ink uppercase">{t("bc.shop")}</span><span className="opacity-40 mx-1">·</span><span>{total} {t("shop.items")}</span>
             </div>
             <h1 className="font-display text-[34px] sm:text-[52px] tracking-tight leading-[.95] uppercase mt-3">
-              The <span className="text-accent">collection</span>
+              {t("shop.titlePre")} <span className="text-accent">{t("shop.titleAccent")}</span>
             </h1>
           </header>
 
@@ -46,7 +49,7 @@ export default async function ShopPage({
                       className={`h-9 px-4 rounded-pill text-[13px] font-medium inline-flex items-center whitespace-nowrap shrink-0 transition ${
                         active ? "bg-ink text-white" : "text-muted hover:text-ink"
                       }`}>
-                      {c === "all" ? "All" : c}
+                      {t(`cat.${c}`)}
                     </Link>
                   );
                 })}
@@ -54,11 +57,11 @@ export default async function ShopPage({
               <form className="shrink-0">
                 <select name="sort" defaultValue={searchParams.sort}
                   className="h-9 pl-3 pr-2 rounded-pill bg-surface-2 text-[13px] font-medium outline-none cursor-pointer border-none">
-                  <option value="">Sort</option>
-                  <option value="new">Newest</option>
-                  <option value="price-asc">Price ↑</option>
-                  <option value="price-desc">Price ↓</option>
-                  <option value="rating">Top rated</option>
+                  <option value="">{t("shop.sort")}</option>
+                  <option value="new">{t("shop.sortNew")}</option>
+                  <option value="price-asc">{t("shop.sortPriceAsc")}</option>
+                  <option value="price-desc">{t("shop.sortPriceDesc")}</option>
+                  <option value="rating">{t("shop.sortRating")}</option>
                 </select>
               </form>
             </div>
@@ -68,18 +71,18 @@ export default async function ShopPage({
           <details className="mt-3 group">
             <summary className="list-none cursor-pointer inline-flex items-center gap-2 text-[13px] font-semibold text-ink bg-white border border-line rounded-pill px-4 h-10 shadow-soft">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-              Filters
+              {t("shop.filters")}
               <svg className="transition-transform group-open:rotate-180" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
             </summary>
             <div className="mt-3 grid sm:grid-cols-3 gap-4 bg-white border border-line rounded-2xl p-5 shadow-soft">
-              <FilterBlock title="Price">
+              <FilterBlock title={t("shop.fPrice")}>
                 <div className="flex items-center gap-2 mt-1">
-                  <input className="h-10 px-3 rounded-xl border border-line bg-surface-2 text-[13px] w-full" placeholder="Min" defaultValue="0"/>
+                  <input className="h-10 px-3 rounded-xl border border-line bg-surface-2 text-[13px] w-full" placeholder={t("shop.min")} defaultValue="0"/>
                   <span className="text-subtle">—</span>
-                  <input className="h-10 px-3 rounded-xl border border-line bg-surface-2 text-[13px] w-full" placeholder="Max" defaultValue="200"/>
+                  <input className="h-10 px-3 rounded-xl border border-line bg-surface-2 text-[13px] w-full" placeholder={t("shop.max")} defaultValue="200"/>
                 </div>
               </FilterBlock>
-              <FilterBlock title="Colour">
+              <FilterBlock title={t("common.colour")}>
                 <div className="flex gap-2 flex-wrap mt-1">
                   {["#1A1A1A","#3A3B3F","#2A3142","#5A5246","#7A6E62","#EDEAE2"].map(c => (
                     <button key={c} className="w-7 h-7 rounded-full border-2 border-white hover:scale-110 transition"
@@ -87,10 +90,10 @@ export default async function ShopPage({
                   ))}
                 </div>
               </FilterBlock>
-              <FilterBlock title="Tech">
+              <FilterBlock title={t("shop.fTech")}>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {["Stretch", "Thermal", "Wicking", "Water-repellent"].map(t => (
-                    <span key={t} className="text-[12px] px-3 h-8 rounded-pill bg-surface-2 inline-flex items-center text-muted">{t}</span>
+                  {techTags.map(([val, key]) => (
+                    <span key={val} className="text-[12px] px-3 h-8 rounded-pill bg-surface-2 inline-flex items-center text-muted">{t(key)}</span>
                   ))}
                 </div>
               </FilterBlock>
@@ -100,9 +103,9 @@ export default async function ShopPage({
           {/* Grid */}
           {products.length === 0 ? (
             <div className="mt-10 bg-white border border-line rounded-2xl p-12 text-center">
-              <h3 className="font-display text-[22px]">Nothing here yet</h3>
-              <p className="text-muted mt-2 text-sm">Try a different category.</p>
-              <Link href="/shop" className="btn btn-primary mt-5 inline-flex">Reset <ArrowRight width={14} height={14}/></Link>
+              <h3 className="font-display text-[22px]">{t("shop.emptyTitle")}</h3>
+              <p className="text-muted mt-2 text-sm">{t("shop.emptyDesc")}</p>
+              <Link href="/shop" className="btn btn-primary mt-5 inline-flex">{t("shop.reset")} <ArrowRight width={14} height={14}/></Link>
             </div>
           ) : (
             <>

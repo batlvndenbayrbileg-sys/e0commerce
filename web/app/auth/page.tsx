@@ -3,11 +3,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useToast } from "@/lib/store";
+import { useT } from "@/components/LangProvider";
 import { api } from "@/lib/api";
 import { ArrowRight } from "@/components/Icons";
 
 export default function AuthPage() {
   const router = useRouter();
+  const t = useT();
   const setSession = useAuth(s => s.setSession);
   const showToast = useToast(s => s.show);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -23,11 +25,11 @@ export default function AuthPage() {
   function validate() {
     const er: Record<string, string> = {};
     if (mode === "register") {
-      if (!form.firstName.trim()) er.firstName = "Required";
-      if (!form.lastName.trim()) er.lastName = "Required";
+      if (!form.firstName.trim()) er.firstName = t("common.required");
+      if (!form.lastName.trim()) er.lastName = t("common.required");
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = "Enter a valid email";
-    if (form.password.length < (mode === "register" ? 8 : 1)) er.password = mode === "register" ? "At least 8 characters" : "Required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = t("auth.invalidEmail");
+    if (form.password.length < (mode === "register" ? 8 : 1)) er.password = mode === "register" ? t("auth.min8") : t("common.required");
     setErrors(er);
     return Object.keys(er).length === 0;
   }
@@ -41,10 +43,10 @@ export default function AuthPage() {
         ? await api.auth.login(form.email, form.password)
         : await api.auth.signup({ firstName: form.firstName, lastName: form.lastName, email: form.email, password: form.password });
       setSession(result.user, result.token);
-      showToast(`Welcome, ${result.user.firstName}!`);
+      showToast(`${t("auth.welcomeName")}, ${result.user.firstName}!`);
       router.push("/account");
     } catch (err: any) {
-      showToast(err.message || "Authentication failed");
+      showToast(err.message || t("toast.authFailed"));
       setBusy(false);
     }
   }
@@ -63,53 +65,51 @@ export default function AuthPage() {
         </Link>
 
         <div className="flex gap-1 bg-surface-2 p-1 rounded-pill mt-6 mb-7">
-          <button onClick={() => setMode("login")} className={`btn btn-sm flex-1 justify-center ${mode === "login" ? "bg-white shadow-soft" : "bg-transparent"}`}>Sign in</button>
-          <button onClick={() => setMode("register")} className={`btn btn-sm flex-1 justify-center ${mode === "register" ? "bg-white shadow-soft" : "bg-transparent"}`}>Create account</button>
+          <button onClick={() => setMode("login")} className={`btn btn-sm flex-1 justify-center ${mode === "login" ? "bg-white shadow-soft" : "bg-transparent"}`}>{t("auth.signIn")}</button>
+          <button onClick={() => setMode("register")} className={`btn btn-sm flex-1 justify-center ${mode === "register" ? "bg-white shadow-soft" : "bg-transparent"}`}>{t("auth.createAccount")}</button>
         </div>
 
         <form onSubmit={submit}>
-          <h2 className="h-2 text-[28px] mb-1.5">{mode === "login" ? "Welcome back." : "Create account."}</h2>
+          <h2 className="h-2 text-[28px] mb-1.5">{mode === "login" ? t("auth.welcomeBack") : t("auth.createTitle")}</h2>
           <p className="text-muted mb-6">
-            {mode === "login"
-              ? "Sign in to track orders and access your kit."
-              : "Join VEXO — early drops, restocks, and free standard shipping."}
+            {mode === "login" ? t("auth.signInDesc") : t("auth.createDesc")}
           </p>
 
           {mode === "register" && (
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <Input label="First name" value={form.firstName} onChange={update("firstName")} error={errors.firstName}/>
-              <Input label="Last name" value={form.lastName} onChange={update("lastName")} error={errors.lastName}/>
+              <Input label={t("co.firstName")} value={form.firstName} onChange={update("firstName")} error={errors.firstName}/>
+              <Input label={t("co.lastName")} value={form.lastName} onChange={update("lastName")} error={errors.lastName}/>
             </div>
           )}
 
-          <Input label="Email" type="email" value={form.email} onChange={update("email")} error={errors.email}/>
+          <Input label={t("co.email")} type="email" value={form.email} onChange={update("email")} error={errors.email}/>
           <div className="mt-3">
-            <Input label="Password" type="password" value={form.password} onChange={update("password")} error={errors.password}/>
+            <Input label={t("auth.password")} type="password" value={form.password} onChange={update("password")} error={errors.password}/>
           </div>
 
           {mode === "login" && (
             <div className="flex justify-between mt-4.5 mb-4">
-              <label className="text-[13px] flex items-center gap-2"><input type="checkbox" className="accent-ink"/> Remember me</label>
-              <a href="#" className="tiny underline">Forgot password?</a>
+              <label className="text-[13px] flex items-center gap-2"><input type="checkbox" className="accent-ink"/> {t("auth.remember")}</label>
+              <a href="#" className="tiny underline">{t("auth.forgot")}</a>
             </div>
           )}
 
           <button disabled={busy} type="submit" className={`btn ${mode === "login" ? "btn-dark" : "btn-primary"} w-full justify-center h-[52px] mt-3 disabled:opacity-50`}>
-            {busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
+            {busy ? t("common.pleaseWait") : mode === "login" ? t("auth.signIn") : t("auth.createAccount")}
             <span className="arrow-cap"><ArrowRight width={14} height={14}/></span>
           </button>
 
           <div className="flex items-center gap-3 my-4.5 text-subtle text-xs">
-            <span className="flex-1 h-px bg-border"/> or continue with <span className="flex-1 h-px bg-border"/>
+            <span className="flex-1 h-px bg-border"/> {t("auth.or")} <span className="flex-1 h-px bg-border"/>
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            <button type="button" className="btn h-12 justify-center bg-surface-2">Google</button>
-            <button type="button" className="btn h-12 justify-center bg-surface-2">Apple</button>
+            <button type="button" className="btn h-12 justify-center bg-surface-2">{t("auth.google")}</button>
+            <button type="button" className="btn h-12 justify-center bg-surface-2">{t("auth.apple")}</button>
           </div>
 
           {mode === "login" && (
-            <p className="tiny text-center mt-5">Demo account: <span className="font-mono">alex@vexo.gear / password123</span></p>
+            <p className="tiny text-center mt-5">{t("auth.demo")} <span className="font-mono">alex@vexo.gear / password123</span></p>
           )}
         </form>
       </div>

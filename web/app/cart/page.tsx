@@ -7,10 +7,12 @@ import { ProductVisual } from "@/components/ProductVisual";
 import { Photo } from "@/components/Photo";
 import { ArrowRight, TrashIcon } from "@/components/Icons";
 import { useCart } from "@/lib/store";
+import { useT } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { productImg } from "@/lib/images";
 
 export default function CartPage() {
+  const t = useT();
   const items = useCart(s => s.items);
   const setQty = useCart(s => s.setQty);
   const remove = useCart(s => s.remove);
@@ -30,23 +32,23 @@ export default function CartPage() {
 
           <div className="mt-6">
             <div className="text-[11px] font-mono tracking-wider text-subtle flex items-center gap-2">
-              <Link href="/" className="hover:text-ink">HOME</Link><span className="opacity-40">/</span><span className="text-ink">CART</span>
+              <Link href="/" className="hover:text-ink uppercase">{t("bc.home")}</Link><span className="opacity-40">/</span><span className="text-ink uppercase">{t("bc.cart")}</span>
             </div>
             <h1 className="font-display text-[34px] sm:text-[48px] uppercase tracking-tight leading-[.95] mt-3">
-              Your <span className="text-accent">bag</span>
+              {t("cart.titlePre")} <span className="text-accent">{t("cart.titleAccent")}</span>
             </h1>
           </div>
 
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 mt-6 pb-10">
             <div className="bg-white border border-line rounded-2xl p-2 shadow-soft">
               {!mounted ? (
-                <div className="p-16 text-center text-muted">Loading…</div>
+                <div className="p-16 text-center text-muted">{t("common.loading")}</div>
               ) : items.length === 0 ? (
                 <div className="py-16 px-6 text-center">
-                  <h3 className="font-display text-[22px] mb-2">Your bag is empty</h3>
-                  <p className="text-muted">Looks quiet in here — let's find you something.</p>
+                  <h3 className="font-display text-[22px] mb-2">{t("cart.emptyTitle")}</h3>
+                  <p className="text-muted">{t("cart.emptyDesc")}</p>
                   <Link href="/shop" className="btn btn-primary mt-5 inline-flex">
-                    Browse shop <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
+                    {t("common.browseShop")} <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
                   </Link>
                 </div>
               ) : (
@@ -69,31 +71,31 @@ export default function CartPage() {
                         <div className="font-display text-[16px] num-tabular">{money(it.price * it.qty)}</div>
                       </div>
                     </div>
-                    <button onClick={() => remove(it.variantId || it.id)} className="w-9 h-9 rounded-full grid place-items-center text-muted hover:text-red-500 hover:bg-red-50 transition self-start" aria-label="Remove"><TrashIcon width={16} height={16}/></button>
+                    <button onClick={() => remove(it.variantId || it.id)} className="w-9 h-9 rounded-full grid place-items-center text-muted hover:text-red-500 hover:bg-red-50 transition self-start" aria-label={t("common.remove")}><TrashIcon width={16} height={16}/></button>
                   </div>
                 ))
               )}
             </div>
 
             <aside className="bg-white border border-line rounded-2xl p-6 h-fit lg:sticky lg:top-6 shadow-soft">
-              <h3 className="font-display text-[20px] tracking-tight">Order summary</h3>
+              <h3 className="font-display text-[20px] tracking-tight">{t("cart.summary")}</h3>
               <div className="mt-4">
-                <Row k="Subtotal" v={money(subtotal)}/>
-                <Row k="Shipping" v={shipping === 0 ? "Free" : money(shipping)}/>
-                <Row k="Tax (est.)" v={money(tax)}/>
+                <Row k={t("cart.subtotal")} v={money(subtotal)}/>
+                <Row k={t("cart.shipping")} v={shipping === 0 ? t("common.free") : money(shipping)}/>
+                <Row k={t("cart.tax")} v={money(tax)}/>
               </div>
               <div className="flex gap-2 my-4">
-                <input placeholder="Promo code" className="flex-1 h-11 px-4 rounded-pill border border-line bg-surface-2 outline-none text-sm"/>
-                <button className="btn btn-ghost btn-sm">Apply</button>
+                <input placeholder={t("cart.promo")} className="flex-1 h-11 px-4 rounded-pill border border-line bg-surface-2 outline-none text-sm"/>
+                <button className="btn btn-ghost btn-sm">{t("common.apply")}</button>
               </div>
               <div className="flex justify-between border-t border-line pt-4 font-display text-[20px]">
-                <span>Total</span><span className="num-tabular">{money(total)}</span>
+                <span>{t("cart.total")}</span><span className="num-tabular">{money(total)}</span>
               </div>
               <Link href="/checkout" className={`btn btn-primary w-full justify-center mt-4 ${items.length === 0 ? "pointer-events-none opacity-50" : ""}`}>
-                Checkout <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
+                {t("cart.checkout")} <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
               </Link>
               <div className="mt-4 p-3 rounded-xl bg-accent-soft text-[12px] text-accent-deep text-center font-medium">
-                Free standard shipping nationwide
+                {t("cart.freeNote")}
               </div>
             </aside>
           </div>

@@ -8,10 +8,12 @@ import { api, money } from "@/lib/api";
 import { productImg } from "@/lib/images";
 import { AddToCart } from "./_AddToCart";
 import { Tabs } from "./_Tabs";
+import { getServerT } from "@/lib/lang";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
+  const t = getServerT();
   const { data: product, related } = await api.products.get(params.id);
   const img = product.image ?? productImg(product.id);
 
@@ -22,8 +24,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
           <Nav />
 
           <div className="text-[11px] font-mono tracking-wider text-subtle flex items-center gap-2 mt-6">
-            <Link href="/" className="hover:text-ink">HOME</Link><span className="opacity-40">/</span>
-            <Link href="/shop" className="hover:text-ink">SHOP</Link><span className="opacity-40">/</span>
+            <Link href="/" className="hover:text-ink uppercase">{t("bc.home")}</Link><span className="opacity-40">/</span>
+            <Link href="/shop" className="hover:text-ink uppercase">{t("bc.shop")}</Link><span className="opacity-40">/</span>
             <span className="text-ink uppercase">{product.name}</span>
           </div>
 
@@ -58,7 +60,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               <div className="flex items-center gap-2 text-[13px] text-muted mt-3">
                 <span className="text-[#F4B400]">★★★★★</span>
                 <span className="num-tabular">{product.rating}</span><span className="opacity-40">·</span>
-                <span className="num-tabular">{product.reviews.toLocaleString()} reviews</span>
+                <span className="num-tabular">{product.reviews.toLocaleString()} {t("common.reviews")}</span>
               </div>
 
               <div className="flex items-baseline gap-3 mt-5">
@@ -77,9 +79,9 @@ export default async function ProductPage({ params }: { params: { id: string } }
               <AddToCart product={product}/>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-line">
-                <Trust label="Free standard shipping"/>
-                <Trust label="Free 30-day returns"/>
-                <Trust label="1-year warranty"/>
+                <Trust label={t("pdp.trustShipping")}/>
+                <Trust label={t("pdp.trustReturns")}/>
+                <Trust label={t("pdp.trustWarranty")}/>
               </div>
             </div>
           </section>
@@ -87,7 +89,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
           <Tabs product={product}/>
 
           <section className="pt-8 pb-10">
-            <h2 className="font-display text-[24px] sm:text-[32px] uppercase tracking-tight mb-5">You may also <span className="text-accent">like</span></h2>
+            <h2 className="font-display text-[24px] sm:text-[32px] uppercase tracking-tight mb-5">{t("pdp.youMayLikePre")} <span className="text-accent">{t("pdp.youMayLikeAccent")}</span></h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {related.map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
             </div>

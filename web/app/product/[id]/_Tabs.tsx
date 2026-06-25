@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useT } from "@/components/LangProvider";
 import type { Product } from "@/lib/types";
 
 export function Tabs({ product }: { product: Product }) {
+  const t = useT();
   const [tab, setTab] = useState<"desc" | "spec" | "reviews" | "faq">("desc");
-  const tabs = [["desc","Description"],["spec","Specs"],["reviews","Reviews"],["faq","FAQ"]] as const;
+  const tabs = [["desc","pdp.tabDesc"],["spec","pdp.tabSpec"],["reviews","pdp.tabReviews"],["faq","pdp.tabFaq"]] as const;
 
   return (
     <>
@@ -13,7 +15,7 @@ export function Tabs({ product }: { product: Product }) {
           <button key={k} onClick={() => setTab(k)}
             className={`px-4.5 py-3.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
               tab === k ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
-            }`}>{label}</button>
+            }`}>{t(label)}</button>
         ))}
       </div>
 
@@ -41,13 +43,13 @@ export function Tabs({ product }: { product: Product }) {
         {tab === "reviews" && (
           <div className="grid gap-4">
             {[
-              { n: "Camille D.", q: "Three winters in and it looks better than the day it arrived. The fit is exactly as described." },
-              { n: "Theo M.", q: "Runs true to size. I'm usually between M and L — took the L for layering and it's perfect." },
+              { n: "Camille D.", q: t("pdp.rev1Q") },
+              { n: "Theo M.", q: t("pdp.rev2Q") },
             ].map(r => (
               <div key={r.n} className="card p-6">
                 <div className="text-camel">★★★★★</div>
                 <p className="my-3">"{r.q}"</p>
-                <div className="tiny">{r.n} · Verified buyer</div>
+                <div className="tiny">{r.n} · {t("pdp.verified")}</div>
               </div>
             ))}
           </div>
@@ -55,10 +57,10 @@ export function Tabs({ product }: { product: Product }) {
         {tab === "faq" && (
           <div>
             {[
-              ["How does it fit?", "Athletic fit, true to size. Between sizes? Size up for layering, down for a compression feel. See the size guide above each option."],
-              ["How should I care for it?", "Machine wash cold and hang or tumble low — technical fabrics keep their stretch and wicking best without high heat or fabric softener."],
-              ["What does the performance warranty cover?", "Every VEXO piece is covered for one year against seam failure and fabric defects under normal training use."],
-              ["What are shipping and returns like?", "Free shipping over $200 and free returns within 30 days. Items arrive in 3–5 business days, tracked."],
+              [t("pdp.faq1Q"), t("pdp.faq1A")],
+              [t("pdp.faq2Q"), t("pdp.faq2A")],
+              [t("pdp.faq3Q"), t("pdp.faq3A")],
+              [t("pdp.faq4Q"), t("pdp.faq4A")],
             ].map(([q, a]) => (
               <details key={q} className="border-b border-border py-4">
                 <summary className="cursor-pointer font-semibold">{q}</summary>

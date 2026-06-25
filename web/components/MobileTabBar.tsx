@@ -2,14 +2,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HomeIcon, SearchIcon, BagIcon, UserIcon } from "./Icons";
+import { useT } from "./LangProvider";
 
 export function MobileTabBar() {
   const path = usePathname();
+  const t = useT();
   const items = [
-    { href: "/",         label: "Home", icon: HomeIcon },
-    { href: "/shop",     label: "Shop", icon: SearchIcon },
-    { href: "/cart",     label: "Cart", icon: BagIcon },
-    { href: "/account",  label: "Me",   icon: UserIcon },
+    { href: "/",         label: t("tab.home"), icon: HomeIcon },
+    { href: "/shop",     label: t("tab.shop"), icon: SearchIcon },
+    { href: "/cart",     label: t("tab.cart"), icon: BagIcon },
+    { href: "/account",  label: t("tab.me"),   icon: UserIcon },
   ];
   return (
     <nav className="lg:hidden fixed bottom-4 inset-x-4 z-40 bg-ink text-white rounded-pill p-2 flex justify-around items-center shadow-deep">

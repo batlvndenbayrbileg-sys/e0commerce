@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, useToast } from "@/lib/store";
+import { useT } from "@/components/LangProvider";
 import { ArrowUpRight, ArrowRight } from "@/components/Icons";
 import type { Product } from "@/lib/types";
 
@@ -14,6 +15,7 @@ const colorName = (hex: string) => COLOR_NAMES[hex.toUpperCase()] ?? COLOR_NAMES
 
 export function AddToCart({ product }: { product: Product }) {
   const router = useRouter();
+  const t = useT();
   const add = useCart(s => s.add);
   const showToast = useToast(s => s.show);
   const [qty, setQty] = useState(1);
@@ -25,18 +27,18 @@ export function AddToCart({ product }: { product: Product }) {
   const soldOut = (product.variants?.length ?? 0) > 0 && product.variants!.every(v => v.stock === 0);
 
   function handleAdd(then?: () => void) {
-    if (soldOut) { showToast("Sold out"); return; }
-    if (sizable && !size) { showToast("Please select a size"); return; }
-    if (size && sizeStock(size) === 0) { showToast("That size is sold out"); return; }
+    if (soldOut) { showToast(t("common.soldOut")); return; }
+    if (sizable && !size) { showToast(t("toast.selectSize")); return; }
+    if (size && sizeStock(size) === 0) { showToast(t("toast.sizeSoldOut")); return; }
     const variantId = product.variants?.find(v => v.size === size)?.id ?? product.variants?.[0]?.id;
     add(product, qty, { size, variantId });
-    showToast(`${product.name} added to bag`);
+    showToast(`${product.name} ${t("toast.addedToBag")}`);
     then?.();
   }
 
   return (
     <div className="mt-2">
-      <Group label="Colour" sub={colorName(color)}>
+      <Group label={t("common.colour")} sub={colorName(color)}>
         <div className="flex gap-2.5">
           {product.colors.map(c => (
             <button key={c}
@@ -50,7 +52,7 @@ export function AddToCart({ product }: { product: Product }) {
       </Group>
 
       {sizable && (
-        <Group label="Size" action={<button className="text-subtle font-normal underline hover:text-ink">Size guide</button>}>
+        <Group label={t("common.size")} action={<button className="text-subtle font-normal underline hover:text-ink">{t("common.sizeGuide")}</button>}>
           <div className="flex flex-wrap gap-2">
             {product.sizes.map(s => {
               const out = sizeStock(s) === 0;
@@ -66,7 +68,7 @@ export function AddToCart({ product }: { product: Product }) {
         </Group>
       )}
 
-      <Group label="Quantity">
+      <Group label={t("common.quantity")}>
         <div className="inline-flex items-center bg-white rounded-pill border border-border p-1">
           <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2">−</button>
           <span className="px-3.5 font-semibold min-w-[36px] text-center">{qty}</span>
@@ -76,8 +78,8 @@ export function AddToCart({ product }: { product: Product }) {
 
       {soldOut ? (
         <div className="mt-6">
-          <button disabled className="btn btn-dark w-full justify-center opacity-50 cursor-not-allowed">Sold out</button>
-          <p className="tiny text-center mt-2">This item is currently out of stock.</p>
+          <button disabled className="btn btn-dark w-full justify-center opacity-50 cursor-not-allowed">{t("common.soldOut")}</button>
+          <p className="tiny text-center mt-2">{t("pdp.outOfStock")}</p>
         </div>
       ) : (
         <div className="flex gap-3 mt-6">
@@ -85,14 +87,14 @@ export function AddToCart({ product }: { product: Product }) {
             onClick={() => handleAdd()}
             className="btn btn-dark flex-1 justify-center"
           >
-            Add to bag
+            {t("common.addToBag")}
             <span className="arrow-cap"><ArrowRight width={14} height={14}/></span>
           </button>
           <button
             onClick={() => handleAdd(() => router.push("/checkout"))}
             className="btn flex-1 justify-center bg-white text-ink border border-ink/15 hover:border-ink hover:-translate-y-0.5 transition-all"
           >
-            Buy now
+            {t("common.buyNow")}
             <span className="arrow-cap !bg-ink !text-white"><ArrowUpRight width={14} height={14}/></span>
           </button>
         </div>

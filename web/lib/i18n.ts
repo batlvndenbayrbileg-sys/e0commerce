@@ -74,6 +74,57 @@ const en: Dict = {
   "foot.tagline": "Gear up every season. Performance workout wear engineered for every condition.",
   "foot.shop": "Shop", "foot.support": "Support", "foot.brand": "Brand", "foot.flagship": "Flagship",
   "foot.rights": "© 2026 VEXO Athletic Inc.", "foot.slogan": "Gear up · Every season",
+  // breadcrumbs + extra common
+  "bc.home": "Home", "bc.shop": "Shop", "bc.cart": "Cart", "bc.checkout": "Checkout",
+  "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
+  "common.required": "Required", "common.pleaseWait": "Please wait…",
+  // product page
+  "pdp.trustShipping": "Free standard shipping", "pdp.trustReturns": "Free 30-day returns", "pdp.trustWarranty": "1-year warranty",
+  "pdp.youMayLikePre": "You may also", "pdp.youMayLikeAccent": "like",
+  "pdp.outOfStock": "This item is currently out of stock.",
+  "pdp.tabDesc": "Description", "pdp.tabSpec": "Specs", "pdp.tabReviews": "Reviews", "pdp.tabFaq": "FAQ",
+  "pdp.verified": "Verified buyer",
+  "pdp.rev1Q": "Three winters in and it looks better than the day it arrived. The fit is exactly as described.",
+  "pdp.rev2Q": "Runs true to size. I'm usually between M and L — took the L for layering and it's perfect.",
+  "pdp.faq1Q": "How does it fit?",
+  "pdp.faq1A": "Athletic fit, true to size. Between sizes? Size up for layering, down for a compression feel. See the size guide above each option.",
+  "pdp.faq2Q": "How should I care for it?",
+  "pdp.faq2A": "Machine wash cold and hang or tumble low — technical fabrics keep their stretch and wicking best without high heat or fabric softener.",
+  "pdp.faq3Q": "What does the performance warranty cover?",
+  "pdp.faq3A": "Every VEXO piece is covered for one year against seam failure and fabric defects under normal training use.",
+  "pdp.faq4Q": "What are shipping and returns like?",
+  "pdp.faq4A": "Free standard shipping nationwide and free returns within 30 days. Items arrive in 3 to 5 business days, tracked.",
+  // toasts
+  "toast.selectSize": "Please select a size", "toast.sizeSoldOut": "That size is sold out",
+  "toast.addedToBag": "added to bag", "toast.cartEmpty": "Cart is empty",
+  "toast.readd": "Please re-add items to your bag", "toast.payFailed": "Payment could not be started",
+  "toast.editAddress": "Edit address", "toast.addAddress": "Add a new address", "toast.profileSaved": "Profile saved",
+  "toast.authFailed": "Authentication failed",
+  // cart / checkout / shop two-tone titles
+  "cart.titlePre": "Your", "cart.titleAccent": "bag",
+  "co.titlePre": "Check", "co.titleAccent": "out", "co.mongolia": "Mongolia",
+  "shop.titlePre": "The", "shop.titleAccent": "collection",
+  // processing
+  "proc.missingRef": "Missing payment reference", "proc.verifyFailed": "Payment verification failed",
+  "proc.timeout": "Payment is taking longer than expected.", "proc.pendingTitle": "Payment pending",
+  "proc.backToCart": "Back to cart",
+  // auth
+  "auth.invalidEmail": "Enter a valid email", "auth.min8": "At least 8 characters",
+  "auth.demo": "Demo account:", "auth.welcomeName": "Welcome", "auth.google": "Google", "auth.apple": "Apple",
+  // account
+  "acc.goldMember": "Gold member", "acc.pts": "pts", "acc.loyalty": "Loyalty",
+  "acc.loyaltyA": "You're", "acc.loyaltyPoints": "760 points", "acc.loyaltyB": "from Platinum. Every purchase earns points.",
+  "acc.defaultHome": "Default · Home", "acc.expires": "Expires", "acc.addAddress": "Add address",
+  "acc.wishEmpty": "Your wishlist is empty", "acc.ordersWord": "orders", "acc.emailOptin": "Email me about drops & restocks",
+  "acc.status_processing": "Processing", "acc.status_shipped": "Shipped", "acc.status_delivered": "Delivered",
+  // shop
+  "shop.items": "items", "shop.sort": "Sort", "shop.sortNew": "Newest", "shop.sortPriceAsc": "Price ↑",
+  "shop.sortPriceDesc": "Price ↓", "shop.sortRating": "Top rated",
+  "shop.filters": "Filters", "shop.fPrice": "Price", "shop.fTech": "Tech", "shop.min": "Min", "shop.max": "Max",
+  "shop.tStretch": "Stretch", "shop.tThermal": "Thermal", "shop.tWicking": "Wicking", "shop.tWater": "Water-repellent",
+  "shop.emptyTitle": "Nothing here yet", "shop.emptyDesc": "Try a different category.", "shop.reset": "Reset",
+  // mobile tab bar
+  "tab.home": "Home", "tab.shop": "Shop", "tab.cart": "Cart", "tab.me": "Me",
 };
 
 const mn: Dict = {
@@ -135,6 +186,57 @@ const mn: Dict = {
   "foot.tagline": "Улирал бүрт бэлэн бай. Аливаа нөхцөлд зориулсан гүйцэтгэлийн дасгалын хувцас.",
   "foot.shop": "Дэлгүүр", "foot.support": "Тусламж", "foot.brand": "Брэнд", "foot.flagship": "Дэлгүүр",
   "foot.rights": "© 2026 VEXO Athletic Inc.", "foot.slogan": "Бэлэн бай · Улирал бүрт",
+  // breadcrumbs + extra common
+  "bc.home": "Нүүр", "bc.shop": "Дэлгүүр", "bc.cart": "Сагс", "bc.checkout": "Төлбөр",
+  "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
+  "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…",
+  // product page
+  "pdp.trustShipping": "Үнэгүй энгийн хүргэлт", "pdp.trustReturns": "30 хоногийн үнэгүй буцаалт", "pdp.trustWarranty": "1 жилийн баталгаа",
+  "pdp.youMayLikePre": "Танд бас", "pdp.youMayLikeAccent": "таалагдаж магадгүй",
+  "pdp.outOfStock": "Энэ бараа одоогоор дууссан байна.",
+  "pdp.tabDesc": "Тайлбар", "pdp.tabSpec": "Үзүүлэлт", "pdp.tabReviews": "Сэтгэгдэл", "pdp.tabFaq": "Асуулт хариулт",
+  "pdp.verified": "Баталгаажсан худалдан авагч",
+  "pdp.rev1Q": "Гурван өвөл өмссөн ч ирсэн өдрөөсөө илүү харагдаж байна. Тохирц яг тайлбарласанчлан.",
+  "pdp.rev2Q": "Хэмжээ яг таарна. Би ихэвчлэн M, L хоёрын дунд байдаг — давхарлахаар L авсан нь төгс.",
+  "pdp.faq1Q": "Хэрхэн тохирох вэ?",
+  "pdp.faq1A": "Спорт тохирц, хэмжээ яг таарна. Хоёр хэмжээний дунд бол давхарлахад том, шахалттай мэдрэмжид жижгийг сонгоорой. Сонголт бүрийн дээрх хэмжээний зааврыг үзнэ үү.",
+  "pdp.faq2Q": "Хэрхэн арчлах вэ?",
+  "pdp.faq2A": "Хүйтэн усаар машинд угааж, өлгөж эсвэл бага температурт хатаа — техникийн даавуу өндөр халуун, зөөлрүүлэгчгүйгээр уян хатан, чийг шингээх чанараа хадгална.",
+  "pdp.faq3Q": "Гүйцэтгэлийн баталгаа юуг хамардаг вэ?",
+  "pdp.faq3A": "VEXO-ийн бүтээгдэхүүн бүр энгийн дасгалын хэрэглээнд оёдол задрах, даавууны гэмтлээс нэг жилийн баталгаатай.",
+  "pdp.faq4Q": "Хүргэлт, буцаалт ямар вэ?",
+  "pdp.faq4A": "Улсын хэмжээнд үнэгүй энгийн хүргэлт, 30 хоногийн дотор үнэгүй буцаалт. Бараа 3-5 ажлын өдөрт хяналттай ирнэ.",
+  // toasts
+  "toast.selectSize": "Хэмжээгээ сонгоно уу", "toast.sizeSoldOut": "Тэр хэмжээ дууссан байна",
+  "toast.addedToBag": "сагсанд нэмэгдлээ", "toast.cartEmpty": "Сагс хоосон байна",
+  "toast.readd": "Бараагаа сагсанд дахин нэмнэ үү", "toast.payFailed": "Төлбөрийг эхлүүлж чадсангүй",
+  "toast.editAddress": "Хаяг засах", "toast.addAddress": "Шинэ хаяг нэмэх", "toast.profileSaved": "Профайл хадгалагдлаа",
+  "toast.authFailed": "Нэвтрэлт амжилтгүй боллоо",
+  // cart / checkout / shop two-tone titles
+  "cart.titlePre": "Таны", "cart.titleAccent": "сагс",
+  "co.titlePre": "", "co.titleAccent": "Төлбөр", "co.mongolia": "Монгол",
+  "shop.titlePre": "", "shop.titleAccent": "Цуглуулга",
+  // processing
+  "proc.missingRef": "Төлбөрийн лавлагаа алга", "proc.verifyFailed": "Төлбөр баталгаажуулж чадсангүй",
+  "proc.timeout": "Төлбөр хүлээгдсэнээс удаж байна.", "proc.pendingTitle": "Төлбөр хүлээгдэж байна",
+  "proc.backToCart": "Сагс руу буцах",
+  // auth
+  "auth.invalidEmail": "Зөв имэйл оруулна уу", "auth.min8": "Дор хаяж 8 тэмдэгт",
+  "auth.demo": "Туршилтын бүртгэл:", "auth.welcomeName": "Тавтай морил", "auth.google": "Google", "auth.apple": "Apple",
+  // account
+  "acc.goldMember": "Алтан гишүүн", "acc.pts": "оноо", "acc.loyalty": "Урамшуулал",
+  "acc.loyaltyA": "Та", "acc.loyaltyPoints": "760 оноо", "acc.loyaltyB": "Платинумаас хоцорч байна. Худалдан авалт бүр оноо нэмнэ.",
+  "acc.defaultHome": "Үндсэн · Гэр", "acc.expires": "Дуусах", "acc.addAddress": "Хаяг нэмэх",
+  "acc.wishEmpty": "Таны хадгалсан жагсаалт хоосон байна", "acc.ordersWord": "захиалга", "acc.emailOptin": "Шинэ бараа, нөөцийн талаар имэйл авах",
+  "acc.status_processing": "Боловсруулж байна", "acc.status_shipped": "Илгээсэн", "acc.status_delivered": "Хүргэгдсэн",
+  // shop
+  "shop.items": "бараа", "shop.sort": "Эрэмбэлэх", "shop.sortNew": "Шинэ", "shop.sortPriceAsc": "Үнэ ↑",
+  "shop.sortPriceDesc": "Үнэ ↓", "shop.sortRating": "Үнэлгээгээр",
+  "shop.filters": "Шүүлтүүр", "shop.fPrice": "Үнэ", "shop.fTech": "Технологи", "shop.min": "Доод", "shop.max": "Дээд",
+  "shop.tStretch": "Уян", "shop.tThermal": "Дулаалга", "shop.tWicking": "Чийг шингээх", "shop.tWater": "Ус түлхэх",
+  "shop.emptyTitle": "Энд одоохондоо юм алга", "shop.emptyDesc": "Өөр ангилал сонгож үзнэ үү.", "shop.reset": "Шинэчлэх",
+  // mobile tab bar
+  "tab.home": "Нүүр", "tab.shop": "Дэлгүүр", "tab.cart": "Сагс", "tab.me": "Би",
 };
 
 const DICTS: Record<Lang, Dict> = { en, mn };

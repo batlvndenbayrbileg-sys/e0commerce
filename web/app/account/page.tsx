@@ -6,11 +6,16 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { useAuth, useWish, useToast, useOrders, type OrderRecord } from "@/lib/store";
+import { useT } from "@/components/LangProvider";
 import { api, money } from "@/lib/api";
 import type { Product } from "@/lib/types";
 
 const TABS = ["Overview", "Orders", "Wishlist", "Addresses", "Settings"] as const;
 type Tab = (typeof TABS)[number];
+const TAB_KEY: Record<Tab, string> = {
+  Overview: "acc.overview", Orders: "acc.orders", Wishlist: "acc.wishlist",
+  Addresses: "acc.addresses", Settings: "acc.settings",
+};
 
 const statusStyle: Record<string, string> = {
   processing: "bg-amber-100 text-amber-700",
@@ -20,6 +25,7 @@ const statusStyle: Record<string, string> = {
 
 export default function AccountPage() {
   const router = useRouter();
+  const t = useT();
   const user = useAuth(s => s.user);
   const signOut = useAuth(s => s.signOut);
   const wishIds = useWish(s => s.ids);
@@ -57,30 +63,30 @@ export default function AccountPage() {
                 <h1 className="font-display text-[24px] tracking-tight truncate">{user.firstName} {user.lastName}</h1>
                 <p className="text-muted text-[13px] truncate">{user.email}</p>
                 <span className="inline-flex items-center gap-1.5 mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-accent bg-accent-soft px-2.5 py-1 rounded-pill">
-                  Gold member · 1,240 pts
+                  {t("acc.goldMember")} · 1,240 {t("acc.pts")}
                 </span>
               </div>
               <button onClick={() => { signOut(); router.push("/"); }}
-                className="ml-auto hidden sm:inline-flex btn btn-outline btn-sm">Sign out</button>
+                className="ml-auto hidden sm:inline-flex btn btn-outline btn-sm">{t("acc.signOut")}</button>
             </div>
 
             {/* Stat tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-              <Stat label="Orders" value={String(orders.length)}/>
-              <Stat label="Spent" value={money(totalSpent)}/>
-              <Stat label="Wishlist" value={String(wished.length)}/>
-              <Stat label="Points" value="1,240"/>
+              <Stat label={t("acc.statOrders")} value={String(orders.length)}/>
+              <Stat label={t("acc.statSpent")} value={money(totalSpent)}/>
+              <Stat label={t("acc.statWishlist")} value={String(wished.length)}/>
+              <Stat label={t("acc.statPoints")} value="1,240"/>
             </div>
           </div>
 
           {/* Tabs */}
           <div className="sticky top-2 z-20 mt-4 -mx-3 px-3 sm:mx-0 sm:px-0">
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar bg-white/80 backdrop-blur border border-line rounded-pill p-1.5 shadow-soft">
-              {TABS.map(t => (
-                <button key={t} onClick={() => setTab(t)}
+              {TABS.map(tb => (
+                <button key={tb} onClick={() => setTab(tb)}
                   className={`h-9 px-4 rounded-pill text-[13px] font-medium whitespace-nowrap shrink-0 transition ${
-                    tab === t ? "bg-ink text-white" : "text-muted hover:text-ink"
-                  }`}>{t}</button>
+                    tab === tb ? "bg-ink text-white" : "text-muted hover:text-ink"
+                  }`}>{t(TAB_KEY[tb])}</button>
               ))}
             </div>
           </div>
@@ -89,35 +95,35 @@ export default function AccountPage() {
           <div className="mt-5 mb-10">
             {tab === "Overview" && (
               <div className="grid lg:grid-cols-2 gap-4">
-                <Card title="Recent order">
-                  {orders.length === 0 ? <Empty msg="No orders yet"/> : (
+                <Card title={t("acc.recentOrder")}>
+                  {orders.length === 0 ? <Empty msg={t("acc.noOrders")}/> : (
                     <OrderRow o={orders[orders.length - 1]}/>
                   )}
                 </Card>
-                <Card title="Default address">
+                <Card title={t("acc.defaultAddress")}>
                   <p className="text-muted leading-relaxed text-sm">
                     {user.firstName} {user.lastName}<br/>
                     140 Performance Ave, Apt 3B<br/>
                     Los Angeles, CA 90012<br/>+1 (213) 555-0142
                   </p>
                 </Card>
-                <Card title="Payment method">
+                <Card title={t("acc.paymentMethod")}>
                   <div className="flex items-center gap-3 p-3 bg-surface-2 rounded-xl">
                     <svg width={40} height={26} viewBox="0 0 40 26"><rect width="40" height="26" rx="4" fill="#1A1F71"/><circle cx="15" cy="13" r="7" fill="#EB001B"/><circle cx="24" cy="13" r="7" fill="#F79E1B" opacity=".85"/></svg>
-                    <div><div className="font-semibold text-sm">•••• 4242</div><div className="tiny">Expires 09/28</div></div>
+                    <div><div className="font-semibold text-sm">•••• 4242</div><div className="tiny">{t("acc.expires")} 09/28</div></div>
                   </div>
                 </Card>
-                <Card title="Loyalty">
-                  <p className="text-sm text-muted">You're <span className="text-ink font-semibold">760 points</span> from Platinum. Every $1 earns 1 point.</p>
+                <Card title={t("acc.loyalty")}>
+                  <p className="text-sm text-muted">{t("acc.loyaltyA")} <span className="text-ink font-semibold">{t("acc.loyaltyPoints")}</span> {t("acc.loyaltyB")}</p>
                   <div className="h-2 bg-surface-2 rounded-pill mt-3 overflow-hidden"><div className="h-full bg-accent rounded-pill" style={{ width: "62%" }}/></div>
                 </Card>
               </div>
             )}
 
             {tab === "Orders" && (
-              <Card title={`${orders.length} order${orders.length === 1 ? "" : "s"}`}>
+              <Card title={`${orders.length} ${t("acc.ordersWord")}`}>
                 {orders.length === 0 ? (
-                  <Empty msg="No orders yet" cta/>
+                  <Empty msg={t("acc.noOrders")} cta/>
                 ) : (
                   <div className="divide-y divide-line">
                     {orders.slice().reverse().map(o => <OrderRow key={o.id} o={o}/>)}
@@ -128,7 +134,7 @@ export default function AccountPage() {
 
             {tab === "Wishlist" && (
               wished.length === 0 ? (
-                <Card><Empty msg="Your wishlist is empty" cta/></Card>
+                <Card><Empty msg={t("acc.wishEmpty")} cta/></Card>
               ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   {wished.map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
@@ -138,31 +144,31 @@ export default function AccountPage() {
 
             {tab === "Addresses" && (
               <div className="grid sm:grid-cols-2 gap-4">
-                <Card title="Default · Home">
+                <Card title={t("acc.defaultHome")}>
                   <p className="text-muted leading-relaxed text-sm">{user.firstName} {user.lastName}<br/>140 Performance Ave, Apt 3B<br/>Los Angeles, CA 90012</p>
-                  <button onClick={() => showToast("Edit address")} className="btn btn-outline btn-sm mt-4">Edit</button>
+                  <button onClick={() => showToast(t("toast.editAddress"))} className="btn btn-outline btn-sm mt-4">{t("common.edit")}</button>
                 </Card>
-                <button onClick={() => showToast("Add a new address")}
+                <button onClick={() => showToast(t("toast.addAddress"))}
                   className="border-2 border-dashed border-line rounded-2xl p-6 text-muted hover:border-ink/30 hover:text-ink transition grid place-items-center min-h-[140px]">
                   <span className="text-3xl leading-none">+</span>
-                  <span className="text-sm mt-2">Add address</span>
+                  <span className="text-sm mt-2">{t("acc.addAddress")}</span>
                 </button>
               </div>
             )}
 
             {tab === "Settings" && (
-              <Card title="Profile settings">
-                <form onSubmit={(e) => { e.preventDefault(); showToast("Profile saved"); }} className="grid sm:grid-cols-2 gap-3">
-                  <Field label="First name" defaultValue={user.firstName}/>
-                  <Field label="Last name" defaultValue={user.lastName}/>
-                  <Field label="Email" defaultValue={user.email} full type="email"/>
-                  <Field label="Phone" defaultValue="+1 (213) 555-0142" full/>
+              <Card title={t("acc.profileSettings")}>
+                <form onSubmit={(e) => { e.preventDefault(); showToast(t("toast.profileSaved")); }} className="grid sm:grid-cols-2 gap-3">
+                  <Field label={t("co.firstName")} defaultValue={user.firstName}/>
+                  <Field label={t("co.lastName")} defaultValue={user.lastName}/>
+                  <Field label={t("co.email")} defaultValue={user.email} full type="email"/>
+                  <Field label={t("co.phone")} defaultValue="+1 (213) 555-0142" full/>
                   <label className="sm:col-span-2 flex items-center gap-2.5 text-sm text-muted">
-                    <input type="checkbox" defaultChecked className="accent-accent"/> Email me about drops & restocks
+                    <input type="checkbox" defaultChecked className="accent-accent"/> {t("acc.emailOptin")}
                   </label>
                   <div className="sm:col-span-2 flex gap-3 mt-2">
-                    <button type="submit" className="btn btn-primary">Save changes</button>
-                    <button type="button" onClick={() => { signOut(); router.push("/"); }} className="btn btn-outline sm:hidden">Sign out</button>
+                    <button type="submit" className="btn btn-primary">{t("acc.saveChanges")}</button>
+                    <button type="button" onClick={() => { signOut(); router.push("/"); }} className="btn btn-outline sm:hidden">{t("acc.signOut")}</button>
                   </div>
                 </form>
               </Card>
@@ -192,22 +198,24 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
   );
 }
 function OrderRow({ o }: { o: OrderRecord }) {
+  const t = useT();
   return (
     <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-sm truncate">{o.items.map(i => i.name).join(", ")}</div>
         <div className="tiny">#{o.id} · {o.createdAt.slice(0, 10)}</div>
       </div>
-      <span className={`px-2.5 py-1 rounded-pill text-[11px] font-semibold capitalize ${statusStyle[o.status]}`}>{o.status}</span>
+      <span className={`px-2.5 py-1 rounded-pill text-[11px] font-semibold ${statusStyle[o.status]}`}>{t(`acc.status_${o.status}`)}</span>
       <span className="font-semibold text-sm num-tabular">{money(o.total)}</span>
     </div>
   );
 }
 function Empty({ msg, cta }: { msg: string; cta?: boolean }) {
+  const t = useT();
   return (
     <div className="py-8 text-center">
       <p className="text-muted">{msg}</p>
-      {cta && <Link href="/shop" className="btn btn-primary btn-sm mt-4 inline-flex">Start shopping</Link>}
+      {cta && <Link href="/shop" className="btn btn-primary btn-sm mt-4 inline-flex">{t("acc.startShopping")}</Link>}
     </div>
   );
 }

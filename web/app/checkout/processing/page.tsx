@@ -2,9 +2,11 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart, useOrders } from "@/lib/store";
+import { useT } from "@/components/LangProvider";
 import { wire } from "@/lib/wire";
 
 function Processing() {
+  const t = useT();
   const router = useRouter();
   const params = useSearchParams();
   const pi = params.get("pi");
@@ -17,7 +19,7 @@ function Processing() {
   itemsRef.current = items;
 
   useEffect(() => {
-    if (!pi) { setError("Missing payment reference"); return; }
+    if (!pi) { setError(t("proc.missingRef")); return; }
     let tries = 0;
     const tick = async () => {
       if (done.current) return;
@@ -39,9 +41,9 @@ function Processing() {
           return;
         }
       } catch (e: any) {
-        if (++tries > 3) { setError(e.message || "Payment verification failed"); return; }
+        if (++tries > 3) { setError(e.message || t("proc.verifyFailed")); return; }
       }
-      if (++tries > 40) { setError("Payment is taking longer than expected."); return; }
+      if (++tries > 40) { setError(t("proc.timeout")); return; }
       setTimeout(tick, 1500);
     };
     tick();
@@ -54,18 +56,18 @@ function Processing() {
         {!error ? (
           <>
             <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full border-4 border-surface-3 border-t-accent animate-spin"/>
-            <h1 className="font-display text-[26px] uppercase tracking-tight">Confirming payment</h1>
-            <p className="text-muted mt-3">Approve the request in <span className="font-semibold text-ink">QPay</span> or your bank app. This page updates automatically.</p>
+            <h1 className="font-display text-[26px] uppercase tracking-tight">{t("proc.title")}</h1>
+            <p className="text-muted mt-3">{t("proc.desc")}</p>
             <div className="mt-5 inline-flex items-center gap-2 text-[12px] text-muted bg-surface-2 px-3 py-1.5 rounded-pill">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"/> Waiting for Wire confirmation…
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"/> {t("proc.waiting")}
             </div>
           </>
         ) : (
           <>
             <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-surface-2 grid place-items-center text-2xl">!</div>
-            <h1 className="font-display text-[24px] uppercase tracking-tight">Payment pending</h1>
+            <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.pendingTitle")}</h1>
             <p className="text-muted mt-3">{error}</p>
-            <button onClick={() => router.push("/cart")} className="btn btn-primary mt-6">Back to cart</button>
+            <button onClick={() => router.push("/cart")} className="btn btn-primary mt-6">{t("proc.backToCart")}</button>
           </>
         )}
       </div>
