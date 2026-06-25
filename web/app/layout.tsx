@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toast } from "@/components/Toast";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { CartDrawer } from "@/components/CartDrawer";
+import { QuickViewModal } from "@/components/QuickViewModal";
 import { FlyLayer } from "@/components/FlyLayer";
 import { LangProvider } from "@/components/LangProvider";
 import { getServerLang, getServerT } from "@/lib/lang";
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="main">{children}</main>
           <Toast />
           <CartDrawer />
+          <QuickViewModal />
           <FlyLayer />
           <MobileTabBar />
         </LangProvider>

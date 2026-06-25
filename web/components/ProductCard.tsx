@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ProductVisual } from "./ProductVisual";
 import { Photo } from "./Photo";
 import { HeartIcon, BagIcon } from "./Icons";
-import { useCart, useWish, useToast, flyToCart } from "@/lib/store";
+import { useCart, useWish, useToast, useQuickView, flyToCart } from "@/lib/store";
 import { productImg } from "@/lib/images";
 import { money } from "@/lib/api";
 import { useT } from "./LangProvider";
@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 
 export function ProductCard({ product, index = 0 }: { product: Product; index?: number }) {
   const add = useCart(s => s.add);
+  const openQuickView = useQuickView(s => s.open);
   const toggleWish = useWish(s => s.toggle);
   const has = useWish(s => s.has);
   const showToast = useToast(s => s.show);
@@ -67,6 +68,18 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         >
           <HeartIcon width={16} height={16} filled={wished}/>
         </button>
+
+        {/* quick view — desktop hover */}
+        {!soldOut && (
+          <button
+            onClick={(e) => { e.preventDefault(); openQuickView(product); }}
+            className="hidden lg:flex absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <span className="bg-white/90 backdrop-blur text-ink text-[12px] font-semibold uppercase tracking-wide px-4 h-9 rounded-pill grid place-items-center shadow-soft hover:bg-white">
+              {t("common.quickView")}
+            </span>
+          </button>
+        )}
 
         {/* price pill */}
         <div className="absolute left-3 bottom-3 z-10 rounded-2xl glass-dark px-3.5 py-2 pr-4">

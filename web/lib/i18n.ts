@@ -80,6 +80,7 @@ const en: Dict = {
   "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
   "common.required": "Required", "common.pleaseWait": "Please wait…", "common.close": "Close",
   "common.decrease": "Decrease quantity", "common.increase": "Increase quantity", "common.rating": "Rating",
+  "common.quickView": "Quick view", "common.viewDetails": "View details",
   "a11y.skip": "Skip to content",
   "cart.viewBag": "View full bag",
   // product page
@@ -196,6 +197,7 @@ const mn: Dict = {
   "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
   "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…", "common.close": "Хаах",
   "common.decrease": "Тоо хорогдуулах", "common.increase": "Тоо нэмэгдүүлэх", "common.rating": "Үнэлгээ",
+  "common.quickView": "Хурдан үзэх", "common.viewDetails": "Дэлгэрэнгүй үзэх",
   "a11y.skip": "Үндсэн хэсэг рүү очих",
   "cart.viewBag": "Сагсыг бүтнээр нь үзэх",
   // product page

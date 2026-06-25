@@ -80,6 +80,14 @@ export const useUI = create<UIState>(set => ({
   closeCart: () => set({ cartOpen: false }),
 }));
 
+// Quick-view modal: holds the product being previewed (null = closed).
+type QuickViewState = { product: Product | null; open: (p: Product) => void; close: () => void };
+export const useQuickView = create<QuickViewState>(set => ({
+  product: null,
+  open: p => set({ product: p }),
+  close: () => set({ product: null }),
+}));
+
 // "Fly to cart" animation: each add launches a short-lived flight that the
 // global FlyLayer renders from the source element to the cart icon.
 type Flight = { id: number; from: { x: number; y: number }; to: { x: number; y: number }; color: string };
