@@ -4,17 +4,19 @@ import {
   createPaymentIntent, getPaymentIntent, createCheckoutSession,
   verifyWireSignature, WIRE_LIVE, WIRE_WEBHOOK_IP,
 } from "../lib/wire.js";
+import { sendOrderConfirmation } from "../lib/email.js";
 
 const MEDUSA_URL = process.env.MEDUSA_URL || "http://localhost:9000";
 const MEDUSA_PK = process.env.MEDUSA_PK || "pk_6352a937fd8593d7cff1b41f32d7dd564df486a1b789b75533bed1abd3cf5271";
 
+type OrderItem = { title: string; quantity: number; amount: number };
 type Record = {
   cartId: string;
   amount: number;
   email: string;
   shippingMethod: "standard" | "express";
   status: "pending" | "paid";
-  order?: { id: string; total: number; email: string; estimatedDelivery: string };
+  order?: { id: string; total: number; email: string; estimatedDelivery: string; items: OrderItem[] };
 };
 const intents = new Map<string, Record>();
 
@@ -33,6 +35,11 @@ async function completeMedusaCart(cartId: string, shippingMethod: "standard" | "
     total: Math.round(o.total),
     email: o.email,
     estimatedDelivery: new Date(Date.now() + (shippingMethod === "express" ? 2 : 4) * 86400000).toISOString().slice(0, 10),
+    items: (o.items || []).map((it: any): OrderItem => ({
+      title: it.product_title || it.title || "Item",
+      quantity: it.quantity,
+      amount: Math.round(Number(it.total ?? it.unit_price * it.quantity) || 0),
+    })),
   };
 }
 
@@ -45,6 +52,8 @@ async function settle(intentId: string): Promise<Record | null> {
     rec.order = await completeMedusaCart(rec.cartId, rec.shippingMethod);
     rec.status = "paid";
     intents.set(intentId, rec);
+    // fire-and-forget order confirmation email
+    sendOrderConfirmation(rec.order).catch(() => {});
   }
   return rec;
 }
