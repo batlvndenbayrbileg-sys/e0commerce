@@ -19,6 +19,17 @@ html, body {
 }
 ::selection { background: #0E0F10; color: #fff; }
 
+/* A11y: respect the OS "reduce motion" setting — neutralize CSS transitions,
+   animations and smooth scroll. Framer Motion is handled via MotionConfig. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 .grainy { position: relative; }
 .grainy::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;

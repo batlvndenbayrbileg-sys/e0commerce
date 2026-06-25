@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SearchIcon, BagIcon, UserIcon } from "./Icons";
 import { useAuth, useCart } from "@/lib/store";
@@ -24,6 +24,8 @@ function Sliders({ size = 18 }: { size?: number }) {
 
 export function Nav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const items = useCart(s => s.items);
   const user = useAuth(s => s.user);
   const [mounted, setMounted] = useState(false);
@@ -31,8 +33,17 @@ export function Nav() {
   const count = mounted ? items.reduce((a, b) => a + b.qty, 0) : 0;
   const t = useT();
 
+  const [q, setQ] = useState("");
+  // Keep the field in sync with the active query when browsing the shop.
+  useEffect(() => { setQ(searchParams.get("q") ?? ""); }, [searchParams]);
+  function search(e: React.FormEvent) {
+    e.preventDefault();
+    const term = q.trim();
+    router.push(term ? `/shop?q=${encodeURIComponent(term)}` : "/shop");
+  }
+
   const Bag = (
-    <Link href="/cart" className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist transition" aria-label="Cart">
+    <Link href="/cart" className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist transition" aria-label={t("nav.cart")}>
       <BagIcon width={18} height={18}/>
       {count > 0 && (
         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold grid place-items-center border-2 border-white num-tabular">{count}</span>
@@ -44,14 +55,15 @@ export function Nav() {
     <>
       {/* ---------- Mobile bar ---------- */}
       <div className="lg:hidden flex items-center gap-2.5">
-        <button className="w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink" aria-label="Notifications">
+        <button className="w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink" aria-label={t("nav.notifications")}>
           <Bell/>
         </button>
-        <div className="flex-1 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
-          <SearchIcon width={16} height={16} className="text-subtle"/>
-          <input className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
-          <button className="text-subtle hover:text-ink" aria-label="Filters"><Sliders size={17}/></button>
-        </div>
+        <form onSubmit={search} className="flex-1 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
+          <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
+          <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")}
+            className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
+          <Link href="/shop" className="text-subtle hover:text-ink shrink-0" aria-label={t("shop.filters")}><Sliders size={17}/></Link>
+        </form>
         <LangToggle/>
         {Bag}
       </div>
@@ -65,13 +77,14 @@ export function Nav() {
         </div>
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-[22px] tracking-[.04em] leading-none">VEXO</Link>
         <div className="flex items-center gap-3 ml-auto">
-          <div className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[220px]">
-            <SearchIcon width={16} height={16} className="text-subtle"/>
-            <input className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle" placeholder={t("nav.searchShort")}/>
-          </div>
+          <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[220px]">
+            <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
+            <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")}
+              className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
+          </form>
           <LangToggle/>
           {Bag}
-          <Link href={user ? "/account" : "/auth"} className="flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:opacity-90 transition">
+          <Link href={user ? "/account" : "/auth"} aria-label={t("nav.account")} className="flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:opacity-90 transition">
             {user ? user.firstName : t("nav.signin")}
             <span className="w-8 h-8 rounded-full bg-white/15 grid place-items-center"><UserIcon width={15} height={15}/></span>
           </Link>

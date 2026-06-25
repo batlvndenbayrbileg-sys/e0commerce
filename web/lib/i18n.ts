@@ -9,6 +9,7 @@ const en: Dict = {
   "nav.shop": "Shop", "nav.men": "Men", "nav.women": "Women", "nav.trending": "Trending",
   "nav.seasonal": "Seasonal", "nav.accessories": "Accessories",
   "nav.search": "Search the collection…", "nav.searchShort": "Search…", "nav.signin": "Sign in",
+  "nav.notifications": "Notifications", "nav.cart": "Cart", "nav.wishlist": "Wishlist", "nav.account": "Account",
   // common
   "common.seeAll": "See all", "common.shopAll": "Shop all", "common.viewAll": "View all",
   "common.soldOut": "Sold out", "common.from": "From", "common.reviews": "reviews",
@@ -131,6 +132,7 @@ const mn: Dict = {
   "nav.shop": "Дэлгүүр", "nav.men": "Эрэгтэй", "nav.women": "Эмэгтэй", "nav.trending": "Тренд",
   "nav.seasonal": "Улирлын", "nav.accessories": "Хэрэгсэл",
   "nav.search": "Бараа хайх…", "nav.searchShort": "Хайх…", "nav.signin": "Нэвтрэх",
+  "nav.notifications": "Мэдэгдэл", "nav.cart": "Сагс", "nav.wishlist": "Хадгалсан", "nav.account": "Бүртгэл",
   "common.seeAll": "Бүгдийг", "common.shopAll": "Бүгдийг үзэх", "common.viewAll": "Бүгдийг үзэх",
   "common.soldOut": "Дууссан", "common.from": "Эхлэх үнэ", "common.reviews": "сэтгэгдэл",
   "common.addToBag": "Сагсанд хийх", "common.buyNow": "Шууд авах", "common.free": "Үнэгүй",

@@ -63,7 +63,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full grid place-items-center backdrop-blur transition-all ${
             wished ? "text-red-500 bg-white" : "text-ink bg-white/85 hover:bg-white"
           }`}
-          aria-label="Wishlist"
+          aria-label={t("nav.wishlist")}
         >
           <HeartIcon width={16} height={16} filled={wished}/>
         </button>
@@ -81,7 +81,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           className={`absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full grid place-items-center transition-all ${
             soldOut ? "bg-white/40 text-ink/40 cursor-not-allowed" : "bg-ink text-white hover:bg-accent hover:scale-105"
           }`}
-          aria-label={soldOut ? "Sold out" : "Add to bag"}
+          aria-label={soldOut ? t("common.soldOut") : t("common.addToBag")}
         >
           <BagIcon width={16} height={16}/>
         </button>

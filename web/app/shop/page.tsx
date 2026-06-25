@@ -5,20 +5,26 @@ import { ProductCard } from "@/components/ProductCard";
 import { ArrowRight } from "@/components/Icons";
 import { api } from "@/lib/api";
 import { getServerT } from "@/lib/lang";
+import { SortSelect, ShopFilters } from "./_ShopControls";
 
 export const dynamic = "force-dynamic";
 
 const cats = ["all", "Outerwear", "Tops", "Bottoms", "Base Layers", "Accessories"];
-const techTags = [["Stretch", "shop.tStretch"], ["Thermal", "shop.tThermal"], ["Wicking", "shop.tWicking"], ["Water-repellent", "shop.tWater"]] as const;
 
 export default async function ShopPage({
   searchParams,
-}: { searchParams: { category?: string; sort?: string; q?: string } }) {
+}: { searchParams: { category?: string; sort?: string; q?: string; gender?: string; filter?: string; color?: string; tech?: string; minPrice?: string; maxPrice?: string } }) {
   const t = getServerT();
   const { data: products, total } = await api.products.list({
     category: searchParams.category,
     sort: searchParams.sort,
     q: searchParams.q,
+    gender: searchParams.gender,
+    filter: searchParams.filter,
+    color: searchParams.color,
+    tech: searchParams.tech,
+    minPrice: searchParams.minPrice,
+    maxPrice: searchParams.maxPrice,
   });
 
   return (
@@ -54,51 +60,14 @@ export default async function ShopPage({
                   );
                 })}
               </div>
-              <form className="shrink-0">
-                <select name="sort" defaultValue={searchParams.sort}
-                  className="h-9 pl-3 pr-2 rounded-pill bg-surface-2 text-[13px] font-medium outline-none cursor-pointer border-none">
-                  <option value="">{t("shop.sort")}</option>
-                  <option value="new">{t("shop.sortNew")}</option>
-                  <option value="price-asc">{t("shop.sortPriceAsc")}</option>
-                  <option value="price-desc">{t("shop.sortPriceDesc")}</option>
-                  <option value="rating">{t("shop.sortRating")}</option>
-                </select>
-              </form>
+              <div className="shrink-0">
+                <SortSelect/>
+              </div>
             </div>
           </div>
 
           {/* Collapsible filters */}
-          <details className="mt-3 group">
-            <summary className="list-none cursor-pointer inline-flex items-center gap-2 text-[13px] font-semibold text-ink bg-white border border-line rounded-pill px-4 h-10 shadow-soft">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-              {t("shop.filters")}
-              <svg className="transition-transform group-open:rotate-180" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
-            </summary>
-            <div className="mt-3 grid sm:grid-cols-3 gap-4 bg-white border border-line rounded-2xl p-5 shadow-soft">
-              <FilterBlock title={t("shop.fPrice")}>
-                <div className="flex items-center gap-2 mt-1">
-                  <input className="h-10 px-3 rounded-xl border border-line bg-surface-2 text-[13px] w-full" placeholder={t("shop.min")} defaultValue="0"/>
-                  <span className="text-subtle">—</span>
-                  <input className="h-10 px-3 rounded-xl border border-line bg-surface-2 text-[13px] w-full" placeholder={t("shop.max")} defaultValue="200"/>
-                </div>
-              </FilterBlock>
-              <FilterBlock title={t("common.colour")}>
-                <div className="flex gap-2 flex-wrap mt-1">
-                  {["#1A1A1A","#3A3B3F","#2A3142","#5A5246","#7A6E62","#EDEAE2"].map(c => (
-                    <button key={c} className="w-7 h-7 rounded-full border-2 border-white hover:scale-110 transition"
-                      style={{ background: c, boxShadow: "0 0 0 1px rgba(14,15,16,.1)" }}/>
-                  ))}
-                </div>
-              </FilterBlock>
-              <FilterBlock title={t("shop.fTech")}>
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  {techTags.map(([val, key]) => (
-                    <span key={val} className="text-[12px] px-3 h-8 rounded-pill bg-surface-2 inline-flex items-center text-muted">{t(key)}</span>
-                  ))}
-                </div>
-              </FilterBlock>
-            </div>
-          </details>
+          <ShopFilters/>
 
           {/* Grid */}
           {products.length === 0 ? (
@@ -126,14 +95,5 @@ export default async function ShopPage({
 
       <Footer />
     </>
-  );
-}
-
-function FilterBlock({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="text-[12px] font-semibold uppercase tracking-wide text-muted">{title}</div>
-      {children}
-    </div>
   );
 }

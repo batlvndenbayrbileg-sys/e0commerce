@@ -96,8 +96,17 @@ export const medusa = {
   products: {
     list: async (params: Record<string, string | undefined> = {}) => {
       let list = await fetchAll();
-      const { category, q, sort } = params;
+      const { category, q, sort, gender, filter, color, tech, minPrice, maxPrice } = params;
       if (category && category !== "all") list = list.filter(p => p.category === category);
+      // A gender page also shows Unisex pieces.
+      if (gender) list = list.filter(p => p.gender === gender || p.gender === "Unisex");
+      if (filter === "new") list = list.filter(p => p.badge === "New");
+      if (filter === "sale") list = list.filter(p => p.badge === "Sale" || p.was != null);
+      if (color) { const c = color.toLowerCase(); list = list.filter(p => p.colors.some(x => x.toLowerCase() === c) || p.accent.toLowerCase() === c); }
+      if (tech) { const n = tech.toLowerCase(); list = list.filter(p => p.fabric.toLowerCase().includes(n) || p.bullets.some(b => b.toLowerCase().includes(n))); }
+      const min = Number(minPrice), max = Number(maxPrice);
+      if (minPrice && !isNaN(min)) list = list.filter(p => p.price >= min);
+      if (maxPrice && !isNaN(max)) list = list.filter(p => p.price <= max);
       if (q) { const n = q.toLowerCase(); list = list.filter(p => p.name.toLowerCase().includes(n) || p.shortDesc.toLowerCase().includes(n)); }
       switch (sort) {
         case "price-asc": list.sort((a, b) => a.price - b.price); break;
