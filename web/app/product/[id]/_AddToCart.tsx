@@ -87,7 +87,7 @@ export function AddToCart({ product }: { product: Product }) {
           <p className="tiny text-center mt-2">{t("pdp.outOfStock")}</p>
         </div>
       ) : (
-        <div className="flex gap-3 mt-6">
+        <div className="flex flex-col sm:flex-row gap-3 mt-6">
           <button
             onClick={(e) => handleAdd(e.currentTarget)}
             className="btn btn-dark flex-1 justify-center"

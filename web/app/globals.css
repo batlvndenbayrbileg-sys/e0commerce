@@ -16,6 +16,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  overflow-x: clip; /* safety net against horizontal overflow (sticky-safe) */
 }
 ::selection { background: #0E0F10; color: #fff; }
 

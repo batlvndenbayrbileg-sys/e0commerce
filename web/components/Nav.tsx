@@ -84,7 +84,7 @@ export function Nav() {
         <button className="w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink" aria-label={t("nav.notifications")}>
           <Bell/>
         </button>
-        <form onSubmit={search} className="flex-1 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
+        <form onSubmit={search} className="flex-1 min-w-0 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
           <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
           <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")} data-search-input
             className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
