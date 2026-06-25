@@ -77,7 +77,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               <AddToCart product={product}/>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-5 border-t border-line">
-                <Trust label="Free shipping over $200"/>
+                <Trust label="Free standard shipping"/>
                 <Trust label="Free 30-day returns"/>
                 <Trust label="1-year warranty"/>
               </div>

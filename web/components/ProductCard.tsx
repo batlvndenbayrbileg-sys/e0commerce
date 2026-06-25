@@ -6,6 +6,7 @@ import { Photo } from "./Photo";
 import { HeartIcon, BagIcon } from "./Icons";
 import { useCart, useWish, useToast } from "@/lib/store";
 import { productImg } from "@/lib/images";
+import { money } from "@/lib/api";
 import type { Product } from "@/lib/types";
 import { useEffect, useState } from "react";
 
@@ -64,7 +65,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
         {/* price pill */}
         <div className="absolute left-3 bottom-3 z-10 rounded-2xl glass-dark px-3.5 py-2 pr-4">
-          <div className="text-white font-display text-[17px] leading-none">${product.price}</div>
+          <div className="text-white font-display text-[16px] leading-none num-tabular">{money(product.price)}</div>
           <div className="text-white/70 text-[11px] mt-1 truncate max-w-[120px]">{product.name}</div>
         </div>
 

@@ -18,8 +18,8 @@ export default function CartPage() {
   useEffect(() => setMounted(true), []);
 
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
-  const shipping = subtotal > 200 || subtotal === 0 ? 0 : 12;
-  const tax = subtotal * 0.08;
+  const shipping = 0; // standard shipping is free; final total confirmed at checkout
+  const tax = 0;
   const total = subtotal + shipping + tax;
 
   return (
@@ -93,7 +93,7 @@ export default function CartPage() {
                 Checkout <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
               </Link>
               <div className="mt-4 p-3 rounded-xl bg-accent-soft text-[12px] text-accent-deep text-center font-medium">
-                Free shipping on orders over $200
+                Free standard shipping nationwide
               </div>
             </aside>
           </div>

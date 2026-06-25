@@ -72,7 +72,7 @@ export default function AuthPage() {
           <p className="text-muted mb-6">
             {mode === "login"
               ? "Sign in to track orders and access your kit."
-              : "Join VEXO — early drops, restocks, and free shipping over $200."}
+              : "Join VEXO — early drops, restocks, and free standard shipping."}
           </p>
 
           {mode === "register" && (

@@ -21,8 +21,8 @@ export default function CheckoutPage() {
   useEffect(() => setMounted(true), []);
 
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
-  const shipping = shipMethod === "express" ? 18 : subtotal > 200 ? 0 : 12;
-  const tax = +(subtotal * 0.08).toFixed(2);
+  const shipping = shipMethod === "express" ? 62100 : 0; // Standard free, Express ₮62,100
+  const tax = 0;
   const total = subtotal + shipping + tax;
 
   async function place(e: React.FormEvent) {
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
               <Radio name="ship" checked={shipMethod === "standard"} onChange={() => setShipMethod("standard")}
                 title="Standard — 3 to 5 business days" sub="Tracked, insured" right="Free"/>
               <Radio name="ship" checked={shipMethod === "express"} onChange={() => setShipMethod("express")}
-                title="Express — 1 to 2 business days" sub="Priority handling" right="$18"/>
+                title="Express — 1 to 2 business days" sub="Priority handling" right="₮62,100"/>
             </FormCard>
 
             <FormCard title="Payment">

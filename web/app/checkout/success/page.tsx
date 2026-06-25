@@ -33,7 +33,7 @@ function Success() {
         <div className="bg-surface-2 rounded-xl p-5 my-7 text-left">
           <div className="flex justify-between mb-1.5"><span className="tiny">Order number</span><span className="font-mono font-semibold">{id ?? "—"}</span></div>
           <div className="flex justify-between mb-1.5"><span className="tiny">Estimated delivery</span><span className="font-medium">{eta}</span></div>
-          <div className="flex justify-between"><span className="tiny">Total</span><span className="font-medium">${total ?? "—"}</span></div>
+          <div className="flex justify-between"><span className="tiny">Total</span><span className="font-medium">{total ? `₮${Number(total).toLocaleString()}` : "—"}</span></div>
         </div>
 
         <div className="flex justify-center gap-2.5">
