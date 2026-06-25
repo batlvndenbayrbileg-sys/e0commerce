@@ -121,9 +121,11 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   .h-mega    { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(72px, 13vw, 220px); line-height: .86; letter-spacing: -.02em; }
   .h-display { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(48px, 8vw, 132px); line-height: .9;  letter-spacing: -.02em; }
   .h-hero    { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 6.4vw, 104px); line-height: .9; letter-spacing: -.02em; }
-  .h-1       { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(36px, 5vw, 72px); line-height: .94; letter-spacing: -.015em; }
-  .h-2       { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 3.8vw, 58px); line-height: .96; letter-spacing: -.015em; }
-  .h-3       { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 22px; line-height: 1.05; letter-spacing: -.01em; }
+  /* Renamed from .h-1/.h-2/.h-3 — those collided with Tailwind height utilities
+     (h-2 = 0.5rem) which clamped heading height and made text overlap siblings. */
+  .hd-1      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(36px, 5vw, 72px); line-height: .94; letter-spacing: -.015em; }
+  .hd-2      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 3.8vw, 58px); line-height: .98; letter-spacing: -.015em; }
+  .hd-3      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 22px; line-height: 1.05; letter-spacing: -.01em; }
 
   /* Ghost / outline display text */
   .ghost {

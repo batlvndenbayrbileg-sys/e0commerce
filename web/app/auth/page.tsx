@@ -70,7 +70,7 @@ export default function AuthPage() {
         </div>
 
         <form onSubmit={submit}>
-          <h2 className="h-2 text-[28px] mb-1.5">{mode === "login" ? t("auth.welcomeBack") : t("auth.createTitle")}</h2>
+          <h2 className="hd-2 !text-[26px] mb-2">{mode === "login" ? t("auth.welcomeBack") : t("auth.createTitle")}</h2>
           <p className="text-muted mb-6">
             {mode === "login" ? t("auth.signInDesc") : t("auth.createDesc")}
           </p>

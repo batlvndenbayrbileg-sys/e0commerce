@@ -137,7 +137,7 @@ export default function CheckoutPage() {
           </div>
 
           <aside className="card p-7 h-fit lg:sticky lg:top-6">
-            <h3 className="h-3">{t("co.order")}</h3>
+            <h3 className="hd-3">{t("co.order")}</h3>
             <div className="my-3.5 py-3.5 border-t border-b border-border">
               {mounted && items.map(i => (
                 <div key={i.id} className="flex justify-between py-2 text-muted">
@@ -180,7 +180,7 @@ function Row({ k, v }: { k: string; v: string }) {
 function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card p-7 mb-4">
-      <h3 className="h-3 mb-4">{title}</h3>
+      <h3 className="hd-3 mb-4">{title}</h3>
       {children}
     </div>
   );
