@@ -79,6 +79,8 @@ const en: Dict = {
   "bc.home": "Home", "bc.shop": "Shop", "bc.cart": "Cart", "bc.checkout": "Checkout",
   "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
   "common.required": "Required", "common.pleaseWait": "Please wait…", "common.close": "Close",
+  "common.decrease": "Decrease quantity", "common.increase": "Increase quantity", "common.rating": "Rating",
+  "a11y.skip": "Skip to content",
   "cart.viewBag": "View full bag",
   // product page
   "pdp.trustShipping": "Free standard shipping", "pdp.trustReturns": "Free 30-day returns", "pdp.trustWarranty": "1-year warranty",
@@ -193,6 +195,8 @@ const mn: Dict = {
   "bc.home": "Нүүр", "bc.shop": "Дэлгүүр", "bc.cart": "Сагс", "bc.checkout": "Төлбөр",
   "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
   "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…", "common.close": "Хаах",
+  "common.decrease": "Тоо хорогдуулах", "common.increase": "Тоо нэмэгдүүлэх", "common.rating": "Үнэлгээ",
+  "a11y.skip": "Үндсэн хэсэг рүү очих",
   "cart.viewBag": "Сагсыг бүтнээр нь үзэх",
   // product page
   "pdp.trustShipping": "Үнэгүй энгийн хүргэлт", "pdp.trustReturns": "30 хоногийн үнэгүй буцаалт", "pdp.trustWarranty": "1 жилийн баталгаа",

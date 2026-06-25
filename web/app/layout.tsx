@@ -5,7 +5,7 @@ import { MobileTabBar } from "@/components/MobileTabBar";
 import { CartDrawer } from "@/components/CartDrawer";
 import { FlyLayer } from "@/components/FlyLayer";
 import { LangProvider } from "@/components/LangProvider";
-import { getServerLang } from "@/lib/lang";
+import { getServerLang, getServerT } from "@/lib/lang";
 
 export const metadata: Metadata = {
   title: "VEXO — Gear Up Every Season.",
@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = getServerLang();
+  const t = getServerT();
   return (
     <html lang={lang}>
       <head>
@@ -25,8 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-sans pb-24 lg:pb-0">
+        <a href="#main" className="skip-link">{t("a11y.skip")}</a>
         <LangProvider lang={lang}>
-          {children}
+          <main id="main">{children}</main>
           <Toast />
           <CartDrawer />
           <FlyLayer />

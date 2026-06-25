@@ -38,6 +38,23 @@ export function Nav() {
   const [q, setQ] = useState("");
   // Keep the field in sync with the active query when browsing the shop.
   useEffect(() => { setQ(searchParams.get("q") ?? ""); }, [searchParams]);
+
+  // Keyboard: Cmd/Ctrl+K or "/" focuses the visible search input.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const k = e.key.toLowerCase();
+      const cmdK = k === "k" && (e.metaKey || e.ctrlKey);
+      const el = e.target as HTMLElement | null;
+      const typing = el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+      if (cmdK || (e.key === "/" && !typing)) {
+        const inputs = Array.from(document.querySelectorAll<HTMLInputElement>("[data-search-input]"));
+        const visible = inputs.find(i => i.offsetParent !== null) ?? inputs[0];
+        if (visible) { e.preventDefault(); visible.focus(); visible.select(); }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
   function search(e: React.FormEvent) {
     e.preventDefault();
     const term = q.trim();
@@ -69,7 +86,7 @@ export function Nav() {
         </button>
         <form onSubmit={search} className="flex-1 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
           <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
-          <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")}
+          <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")} data-search-input
             className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
           <Link href="/shop" className="text-subtle hover:text-ink shrink-0" aria-label={t("shop.filters")}><Sliders size={17}/></Link>
         </form>
@@ -88,7 +105,7 @@ export function Nav() {
         <div className="flex items-center gap-3 ml-auto">
           <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[220px]">
             <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
-            <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")}
+            <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")} data-search-input
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
           </form>
           <LangToggle/>

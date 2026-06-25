@@ -47,7 +47,7 @@ export function Tabs({ product }: { product: Product }) {
               { n: "Theo M.", q: t("pdp.rev2Q") },
             ].map(r => (
               <div key={r.n} className="card p-6">
-                <div className="text-camel">★★★★★</div>
+                <div className="text-camel" aria-hidden>★★★★★</div>
                 <p className="my-3">"{r.q}"</p>
                 <div className="tiny">{r.n} · {t("pdp.verified")}</div>
               </div>

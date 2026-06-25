@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCart, useUI } from "@/lib/store";
 import { useT } from "./LangProvider";
@@ -18,14 +18,23 @@ export function CartDrawer() {
   const remove = useCart(s => s.remove);
   const t = useT();
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const lastFocused = useRef<HTMLElement | null>(null);
 
-  // Esc closes the drawer; lock body scroll while open.
+  // Esc closes; lock body scroll; move focus into the drawer and restore on close.
   useEffect(() => {
     if (!open) return;
+    lastFocused.current = document.activeElement as HTMLElement;
+    const focusId = setTimeout(() => closeRef.current?.focus(), 60);
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+    return () => {
+      clearTimeout(focusId);
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+      lastFocused.current?.focus?.();
+    };
   }, [open, close]);
 
   return (
@@ -46,7 +55,7 @@ export function CartDrawer() {
           >
             <header className="flex items-center justify-between px-5 h-16 border-b border-line shrink-0">
               <h2 className="font-display text-[20px] tracking-tight">{t("cart.title")}</h2>
-              <button onClick={close} aria-label={t("common.close")}
+              <button ref={closeRef} onClick={close} aria-label={t("common.close")}
                 className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2 text-xl leading-none">×</button>
             </header>
 
@@ -75,9 +84,9 @@ export function CartDrawer() {
                         <div className="tiny">{it.category}{it.size ? ` · ${it.size}` : ""}</div>
                         <div className="flex items-center justify-between mt-1.5">
                           <div className="inline-flex items-center bg-surface-2 rounded-pill p-0.5">
-                            <button onClick={() => setQty(it.variantId || it.id, it.qty - 1)} className="w-7 h-7 rounded-full grid place-items-center hover:bg-white">−</button>
+                            <button onClick={() => setQty(it.variantId || it.id, it.qty - 1)} aria-label={t("common.decrease")} className="w-7 h-7 rounded-full grid place-items-center hover:bg-white">−</button>
                             <span className="px-2.5 text-sm font-semibold num-tabular">{it.qty}</span>
-                            <button onClick={() => setQty(it.variantId || it.id, it.qty + 1)} className="w-7 h-7 rounded-full grid place-items-center hover:bg-white">+</button>
+                            <button onClick={() => setQty(it.variantId || it.id, it.qty + 1)} aria-label={t("common.increase")} className="w-7 h-7 rounded-full grid place-items-center hover:bg-white">+</button>
                           </div>
                           <span className="font-display text-[15px] num-tabular">{money(it.price * it.qty)}</span>
                         </div>

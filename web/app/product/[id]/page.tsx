@@ -39,9 +39,9 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 <span className="w-2.5 h-2.5 rounded-full" style={{ background: product.accent }}/> {product.category}
               </span>
               <h1 className="font-display text-[28px] sm:text-[40px] uppercase tracking-[-.02em] leading-[.95] mt-4">{product.name}</h1>
-              <div className="flex items-center gap-2 text-[13px] text-muted mt-3">
-                <span className="text-[#F4B400]">★★★★★</span>
-                <span className="num-tabular">{product.rating}</span><span className="opacity-40">·</span>
+              <div className="flex items-center gap-2 text-[13px] text-muted mt-3" role="img" aria-label={`${t("common.rating")}: ${product.rating} / 5`}>
+                <span className="text-[#F4B400]" aria-hidden>★★★★★</span>
+                <span className="num-tabular">{product.rating}</span><span className="opacity-40" aria-hidden>·</span>
                 <span className="num-tabular">{product.reviews.toLocaleString()} {t("common.reviews")}</span>
               </div>
 

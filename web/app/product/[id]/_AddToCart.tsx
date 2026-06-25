@@ -73,9 +73,9 @@ export function AddToCart({ product }: { product: Product }) {
 
       <Group label={t("common.quantity")}>
         <div className="inline-flex items-center bg-white rounded-pill border border-border p-1">
-          <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2">−</button>
+          <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label={t("common.decrease")} className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2">−</button>
           <span className="px-3.5 font-semibold min-w-[36px] text-center">{qty}</span>
-          <button onClick={() => setQty(q => q + 1)} className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2">+</button>
+          <button onClick={() => setQty(q => q + 1)} aria-label={t("common.increase")} className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2">+</button>
         </div>
       </Group>
 
