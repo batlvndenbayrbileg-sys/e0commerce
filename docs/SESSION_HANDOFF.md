@@ -8,7 +8,7 @@
 - **Storefront:** Next.js 14 (App Router) → Vercel — https://e0commerce-web.vercel.app
 - **Backend:** Medusa v2 → Railway (Postgres 16 + Redis 7)
 - **Repo:** https://github.com/batlvndenbayrbileg-sys/e0commerce — branch `main`
-- **Сүүлийн commit:** `3b060e2` — Quick view modal (Sprint 2 дуусгасан)
+- **Сүүлийн commit:** `ef7f796` — Polish (size guide, real colour filter, mobile zoom, focus-trap)
 - **Төлбөр:** Wire Payment (QPay + Монгол банкны апп), одоогоор MOCK горим
 - **Имэйл:** Resend (mock/deployed), **Үнэ:** MNT (₮), USD→MNT = 3450
 - **Inventory:** Medusa-д track хийгддэг, "Дууссан" badge ажилладаг
@@ -26,6 +26,7 @@
 | **Sprint 2** | Page transition (fade), number count-up, PDP hover-zoom, Reveal өргөтгөл | `90866ff` |
 | **A11y pass** | focus-visible ring, skip link + `<main>`, ⌘K/`/` хайлт, drawer focus mgmt, qty aria-label, контраст (`subtle` #8A8F93→#72767A) | `e04f52b` |
 | **Quick view** | Картаас hover → modal (Sprint 2 дуусгасан) | `3b060e2` |
+| **Polish** | Size guide modal, өнгөний шүүлтүүр бодит accent-ээс, mobile PDP tap-zoom, бүх overlay-д focus-trap (`useFocusTrap`) | `ef7f796` |
 
 ### Шинэ дэд бүтэц (дараагийн хүн мэдэх ёстой)
 - **i18n:** `web/lib/i18n.ts` (толь, EN+MN), `web/lib/lang.ts` (server `getServerT`), `web/components/LangProvider.tsx` (client `useT`).
@@ -40,12 +41,11 @@
 ---
 
 ## ⬜ Үлдсэн polish (заавал биш, эрэмбээр)
-1. **Size guide modal** — PDP дээр бодит см/инч хүснэгт (одоо зүгээр текст линк).
-2. **Mobile PDP zoom** — одоо зөвхөн desktop hover. Гар утсанд pinch/tap-zoom.
-3. **Drawer/modal бүрэн focus-trap** — одоо focus оруулж/буцаадаг ч Tab-ийг дотор нь түгждэггүй.
-4. **Hero carousel polish** — parallax, drag inertia.
-5. **Lighthouse аудит** — браузер/CI дээр ажиллуулж a11y/perf оноо баталгаажуулах (код талаас гол алдаанууд зассан).
-6. **Өнгөний шүүлтүүр** — swatch-уудыг бодит бараануудын accent өнгөнөөс үүсгэвэл "дарсан атлаа хоосон" арилна.
+1. **Hero carousel polish** — parallax, drag inertia (`web/components/HeroCarousel.tsx`).
+2. **Lighthouse аудит** — браузер/CI дээр ажиллуулж a11y/perf оноо баталгаажуулах (код талаас гол алдаанууд зассан).
+3. **Олон зураг** — бараа бүр 1 зурагтай (Medusa thumbnail). PDP gallery-ийн 4 thumbnail одоо ижил зураг; бодит олон зураг нэмбэл жинхэнэ gallery болно.
+
+✅ **Дуусгасан** (өмнө энд байсан): size guide modal, mobile PDP zoom, overlay focus-trap, өнгөний шүүлтүүр бодит accent-ээс.
 
 ## ⬜ Production (нууц түлхүүр шаардлагатай — НАДТАЙ БИТГИЙ ХУВААЛЦ)
 - **Wire** MOCK → бодит горим (бодит QPay keys, Railway/Vercel env дотор).
