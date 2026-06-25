@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install (root workspaces)
+        run: npm install
+      - name: Build API (Express)
+        run: npm --workspace api run build
+      - name: Build storefront (Next.js)
+        run: npm --workspace web run build
+        env:
+          NEXT_PUBLIC_USE_MEDUSA: "1"
+          NEXT_PUBLIC_MEDUSA_URL: https://example.invalid
+          NEXT_PUBLIC_MEDUSA_PK: pk_ci_placeholder
+          NEXT_PUBLIC_MEDUSA_REGION: reg_ci_placeholder

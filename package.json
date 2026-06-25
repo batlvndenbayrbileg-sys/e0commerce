@@ -1,0 +1,22 @@
+{
+  "name": "nitec",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "api"
+  ],
+  "scripts": {
+    "predev": "kill-port 3000 4000 || true",
+    "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm --workspace api run dev",
+    "dev:web": "npm --workspace web run dev",
+    "stop": "kill-port 3000 4000",
+    "build": "npm --workspace api run build && npm --workspace web run build",
+    "start": "concurrently -n api,web -c blue,green \"npm --workspace api run start\" \"npm --workspace web run start\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "kill-port": "^2.0.1"
+  }
+}

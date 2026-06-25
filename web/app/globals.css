@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Archivo Black", "Archivo", system-ui, sans-serif;
+  --font-serif: "Archivo", system-ui, sans-serif;
+  --font-body: "Archivo", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html, body {
+  background: #D3E0E3;
+  color: #0E0F10;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: #0E0F10; color: #fff; }
+
+.grainy { position: relative; }
+.grainy::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: theme("backgroundImage.grain"); opacity: .3; mix-blend-mode: overlay;
+  border-radius: inherit;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2.5 h-[52px] px-6 rounded-pill text-[14px] font-semibold uppercase tracking-wide transition-all whitespace-nowrap;
+  }
+  .btn-primary { @apply bg-accent text-white hover:bg-accent-deep hover:-translate-y-0.5 hover:shadow-lift; }
+  .btn-dark    { @apply bg-ink text-white hover:-translate-y-0.5 hover:shadow-lift; }
+  .btn-ghost   { @apply bg-surface-2 text-ink hover:bg-white hover:shadow-soft; }
+  .btn-light   { @apply bg-white text-ink hover:bg-mist; }
+  .btn-outline { @apply border border-ink/20 text-ink hover:border-ink bg-white/40; }
+  .btn-sm      { @apply h-10 px-4 text-[12px]; }
+  .arrow-cap   { @apply w-8 h-8 rounded-full grid place-items-center bg-white text-ink; }
+
+  .icon-btn {
+    @apply w-10 h-10 rounded-full grid place-items-center bg-surface-2 text-ink
+           transition-all hover:bg-white hover:shadow-soft hover:-translate-y-px;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 h-9 px-3.5 rounded-pill bg-white border border-line text-[13px] uppercase tracking-wide;
+  }
+  .chip-active { @apply bg-ink text-white border-ink; }
+  .eyebrow { @apply text-[11px] uppercase tracking-[.22em] font-semibold text-muted; }
+  .tiny    { @apply text-xs text-subtle; }
+
+  .card { @apply bg-white border border-line rounded-3xl; }
+
+  .field input, .field select {
+    @apply h-12 w-full px-4 rounded-xl border border-line bg-surface-2 outline-none transition;
+  }
+  .field input:focus, .field select:focus { @apply border-ink bg-white ring-4 ring-black/5; }
+
+  .glass {
+    background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.4));
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border: 1px solid rgba(255,255,255,.5);
+  }
+  .glass-dark {
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255,255,255,.12);
+  }
+  .num-tabular { font-variant-numeric: tabular-nums; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Pill label used on cards (TOP SELLING GEAR / NEW ARRIVAL) */
+  .pill-label {
+    @apply inline-flex items-center gap-2 px-4 h-9 rounded-pill text-[11px] font-semibold uppercase tracking-[.18em];
+  }
+}
+
+@layer utilities {
+  /* Athletic display scale — Archivo Black, uppercase, tight */
+  .h-mega    { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(72px, 13vw, 220px); line-height: .86; letter-spacing: -.02em; }
+  .h-display { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(48px, 8vw, 132px); line-height: .9;  letter-spacing: -.02em; }
+  .h-hero    { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 6.4vw, 104px); line-height: .9; letter-spacing: -.02em; }
+  .h-1       { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(36px, 5vw, 72px); line-height: .94; letter-spacing: -.015em; }
+  .h-2       { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 3.8vw, 58px); line-height: .96; letter-spacing: -.015em; }
+  .h-3       { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 22px; line-height: 1.05; letter-spacing: -.01em; }
+
+  /* Ghost / outline display text */
+  .ghost {
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(14,15,16,.16);
+  }
+  .ghost-strong { color: transparent; -webkit-text-stroke: 2px rgba(14,15,16,.22); }
+  .ghost-light { color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,.30); }
+
+  /* "italic-serif" kept as an athletic italic accent so legacy pages don't break */
+  .italic-serif { font-family: var(--font-display); font-weight: 900; font-style: normal; text-transform: uppercase; }
+
+  .text-balance { text-wrap: balance; }
+
+  /* Warm vibrant ambient background */
+  .mesh-light {
+    background:
+      radial-gradient(820px 480px at 88% -6%, #FFE0C6 0%, transparent 55%),
+      radial-gradient(680px 520px at -5% 102%, #F7D6EF 0%, transparent 55%),
+      radial-gradient(620px 460px at 105% 104%, #DED7FB 0%, transparent 55%),
+      #F6F5F3;
+  }
+  .mesh-warm {
+    background:
+      radial-gradient(700px 420px at 90% 0%, #FFD9BE 0%, transparent 55%),
+      radial-gradient(560px 420px at 0% 60%, #F8D2EC 0%, transparent 55%),
+      radial-gradient(560px 420px at 100% 100%, #DCD4FB 0%, transparent 55%),
+      #F7F6F4;
+  }
+  .mesh-dark {
+    background:
+      radial-gradient(700px 500px at 70% 0%, #232427 0%, transparent 55%),
+      linear-gradient(180deg, #161719 0%, #08090A 100%);
+  }
+  /* Dark product / seasonal card */
+  .card-dark {
+    background: linear-gradient(155deg, #2A2C2F 0%, #161719 55%, #0A0B0C 100%);
+  }
+
+  .hairline { box-shadow: inset 0 0 0 1px rgba(14,15,16,.08); }
+  .hairline-white { box-shadow: inset 0 0 0 1px rgba(255,255,255,.10); }
+
+  .gradient-text {
+    background: linear-gradient(180deg, #0E0F10 0%, #4A4C50 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .gradient-text-light {
+    background: linear-gradient(180deg, #FFFFFF 0%, rgba(255,255,255,0.55) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+}

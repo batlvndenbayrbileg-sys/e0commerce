@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Saveo — Mobile UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sage:#C7D9AB; --sage-2:#BCD09C;
+  --screen:#F3F4EF; --card:#FFFFFF;
+  --accent:#C8E89A; --accent-press:#B7E07F; --accent-ink:#28340F;
+  --ink:#1C1E16; --muted:#9CA095; --hint:#B7BAB0;
+  --nav:#15160F; --line:#ECEEE7; --chip:#EFF1EA;
+  --danger:#F26B6B; --danger-soft:#FAD8D8;
+  --r-card:22px; --r-lg:26px; --r-pill:999px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);
+  background:
+    repeating-linear-gradient(125deg, rgba(255,255,255,.05) 0 2px, transparent 2px 60px),
+    linear-gradient(160deg,var(--sage) 0%, var(--sage-2) 100%);
+  min-height:100vh;padding:48px 20px;}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-wrap:wrap;gap:40px;justify-content:center;align-items:flex-start}
+.intro{flex-basis:100%;text-align:center;color:#3c4a26;margin-bottom:8px}
+.intro h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.intro p{margin:0;font-size:14px;color:#5a6b3c}
+
+/* ---- phone ---- */
+.phone{width:330px;background:var(--screen);border-radius:46px;padding:14px 12px 16px;
+  box-shadow:0 30px 60px rgba(40,55,20,.22), 0 4px 14px rgba(0,0,0,.06);
+  border:1px solid rgba(255,255,255,.6);position:relative}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:2px 16px 10px;font-size:13px;font-weight:600}
+.statusbar .ic{display:flex;gap:5px;align-items:center}
+.screen{padding:0 6px}
+.scr-title{display:flex;align-items:center;justify-content:space-between;padding:6px 6px 18px}
+.scr-title h2{font-size:17px;font-weight:600;margin:0}
+.rndbtn{width:38px;height:38px;border-radius:50%;background:var(--card);display:grid;place-items:center;border:none;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.lbl{font-size:11px}
+
+/* ---- list rows ---- */
+.list-card{background:var(--card);border-radius:var(--r-card);padding:6px;box-shadow:0 6px 18px rgba(40,55,20,.06)}
+.row{display:flex;gap:12px;align-items:center;padding:12px 10px;position:relative}
+.row + .row{border-top:1px solid var(--line)}
+.thumb{width:54px;height:54px;border-radius:16px;background:#EDEFE8;object-fit:cover;flex-shrink:0}
+.row-main{flex:1;min-width:0}
+.row-name{font-size:14px;font-weight:600;margin:0 0 4px;display:flex;align-items:center;gap:6px;justify-content:space-between}
+.row-name .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-date{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:11px}
+.row-bot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.price{font-size:15px;font-weight:700}
+.stepper{display:inline-flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--line);border-radius:var(--r-pill);padding:3px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.stepper button{width:30px;height:30px;border-radius:50%;border:none;background:#fff;color:var(--ink);font-size:17px;display:grid;place-items:center;cursor:pointer}
+.stepper button:active{background:var(--chip)}
+.stepper .qty{min-width:26px;text-align:center;font-size:14px;font-weight:600}
+.pencil{color:var(--muted);background:none;border:none;cursor:pointer;padding:4px}
+
+/* swipe-revealed delete */
+.row.swiped{background:linear-gradient(90deg,#fff 72%,var(--danger-soft) 72%);border-radius:16px}
+.del{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:14px;
+  background:var(--danger);color:#fff;border:none;display:grid;place-items:center;cursor:pointer}
+
+/* discount + totals */
+.discount{display:flex;gap:8px;margin:16px 0 4px}
+.discount input{flex:1;height:48px;border:none;background:var(--chip);border-radius:var(--r-pill);padding:0 18px;font-size:13px;font-family:inherit;outline:none}
+.discount input::placeholder{color:var(--hint)}
+.apply{height:48px;padding:0 20px;border-radius:var(--r-pill);border:none;background:#fff;border:1px solid var(--line);font-weight:600;font-size:13px;cursor:pointer}
+.totals{padding:14px 8px 4px}
+.tot-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:6px 0}
+.tot-row.grand{color:var(--ink);font-weight:700;font-size:16px;border-top:1px solid var(--line);margin-top:6px;padding-top:12px}
+.cta{width:100%;height:56px;border:none;border-radius:var(--r-lg);background:var(--accent);color:var(--accent-ink);
+  font-weight:700;font-size:15px;margin-top:14px;cursor:pointer;font-family:inherit;transition:background .15s,transform .1s}
+.cta:active{background:var(--accent-press);transform:scale(.99)}
+
+/* ---- bottom nav ---- */
+.nav{margin:18px 4px 2px;background:var(--nav);border-radius:var(--r-pill);padding:8px;display:flex;justify-content:space-between;align-items:center}
+.nav a{flex:1;display:flex;justify-content:center;align-items:center;gap:7px;color:#8C8F84;height:46px;border-radius:var(--r-pill);text-decoration:none}
+.nav a.on{background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13px;flex:1.5}
+
+/* ---- product detail ---- */
+.stage{background:var(--card);border-radius:var(--r-card);padding:18px 18px 8px;position:relative;box-shadow:0 6px 18px rgba(40,55,20,.06)}
+.stage .dots{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:7px;align-items:center}
+.stage .dots i{width:6px;height:6px;border-radius:50%;background:#D7DACF;display:block}
+.stage .dots i.on{background:var(--ink);width:7px;height:7px}
+.hero-img{width:100%;height:230px;object-fit:contain}
+.pedestal{height:18px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.10),transparent 75%);margin:-6px auto 4px;width:70%}
+.swctrl{width:38px;height:38px;border-radius:50%;background:var(--nav);color:#fff;display:grid;place-items:center;margin:6px auto 0}
+.thumbs{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.thumbs .t{width:64px;height:64px;border-radius:16px;background:#EDEFE8;object-fit:cover;border:2px solid transparent;cursor:pointer}
+.thumbs .t.on{border-color:var(--ink);background:#E2E5DA}
+.pname{display:flex;justify-content:space-between;align-items:flex-start;margin:18px 4px 14px}
+.pname h3{font-size:19px;font-weight:700;margin:0;line-height:1.2}
+.pname .p{font-size:19px;font-weight:700;white-space:nowrap}
+.actions{display:flex;gap:8px;background:var(--card);border-radius:var(--r-card);padding:12px;box-shadow:0 6px 18px rgba(40,55,20,.06)}
+.act{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:11px;color:var(--muted);cursor:pointer}
+.act .ico{width:44px;height:44px;border-radius:14px;background:var(--chip);display:grid;place-items:center;color:var(--ink)}
+.act.on .ico{background:var(--nav);color:#fff}
+.act.on{color:var(--ink);font-weight:600}
+.desc{padding:18px 6px 2px}
+.desc .dh{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.desc .dh .more{color:var(--muted);font-size:12px;font-weight:500;display:flex;align-items:center;gap:3px}
+.desc p{font-size:13px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+
+/* ---- good deals ---- */
+.search{display:flex;gap:10px;margin:0 4px 18px}
+.search .box{flex:1;height:48px;background:var(--card);border-radius:var(--r-pill);display:flex;align-items:center;gap:10px;padding:0 18px;color:var(--hint);font-size:14px;box-shadow:0 2px 6px rgba(40,55,20,.05)}
+.search .filt{width:48px;height:48px;border-radius:16px;background:var(--nav);color:#fff;display:grid;place-items:center;border:none}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:6px 6px 12px}
+.sec h4{font-size:15px;font-weight:600;margin:0}
+.sec a{font-size:12px;color:var(--muted);text-decoration:none}
+.deals{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.deal{background:var(--card);border-radius:18px;padding:10px;box-shadow:0 6px 16px rgba(40,55,20,.06)}
+.deal img{width:100%;height:96px;object-fit:cover;border-radius:12px;background:#EDEFE8}
+.deal .dn{font-size:13px;font-weight:600;margin:10px 2px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.deal .pr{display:flex;align-items:baseline;gap:6px;margin:0 2px}
+.deal .now{font-size:15px;font-weight:700}
+.deal .old{font-size:12px;color:var(--hint);text-decoration:line-through}
+.deal .meta{display:flex;justify-content:space-between;align-items:center;margin:10px 2px 2px}
+.deal .dt{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:10px;border:1px solid var(--line);border-radius:var(--r-pill);padding:4px 8px}
+.deal .add{width:32px;height:32px;border-radius:50%;background:var(--chip);border:none;display:grid;place-items:center;color:var(--ink);cursor:pointer}
+.scroll{max-height:none}
+svg{display:block}
+@media(max-width:760px){body{padding:28px 12px}.phone{width:100%;max-width:360px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1>Saveo — savings & shopping list</h1>
+    <p>Mobile UI · three screens · sage + pistachio system</p>
+  </div>
+
+  <!-- ============ SCREEN 1: SHOPPING LIST ============ -->
+  <div class="phone">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="ic">
+        <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4.5" y="4" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1C1E16" stroke-width="1.6"><path d="M1 4.5C4.5 1.5 11.5 1.5 15 4.5M3.5 7C6 5 10 5 12.5 7M6 9.3c1.2-1 2.8-1 4 0"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="#1C1E16" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/><rect x="23" y="4" width="2" height="4" rx="1"/></svg>
+      </span>
+    </div>
+    <div class="screen">
+      <div class="scr-title">
+        <button class="rndbtn" aria-label="Filter"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+        <h2>Shopping list</h2>
+        <button class="rndbtn" aria-label="More"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>
+      </div>
+
+      <div class="list-card">
+        <!-- row 1 -->
+        <div class="row">
+          <img class="thumb" src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=160&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="row-main">
+            <div class="row-name"><span class="nm">Zipper Hoodie</span>
+              <button class="pencil" aria-label="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+            <div class="row-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Valid 02–07 Jan</div>
+            <div class="row-bot">
+              <span class="stepper"><button data-step="-1">−</button><span class="qty">1</span><button data-step="1">+</button></span>
+              <span class="price">947.30 €</span>
+            </div>
+          </div>
+        </div>
+        <!-- row 2 (swiped) -->
+        <div class="row swiped">
+          <img class="thumb" src="https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=160&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="row-main">
+            <div class="row-name"><span class="nm">Adidas shorts</span>
+              <button class="pencil" aria-label="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+            <div class="row-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Valid 02–07 Jan</div>
+            <div class="row-bot">
+              <span class="stepper"><button data-step="-1">−</button><span class="qty">1</span><button data-step="1">+</button></span>
+              <span class="price">24.95 €</span>
+            </div>
+          </div>
+          <button class="del" aria-label="Delete"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+        </div>
+        <!-- row 3 -->
+        <div class="row">
+          <img class="thumb" src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=160&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="row-main">
+            <div class="row-name"><span class="nm">Nike shoes</span>
+              <button class="pencil" aria-label="Edit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+            </div>
+            <div class="row-date"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Valid 02–07 Jan</div>
+            <div class="row-bot">
+              <span class="stepper"><button data-step="-1">−</button><span class="qty">1</span><button data-step="1">+</button></span>
+              <span class="price">89.95 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="discount">
+        <input placeholder="Enter your discount code"/>
+        <button class="apply">Apply</button>
+      </div>
+      <div class="totals">
+        <div class="tot-row"><span>Subtotal</span><span>1,062.20 €</span></div>
+        <div class="tot-row"><span>Savings</span><span>− 18.40 €</span></div>
+        <div class="tot-row grand"><span>Total</span><span>1,043.80 €</span></div>
+      </div>
+      <button class="cta">Make a purchase</button>
+
+      <nav class="nav">
+        <a href="#" aria-label="Home"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a>
+        <a href="#" aria-label="Wallet"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14h2"/></svg></a>
+        <a href="#" class="on" aria-label="List"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.5 13h11l2-9H6"/></svg> List</a>
+        <a href="#" aria-label="Saved"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-5 9 5-9 5z"/><path d="M3 9v6l9 5 9-5V9"/></svg></a>
+        <a href="#" aria-label="Deals"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 19 19 5"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></svg></a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: PRODUCT DETAIL ============ -->
+  <div class="phone">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="ic">
+        <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4.5" y="4" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1C1E16" stroke-width="1.6"><path d="M1 4.5C4.5 1.5 11.5 1.5 15 4.5M3.5 7C6 5 10 5 12.5 7M6 9.3c1.2-1 2.8-1 4 0"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="#1C1E16" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/><rect x="23" y="4" width="2" height="4" rx="1"/></svg>
+      </span>
+    </div>
+    <div class="screen">
+      <div class="scr-title">
+        <button class="rndbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <h2>Special offers</h2>
+        <span style="width:38px"></span>
+      </div>
+
+      <div class="stage">
+        <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+        <img class="hero-img" src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=500&q=80" onerror="this.style.background='#EDEFE8'" alt="Zipper Hoodie">
+        <div class="pedestal"></div>
+        <div class="swctrl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 7-4 5 4 5M15 7l4 5-4 5"/></svg></div>
+      </div>
+
+      <div class="thumbs">
+        <img class="t" src="https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=160&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+        <img class="t on" src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=160&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+        <img class="t" src="https://images.unsplash.com/photo-1483721310020-03333e577078?auto=format&fit=crop&w=160&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+      </div>
+
+      <div class="pname">
+        <h3>Zipper Hoodie<br/>(Black)</h3>
+        <span class="p">947.30 €</span>
+      </div>
+
+      <div class="actions">
+        <div class="act on"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l1-4h16l1 4M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M3 9h18"/></svg></span>E.Leclerc</div>
+        <div class="act"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14"/></svg></span>Remove</div>
+        <div class="act"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 3v6h6"/></svg></span>Catalog</div>
+        <div class="act"><span class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8 11 8-4M8 13l8 4"/></svg></span>Share</div>
+      </div>
+
+      <div class="desc">
+        <div class="dh"><span>Description</span><span class="more">Show more <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></span></div>
+        <p>Full-zip cotton-blend hoodie with a brushed inner, ribbed cuffs and a structured hood. Currently on offer at your nearest store — add it to your list to track the price.</p>
+      </div>
+
+      <button class="cta">Add to list</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: GOOD DEALS ============ -->
+  <div class="phone">
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="ic">
+        <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="1"/><rect x="4.5" y="4" width="3" height="7" rx="1"/><rect x="9" y="2" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none" stroke="#1C1E16" stroke-width="1.6"><path d="M1 4.5C4.5 1.5 11.5 1.5 15 4.5M3.5 7C6 5 10 5 12.5 7M6 9.3c1.2-1 2.8-1 4 0"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="#1C1E16" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/><rect x="23" y="4" width="2" height="4" rx="1"/></svg>
+      </span>
+    </div>
+    <div class="screen">
+      <div class="scr-title">
+        <button class="rndbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <h2>Good deals</h2>
+        <span style="width:38px"></span>
+      </div>
+
+      <div class="search">
+        <div class="box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search deals…</div>
+        <button class="filt" aria-label="Filter"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+      </div>
+
+      <div class="sec"><h4>Ending soon</h4><a href="#">See more</a></div>
+      <div class="deals">
+        <div class="deal">
+          <img src="https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?auto=format&fit=crop&w=300&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="dn">All-purpose cleaner</div>
+          <div class="pr"><span class="now">2.36 €</span><span class="old">3.59 €</span></div>
+          <div class="meta"><span class="dt"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 27.12–05.01</span><button class="add" aria-label="Add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h3l2.5 13h11l2-9H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg></button></div>
+        </div>
+        <div class="deal">
+          <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=300&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="dn">Marseille liquid soap</div>
+          <div class="pr"><span class="now">5.68 €</span></div>
+          <div class="meta"><span class="dt"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 27.12–05.01</span><button class="add" aria-label="Add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h3l2.5 13h11l2-9H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg></button></div>
+        </div>
+      </div>
+
+      <div class="sec" style="margin-top:20px"><h4>Boost your budget</h4><a href="#">See more</a></div>
+      <div class="deals">
+        <div class="deal">
+          <img src="https://images.unsplash.com/photo-1490578474895-699cd4e2cf59?auto=format&fit=crop&w=300&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="dn">Small glass vase</div>
+          <div class="pr"><span class="now">2.36 €</span><span class="old">3.59 €</span></div>
+          <div class="meta"><span class="dt"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 27.12–05.01</span><button class="add" aria-label="Add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h3l2.5 13h11l2-9H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg></button></div>
+        </div>
+        <div class="deal">
+          <img src="https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=300&q=70" onerror="this.style.background='#E5E8DE';this.removeAttribute('src')" alt="">
+          <div class="dn">Table lamp</div>
+          <div class="pr"><span class="now">7.00 €</span></div>
+          <div class="meta"><span class="dt"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 27.12–05.01</span><button class="add" aria-label="Add"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h3l2.5 13h11l2-9H6"/><circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/></svg></button></div>
+        </div>
+      </div>
+
+      <nav class="nav" style="margin-top:20px">
+        <a href="#" aria-label="Home"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></a>
+        <a href="#" aria-label="Wallet"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14h2"/></svg></a>
+        <a href="#" aria-label="List"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h3l2.5 13h11l2-9H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></a>
+        <a href="#" aria-label="Saved"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-5 9 5-9 5z"/><path d="M3 9v6l9 5 9-5V9"/></svg></a>
+        <a href="#" class="on" aria-label="Deals"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 19 19 5"/><circle cx="7.5" cy="7.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/></svg> Bons</a>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.stepper').forEach(s=>{
+  const q=s.querySelector('.qty');
+  s.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    let n=parseInt(q.textContent,10)+parseInt(b.dataset.step,10);
+    q.textContent=Math.max(1,n);
+  }));
+});
+</script>
+</body>
+</html>

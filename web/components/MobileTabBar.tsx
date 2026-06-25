@@ -1,0 +1,30 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { HomeIcon, SearchIcon, BagIcon, UserIcon } from "./Icons";
+
+export function MobileTabBar() {
+  const path = usePathname();
+  const items = [
+    { href: "/",         label: "Home", icon: HomeIcon },
+    { href: "/shop",     label: "Shop", icon: SearchIcon },
+    { href: "/cart",     label: "Cart", icon: BagIcon },
+    { href: "/account",  label: "Me",   icon: UserIcon },
+  ];
+  return (
+    <nav className="lg:hidden fixed bottom-4 inset-x-4 z-40 bg-ink text-white rounded-pill p-2 flex justify-around items-center shadow-deep">
+      {items.map(({ href, label, icon: Icon }) => {
+        const active = path === href || (href !== "/" && path.startsWith(href));
+        return (
+          <Link key={href} href={href}
+            className={`flex items-center justify-center gap-2 h-11 rounded-pill text-[12px] font-semibold transition-all ${
+              active ? "bg-accent text-white px-5 flex-[1.4]" : "text-white/60 flex-1"
+            }`}>
+            <Icon width={19} height={19}/>
+            {active && <span>{label}</span>}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
