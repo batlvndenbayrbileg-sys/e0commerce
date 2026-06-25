@@ -5,6 +5,20 @@ live Medusa/Wire/MNT stack. Built on the existing Next.js 14 + Tailwind + Framer
 
 ---
 
+## ✅ STATUS (2026-06-25) — Phase 1–4 гол хэсэг ДУУССАН, live
+
+- **Phase 1 (i18n):** ✅ бүх хуудас MN/EN. `c351892`
+- **Phase 2 (UX):** ✅ cart drawer, ✅ ажилладаг хайлт, ✅ ажилладаг шүүлтүүр, ✅ PDP hover-zoom,
+  ✅ mobile sticky CTA, ✅ quick view, ✅ skeletons. ⬜ size guide modal үлдсэн. `6c87df4`,`1e08a09`,`3b060e2`
+- **Phase 3 (Animation):** ✅ page transition (opacity), ✅ add-to-cart fly, ✅ cart badge spring,
+  ✅ count-up, ✅ reveal өргөтгөл. ⬜ hero carousel parallax үлдсэн. `90866ff`
+- **Phase 4 (A11y):** ✅ focus-visible, ✅ skip link + `<main>`, ✅ keyboard (⌘K/`/`, Esc),
+  ✅ aria labels, ✅ reduced-motion, ✅ контраст (AA). ⬜ бүрэн focus-trap, ⬜ Lighthouse аудит.
+
+Дэлгэрэнгүй commit/үлдсэн ажил: `docs/SESSION_HANDOFF.md`.
+
+---
+
 ## Phase 1 — Mongolian localization (i18n) 🇲🇳
 
 **The #1 ask. Make every UI string switchable EN ⇄ MN.**
