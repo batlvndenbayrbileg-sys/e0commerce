@@ -26,7 +26,7 @@ export type Product = {
   stock: number;
   accent: string;
   image?: string;
-  variants?: { id: string; size: string }[];
+  variants?: { id: string; size: string; stock: number }[];
 };
 
 export type CartItem = {

@@ -5,7 +5,7 @@ const URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000";
 const PK = process.env.NEXT_PUBLIC_MEDUSA_PK || "pk_6352a937fd8593d7cff1b41f32d7dd564df486a1b789b75533bed1abd3cf5271";
 const REGION = process.env.NEXT_PUBLIC_MEDUSA_REGION || "reg_01KVYG28Y7T54Y110SXWV6CTAX";
 
-const FIELDS = "id,title,handle,description,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price";
+const FIELDS = "id,title,handle,description,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
 const H = { "content-type": "application/json", "x-publishable-api-key": PK };
 
 async function mfetch(path: string) {
@@ -51,6 +51,14 @@ function map(m: any): Product {
   const sizes = sizeOpt?.values?.map((v: any) => v.value) ?? ["One size"];
   const description = m.description || "";
 
+  const variantStock = (v: any): number => {
+    if (v?.manage_inventory === false) return 9999;
+    const levels = (v?.inventory_items || []).flatMap((ii: any) => ii?.inventory?.location_levels || []);
+    return levels.reduce((a: number, l: any) => a + (l?.available_quantity ?? 0), 0);
+  };
+  const variants = (m.variants || []).map((v: any) => ({ id: v.id, size: v.title, stock: variantStock(v) }));
+  const stock = variants.reduce((a: number, v: any) => a + v.stock, 0);
+
   return {
     id: handle,
     slug: handle,
@@ -71,10 +79,10 @@ function map(m: any): Product {
     description,
     bullets: e.bullets,
     specs: e.specs,
-    stock: 99,
+    stock,
     accent: e.accent,
     image: m.thumbnail || m.images?.[0]?.url,
-    variants: (m.variants || []).map((v: any) => ({ id: v.id, size: v.title })),
+    variants,
   };
 }
 

@@ -18,6 +18,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const wished = mounted && has(product.id);
+  const soldOut = product.stock === 0;
 
   const fallback = (
     <div className="absolute inset-0 grid place-items-center"
@@ -43,10 +44,12 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           fallback={fallback}
           imgClassName="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-elegant group-hover:scale-[1.06]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15"/>
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15 ${soldOut ? "backdrop-grayscale" : ""}`}/>
 
         {/* badge */}
-        {product.badge && (
+        {soldOut ? (
+          <span className="absolute top-3 left-3 z-10 text-[10px] uppercase tracking-[.14em] font-semibold px-2.5 h-6 rounded-pill grid place-items-center bg-ink text-white">Sold out</span>
+        ) : product.badge && (
           <span className={`absolute top-3 left-3 z-10 text-[10px] uppercase tracking-[.14em] font-semibold px-2.5 h-6 rounded-pill grid place-items-center ${
             product.badge === "New" ? "bg-accent text-white" : "bg-white/90 text-ink"
           }`}>{product.badge}</span>
@@ -71,9 +74,12 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
         {/* add to bag */}
         <button
-          onClick={(e) => { e.preventDefault(); add(product); showToast(`${product.name} added to bag`); }}
-          className="absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full bg-ink text-white grid place-items-center transition-all hover:bg-accent hover:scale-105"
-          aria-label="Add to bag"
+          disabled={soldOut}
+          onClick={(e) => { e.preventDefault(); if (soldOut) return; add(product); showToast(`${product.name} added to bag`); }}
+          className={`absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full grid place-items-center transition-all ${
+            soldOut ? "bg-white/40 text-ink/40 cursor-not-allowed" : "bg-ink text-white hover:bg-accent hover:scale-105"
+          }`}
+          aria-label={soldOut ? "Sold out" : "Add to bag"}
         >
           <BagIcon width={16} height={16}/>
         </button>

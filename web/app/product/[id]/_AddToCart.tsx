@@ -21,8 +21,13 @@ export function AddToCart({ product }: { product: Product }) {
   const sizable = product.sizes.length > 1;
   const [size, setSize] = useState(sizable ? "" : product.sizes[0]);
 
+  const sizeStock = (s: string) => product.variants?.find(v => v.size === s)?.stock ?? 9999;
+  const soldOut = (product.variants?.length ?? 0) > 0 && product.variants!.every(v => v.stock === 0);
+
   function handleAdd(then?: () => void) {
+    if (soldOut) { showToast("Sold out"); return; }
     if (sizable && !size) { showToast("Please select a size"); return; }
+    if (size && sizeStock(size) === 0) { showToast("That size is sold out"); return; }
     const variantId = product.variants?.find(v => v.size === size)?.id ?? product.variants?.[0]?.id;
     add(product, qty, { size, variantId });
     showToast(`${product.name} added to bag`);
@@ -47,12 +52,16 @@ export function AddToCart({ product }: { product: Product }) {
       {sizable && (
         <Group label="Size" action={<button className="text-subtle font-normal underline hover:text-ink">Size guide</button>}>
           <div className="flex flex-wrap gap-2">
-            {product.sizes.map(s => (
-              <button key={s} onClick={() => setSize(s)}
-                className={`min-w-[52px] px-4 py-2.5 rounded-pill border text-sm transition ${
-                  size === s ? "bg-ink text-white border-ink" : "border-border bg-white hover:border-ink"
-                }`}>{s}</button>
-            ))}
+            {product.sizes.map(s => {
+              const out = sizeStock(s) === 0;
+              return (
+                <button key={s} disabled={out} onClick={() => !out && setSize(s)}
+                  className={`min-w-[52px] px-4 py-2.5 rounded-pill border text-sm transition ${
+                    out ? "border-border bg-surface-2 text-subtle line-through cursor-not-allowed"
+                    : size === s ? "bg-ink text-white border-ink" : "border-border bg-white hover:border-ink"
+                  }`}>{s}</button>
+              );
+            })}
           </div>
         </Group>
       )}
@@ -65,22 +74,29 @@ export function AddToCart({ product }: { product: Product }) {
         </div>
       </Group>
 
-      <div className="flex gap-3 mt-6">
-        <button
-          onClick={() => handleAdd()}
-          className="btn btn-dark flex-1 justify-center"
-        >
-          Add to bag
-          <span className="arrow-cap"><ArrowRight width={14} height={14}/></span>
-        </button>
-        <button
-          onClick={() => handleAdd(() => router.push("/checkout"))}
-          className="btn flex-1 justify-center bg-white text-ink border border-ink/15 hover:border-ink hover:-translate-y-0.5 transition-all"
-        >
-          Buy now
-          <span className="arrow-cap !bg-ink !text-white"><ArrowUpRight width={14} height={14}/></span>
-        </button>
-      </div>
+      {soldOut ? (
+        <div className="mt-6">
+          <button disabled className="btn btn-dark w-full justify-center opacity-50 cursor-not-allowed">Sold out</button>
+          <p className="tiny text-center mt-2">This item is currently out of stock.</p>
+        </div>
+      ) : (
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={() => handleAdd()}
+            className="btn btn-dark flex-1 justify-center"
+          >
+            Add to bag
+            <span className="arrow-cap"><ArrowRight width={14} height={14}/></span>
+          </button>
+          <button
+            onClick={() => handleAdd(() => router.push("/checkout"))}
+            className="btn flex-1 justify-center bg-white text-ink border border-ink/15 hover:border-ink hover:-translate-y-0.5 transition-all"
+          >
+            Buy now
+            <span className="arrow-cap !bg-ink !text-white"><ArrowUpRight width={14} height={14}/></span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
