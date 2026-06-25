@@ -17,7 +17,7 @@ export function NewsletterForm() {
         <input
           type="email" required value={email} onChange={e => setEmail(e.target.value)}
           placeholder={t("news.placeholder")}
-          className="flex-1 px-5 py-3 bg-transparent text-white placeholder:text-white/40 outline-none text-[15px]"
+          className="flex-1 min-w-0 px-5 py-3 bg-transparent text-white placeholder:text-white/40 outline-none text-[15px]"
         />
         <button type="submit" className="btn bg-white text-ink !h-12 !px-5 hover:opacity-90">
           {t("news.subscribe")}
