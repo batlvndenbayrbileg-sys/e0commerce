@@ -38,7 +38,7 @@ export default function CheckoutPage() {
       address_1: String(fd.get("address_1") || ""),
       city: String(fd.get("city") || ""),
       postal_code: String(fd.get("postal_code") || ""),
-      country_code: "us",
+      country_code: "mn",
       phone: String(fd.get("phone") || ""),
     };
 
@@ -94,15 +94,15 @@ export default function CheckoutPage() {
 
             <FormCard title="Shipping address">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <Field label="First name"><input name="first_name" placeholder="Alex" defaultValue="Alex" required/></Field>
-                <Field label="Last name"><input name="last_name" placeholder="Rivera" defaultValue="Rivera" required/></Field>
-                <Field label="Address" full><input name="address_1" placeholder="Street and number" defaultValue="140 Performance Ave" required/></Field>
-                <Field label="City"><input name="city" placeholder="Los Angeles" defaultValue="Los Angeles" required/></Field>
-                <Field label="Postal code"><input name="postal_code" placeholder="90012" defaultValue="90012" required/></Field>
+                <Field label="First name"><input name="first_name" placeholder="Bat" defaultValue="Bat" required/></Field>
+                <Field label="Last name"><input name="last_name" placeholder="Erdene" defaultValue="Erdene" required/></Field>
+                <Field label="Address" full><input name="address_1" placeholder="District, street, building" defaultValue="Sukhbaatar District, 1-r khoroo" required/></Field>
+                <Field label="City"><input name="city" placeholder="Ulaanbaatar" defaultValue="Ulaanbaatar" required/></Field>
+                <Field label="Postal code"><input name="postal_code" placeholder="14200" defaultValue="14200" required/></Field>
                 <Field label="Country">
-                  <select name="country"><option value="us">United States</option></select>
+                  <select name="country"><option value="mn">Mongolia</option></select>
                 </Field>
-                <Field label="Phone"><input name="phone" placeholder="+1 …" defaultValue="+1 213 555 0142"/></Field>
+                <Field label="Phone"><input name="phone" placeholder="+976 …" defaultValue="+976 9911 2233"/></Field>
               </div>
             </FormCard>
 
