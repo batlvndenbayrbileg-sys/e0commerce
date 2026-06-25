@@ -1,8 +1,10 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Photo } from "@/components/Photo";
 import { ProductVisual } from "@/components/ProductVisual";
 import type { Product } from "@/lib/types";
+
+const clamp = (n: number) => Math.min(100, Math.max(0, n));
 
 // Main product image with a cursor-tracking hover zoom (desktop). The zoom is a
 // CSS transform on an inner wrapper, so the reduced-motion guardrail removes the
@@ -11,15 +13,24 @@ export function Gallery({ product, img }: { product: Product; img: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(false);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+  // Desktop uses hover; touch devices (no hover) tap to toggle zoom.
+  const [canHover, setCanHover] = useState(true);
+  useEffect(() => { setCanHover(window.matchMedia("(hover: hover)").matches); }, []);
 
-  function onMove(e: React.MouseEvent) {
+  function pointFromEvent(e: React.MouseEvent) {
     const el = ref.current;
-    if (!el) return;
+    if (!el) return { x: 50, y: 50 };
     const r = el.getBoundingClientRect();
-    setPos({
-      x: Math.min(100, Math.max(0, ((e.clientX - r.left) / r.width) * 100)),
-      y: Math.min(100, Math.max(0, ((e.clientY - r.top) / r.height) * 100)),
-    });
+    return { x: clamp(((e.clientX - r.left) / r.width) * 100), y: clamp(((e.clientY - r.top) / r.height) * 100) };
+  }
+  function onMove(e: React.MouseEvent) {
+    if (!canHover) return;
+    setPos(pointFromEvent(e));
+  }
+  function onClick(e: React.MouseEvent) {
+    if (canHover) return;
+    setPos(pointFromEvent(e));
+    setZoom(z => !z);
   }
 
   return (
@@ -36,9 +47,10 @@ export function Gallery({ product, img }: { product: Product; img: string }) {
 
       <div
         ref={ref}
-        onMouseEnter={() => setZoom(true)}
-        onMouseLeave={() => setZoom(false)}
+        onMouseEnter={() => canHover && setZoom(true)}
+        onMouseLeave={() => canHover && setZoom(false)}
         onMouseMove={onMove}
+        onClick={onClick}
         className="flex-1 rounded-[1.5rem] aspect-[4/5] sm:aspect-square overflow-hidden bg-graphite relative cursor-zoom-in"
       >
         <div

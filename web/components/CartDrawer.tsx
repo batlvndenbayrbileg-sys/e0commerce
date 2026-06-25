@@ -9,6 +9,7 @@ import { Photo } from "./Photo";
 import { ProductVisual } from "./ProductVisual";
 import { productImg } from "@/lib/images";
 import { ArrowRight, TrashIcon } from "./Icons";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 export function CartDrawer() {
   const open = useUI(s => s.cartOpen);
@@ -20,6 +21,8 @@ export function CartDrawer() {
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, open);
 
   // Esc closes; lock body scroll; move focus into the drawer and restore on close.
   useEffect(() => {
@@ -48,6 +51,7 @@ export function CartDrawer() {
             className="fixed inset-0 z-[80] bg-ink/40 backdrop-blur-sm"
           />
           <motion.aside
+            ref={panelRef}
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 380, damping: 40 }}
             className="fixed right-0 top-0 bottom-0 z-[81] w-[min(420px,92vw)] bg-white shadow-deep flex flex-col"

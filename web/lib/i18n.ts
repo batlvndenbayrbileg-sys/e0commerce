@@ -81,6 +81,8 @@ const en: Dict = {
   "common.required": "Required", "common.pleaseWait": "Please wait…", "common.close": "Close",
   "common.decrease": "Decrease quantity", "common.increase": "Increase quantity", "common.rating": "Rating",
   "common.quickView": "Quick view", "common.viewDetails": "View details",
+  "sg.chest": "Chest", "sg.waist": "Waist", "sg.hip": "Hip",
+  "sg.note": "Measurements in cm. Between sizes? Size up for layering.",
   "a11y.skip": "Skip to content",
   "cart.viewBag": "View full bag",
   // product page
@@ -198,6 +200,8 @@ const mn: Dict = {
   "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…", "common.close": "Хаах",
   "common.decrease": "Тоо хорогдуулах", "common.increase": "Тоо нэмэгдүүлэх", "common.rating": "Үнэлгээ",
   "common.quickView": "Хурдан үзэх", "common.viewDetails": "Дэлгэрэнгүй үзэх",
+  "sg.chest": "Цээж", "sg.waist": "Бэлхүүс", "sg.hip": "Хонго",
+  "sg.note": "Хэмжээ см-ээр. Хоёр хэмжээний дунд бол давхарлахад томыг сонго.",
   "a11y.skip": "Үндсэн хэсэг рүү очих",
   "cart.viewBag": "Сагсыг бүтнээр нь үзэх",
   // product page

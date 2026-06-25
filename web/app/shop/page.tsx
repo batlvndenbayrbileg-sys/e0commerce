@@ -16,17 +16,22 @@ export default async function ShopPage({
   searchParams,
 }: { searchParams: { category?: string; sort?: string; q?: string; gender?: string; filter?: string; color?: string; tech?: string; minPrice?: string; maxPrice?: string } }) {
   const t = getServerT();
-  const { data: products, total } = await api.products.list({
-    category: searchParams.category,
-    sort: searchParams.sort,
-    q: searchParams.q,
-    gender: searchParams.gender,
-    filter: searchParams.filter,
-    color: searchParams.color,
-    tech: searchParams.tech,
-    minPrice: searchParams.minPrice,
-    maxPrice: searchParams.maxPrice,
-  });
+  const [{ data: products, total }, allForColors] = await Promise.all([
+    api.products.list({
+      category: searchParams.category,
+      sort: searchParams.sort,
+      q: searchParams.q,
+      gender: searchParams.gender,
+      filter: searchParams.filter,
+      color: searchParams.color,
+      tech: searchParams.tech,
+      minPrice: searchParams.minPrice,
+      maxPrice: searchParams.maxPrice,
+    }),
+    api.products.list({}),
+  ]);
+  // Real swatches: unique product accents, so every colour chip yields results.
+  const availableColors = Array.from(new Set(allForColors.data.map(p => p.accent)));
 
   return (
     <>
@@ -70,7 +75,7 @@ export default async function ShopPage({
           </div>
 
           {/* Collapsible filters */}
-          <ShopFilters/>
+          <ShopFilters colors={availableColors}/>
 
           {/* Grid */}
           {products.length === 0 ? (

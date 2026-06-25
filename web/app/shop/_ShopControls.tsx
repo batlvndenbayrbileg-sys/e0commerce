@@ -3,7 +3,6 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useT } from "@/components/LangProvider";
 
-const FILTER_COLORS = ["#1A1A1A", "#3A3B3F", "#2A3142", "#5A5246", "#7A6E62", "#EDEAE2"];
 const TECH_TAGS = [
   ["Stretch", "shop.tStretch"], ["Thermal", "shop.tThermal"],
   ["Wicking", "shop.tWicking"], ["Water-repellent", "shop.tWater"],
@@ -44,7 +43,7 @@ export function SortSelect() {
   );
 }
 
-export function ShopFilters() {
+export function ShopFilters({ colors = [] }: { colors?: string[] }) {
   const sp = useSearchParams();
   const t = useT();
   const setParams = useSetParams();
@@ -88,7 +87,7 @@ export function ShopFilters() {
         <div>
           <div className="text-[12px] font-semibold uppercase tracking-wide text-muted">{t("common.colour")}</div>
           <div className="flex gap-2 flex-wrap mt-2">
-            {FILTER_COLORS.map(c => {
+            {colors.map(c => {
               const on = activeColor?.toLowerCase() === c.toLowerCase();
               return (
                 <button key={c} onClick={() => setParams({ color: on ? null : c })}

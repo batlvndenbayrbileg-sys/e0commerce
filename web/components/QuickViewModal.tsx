@@ -9,6 +9,7 @@ import { Photo } from "./Photo";
 import { ProductVisual } from "./ProductVisual";
 import { productImg } from "@/lib/images";
 import { ArrowUpRight } from "./Icons";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 export function QuickViewModal() {
   const product = useQuickView(s => s.product);
@@ -24,6 +25,8 @@ export function QuickViewModal() {
   const [size, setSize] = useState("");
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open);
 
   // Reset the selection whenever a new product is opened.
   useEffect(() => {
@@ -78,6 +81,7 @@ export function QuickViewModal() {
             className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
           />
           <motion.div
+            ref={dialogRef}
             initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
