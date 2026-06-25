@@ -8,7 +8,7 @@
 - **Storefront:** Next.js 14 (App Router) → Vercel — https://e0commerce-web.vercel.app
 - **Backend:** Medusa v2 → Railway (Postgres 16 + Redis 7)
 - **Repo:** https://github.com/batlvndenbayrbileg-sys/e0commerce — branch `main`
-- **Сүүлийн commit:** `ef7f796` — Polish (size guide, real colour filter, mobile zoom, focus-trap)
+- **Сүүлийн commit:** `a7fb8a7` — Lighthouse a11y = 100 (Home/Shop/PDP)
 - **Төлбөр:** Wire Payment (QPay + Монгол банкны апп), одоогоор MOCK горим
 - **Имэйл:** Resend (mock/deployed), **Үнэ:** MNT (₮), USD→MNT = 3450
 - **Inventory:** Medusa-д track хийгддэг, "Дууссан" badge ажилладаг
@@ -27,6 +27,10 @@
 | **A11y pass** | focus-visible ring, skip link + `<main>`, ⌘K/`/` хайлт, drawer focus mgmt, qty aria-label, контраст (`subtle` #8A8F93→#72767A) | `e04f52b` |
 | **Quick view** | Картаас hover → modal (Sprint 2 дуусгасан) | `3b060e2` |
 | **Polish** | Size guide modal, өнгөний шүүлтүүр бодит accent-ээс, mobile PDP tap-zoom, бүх overlay-д focus-trap (`useFocusTrap`) | `ef7f796` |
+| **Hero + gallery** | Carousel parallax + "Shop now" i18n; бодит олон зурагтай PDP gallery (`images[]`, thumbnail сонголт) | `cc30341` |
+| **Lighthouse a11y → 100** | Headless Lighthouse-аар Home/Shop/PDP бүгд **100**: badge/CTA/tab/promo-д ink текст (accent+цагаан 2.86:1 унадаг байсан), `subtle`→#5C6166, select/link/lang aria, carousel цэгийн 24px target, үнэ accent-deep | `1c803cf`→`a7fb8a7` |
+
+> ⚠️ **Брэндийн өөрчлөлт:** accent (улбар #FF6A1A) дээрх **бүх текст одоо бараан (ink)** — btn-primary, badge, идэвхтэй tab, promo banner, hero "Shop now". Учир нь цагаан-улбар = 2.86:1 (AA унана), бараан-улбар = ~6.9:1. Хэрэв цагаан CTA текст заавал хэрэгтэй бол accent-ийг гүн болгох (#B5470A орчим) хэрэгтэй болно.
 
 ### Шинэ дэд бүтэц (дараагийн хүн мэдэх ёстой)
 - **i18n:** `web/lib/i18n.ts` (толь, EN+MN), `web/lib/lang.ts` (server `getServerT`), `web/components/LangProvider.tsx` (client `useT`).
@@ -40,12 +44,18 @@
 
 ---
 
-## ⬜ Үлдсэн polish (заавал биш, эрэмбээр)
-1. **Hero carousel polish** — parallax, drag inertia (`web/components/HeroCarousel.tsx`).
-2. **Lighthouse аудит** — браузер/CI дээр ажиллуулж a11y/perf оноо баталгаажуулах (код талаас гол алдаанууд зассан).
-3. **Олон зураг** — бараа бүр 1 зурагтай (Medusa thumbnail). PDP gallery-ийн 4 thumbnail одоо ижил зураг; бодит олон зураг нэмбэл жинхэнэ gallery болно.
+## ⬜ Үлдсэн зүйл (заавал биш)
+1. **Performance / SEO Lighthouse** — a11y = 100 болсон; perf/SEO/best-practices категориудыг мөн шалгаж сайжруулж болно.
+2. **Контент: олон зураг** — Medusa admin-д бараа бүрт олон зураг оруулбал PDP gallery автоматаар бодит thumbnail-уудыг харуулна (код бэлэн, `images[]`). Одоо ихэнх бараа 1 зурагтай тул thumbnail strip нуугдана.
+3. **Cart/Checkout/Account/Auth** хуудсуудыг тус бүр Lighthouse-аар шалгах (ижил засагдсан компонент ашигладаг тул 100 байх магадлал өндөр, гэхдээ нэг бүрчлэн баталгаажуулаагүй).
 
-✅ **Дуусгасан** (өмнө энд байсан): size guide modal, mobile PDP zoom, overlay focus-trap, өнгөний шүүлтүүр бодит accent-ээс.
+✅ **Бүгд дуусгасан:** size guide, mobile zoom, focus-trap, бодит өнгөний шүүлтүүр, hero parallax, multi-image gallery, **Lighthouse a11y = 100 (Home/Shop/PDP)**.
+
+## 🧪 Lighthouse дахин ажиллуулах (энэ машинд Chrome суусан)
+```bash
+npx -y lighthouse "https://e0commerce-web.vercel.app/shop" --only-categories=accessibility \
+  --output=json --output-path=stdout --chrome-flags="--headless=new --no-sandbox" --quiet
+```
 
 ## ⬜ Production (нууц түлхүүр шаардлагатай — НАДТАЙ БИТГИЙ ХУВААЛЦ)
 - **Wire** MOCK → бодит горим (бодит QPay keys, Railway/Vercel env дотор).

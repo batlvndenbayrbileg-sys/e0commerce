@@ -11,9 +11,10 @@ live Medusa/Wire/MNT stack. Built on the existing Next.js 14 + Tailwind + Framer
 - **Phase 2 (UX):** ✅ cart drawer, ✅ ажилладаг хайлт, ✅ ажилладаг шүүлтүүр (бодит өнгө), ✅ PDP zoom
   (desktop hover + mobile tap), ✅ mobile sticky CTA, ✅ quick view, ✅ skeletons, ✅ size guide modal. `6c87df4`,`1e08a09`,`3b060e2`,`ef7f796`
 - **Phase 3 (Animation):** ✅ page transition (opacity), ✅ add-to-cart fly, ✅ cart badge spring,
-  ✅ count-up, ✅ reveal өргөтгөл. ⬜ hero carousel parallax үлдсэн. `90866ff`
+  ✅ count-up, ✅ reveal өргөтгөл, ✅ hero carousel parallax. `90866ff`,`cc30341`
 - **Phase 4 (A11y):** ✅ focus-visible, ✅ skip link + `<main>`, ✅ keyboard (⌘K/`/`, Esc),
-  ✅ aria labels, ✅ reduced-motion, ✅ контраст (AA), ✅ overlay focus-trap. ⬜ Lighthouse аудит (браузер). `e04f52b`,`ef7f796`
+  ✅ aria labels, ✅ reduced-motion, ✅ контраст (AA), ✅ overlay focus-trap,
+  ✅ **Lighthouse a11y = 100 (Home/Shop/PDP)**. `e04f52b`→`a7fb8a7`
 
 Дэлгэрэнгүй commit/үлдсэн ажил: `docs/SESSION_HANDOFF.md`.
 
