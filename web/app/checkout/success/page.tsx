@@ -27,8 +27,8 @@ function Success() {
           <CheckIcon width={42} height={42} className="text-white"/>
         </div>
 
-        <h1 className="h-2 mb-2.5">Order placed.</h1>
-        <p className="text-muted">A confirmation has been sent to your email. Your gear is being packed — tracking arrives within 24 hours.</p>
+        <h1 className="font-display text-[28px] sm:text-[34px] uppercase tracking-tight leading-none mt-6 mb-3">Order placed</h1>
+        <p className="text-muted text-[15px] leading-relaxed">A confirmation has been sent to your email. Your gear is being packed — tracking arrives within 24 hours.</p>
 
         <div className="bg-surface-2 rounded-xl p-5 my-7 text-left">
           <div className="flex justify-between mb-1.5"><span className="tiny">Order number</span><span className="font-mono font-semibold">{id ?? "—"}</span></div>
