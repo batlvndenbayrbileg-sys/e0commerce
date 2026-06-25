@@ -15,10 +15,10 @@ const config: Config = {
         ink:       "#0E0F10",
         graphite:  "#16171A",
         charcoal:  "#1F2024",
-        frost:     { DEFAULT: "#D3E0E3", deep: "#C2D2D6" },
-        haze:      "#E8EEEF",
-        cloud:     "#E8EEEF",
-        mist:      "#F2F5F5",
+        frost:     { DEFAULT: "#E7E2D8", deep: "#D6D0C5" },
+        haze:      "#EFEBE3",
+        cloud:     "#EFEBE3",
+        mist:      "#F5F3EE",
         paper:     "#FFFFFF",
         accent:    { DEFAULT: "#FF6A1A", deep: "#E8550A", soft: "#FFEAD9" },
         lime:      { DEFAULT: "#D7F26B", deep: "#BFE03E", dark: "#9FBF24" },
@@ -26,7 +26,7 @@ const config: Config = {
         muted:     "#5C5F63",
         subtle:    "#5C6166", // meets WCAG AA on white AND the light frost page bg (~4.5:1+)
         line:      "rgba(14,15,16,0.09)",
-        surface: { 0:"#D3E0E3", 1:"#FFFFFF", 2:"#F2F5F5", 3:"#E8EEEF", dark:"#0E0F10" },
+        surface: { 0:"#E7E2D8", 1:"#FFFFFF", 2:"#F5F3EE", 3:"#EFEBE3", dark:"#0E0F10" },
       },
       borderRadius: {
         "2xl": "1.25rem", "3xl": "1.75rem", "4xl": "2.5rem", pill: "999px",

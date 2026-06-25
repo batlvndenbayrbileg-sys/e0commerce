@@ -11,7 +11,7 @@
 }
 
 html, body {
-  background: #D3E0E3;
+  background: #E7E2D8;
   color: #0E0F10;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -141,20 +141,20 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
 
   .text-balance { text-wrap: balance; }
 
-  /* Warm vibrant ambient background */
+  /* Warm premium ambient background — peach + apricot + sand, anchored by a faint cool stone */
   .mesh-light {
     background:
-      radial-gradient(820px 480px at 88% -6%, #FFE0C6 0%, transparent 55%),
-      radial-gradient(680px 520px at -5% 102%, #F7D6EF 0%, transparent 55%),
-      radial-gradient(620px 460px at 105% 104%, #DED7FB 0%, transparent 55%),
-      #F6F5F3;
+      radial-gradient(820px 480px at 88% -6%, #FFE1C4 0%, transparent 56%),
+      radial-gradient(680px 520px at -6% 102%, #FCE2CE 0%, transparent 58%),
+      radial-gradient(640px 460px at 106% 104%, #E7EAEC 0%, transparent 52%),
+      #F8F5EF;
   }
   .mesh-warm {
     background:
-      radial-gradient(700px 420px at 90% 0%, #FFD9BE 0%, transparent 55%),
-      radial-gradient(560px 420px at 0% 60%, #F8D2EC 0%, transparent 55%),
-      radial-gradient(560px 420px at 100% 100%, #DCD4FB 0%, transparent 55%),
-      #F7F6F4;
+      radial-gradient(700px 420px at 90% 0%, #FFDBB8 0%, transparent 56%),
+      radial-gradient(560px 420px at 0% 60%, #FBE0CB 0%, transparent 58%),
+      radial-gradient(560px 420px at 100% 100%, #E6E9EC 0%, transparent 52%),
+      #F8F5EF;
   }
   .mesh-dark {
     background:
