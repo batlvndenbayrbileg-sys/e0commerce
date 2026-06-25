@@ -8,12 +8,12 @@ export function LangToggle({ className = "" }: { className?: string }) {
       <button
         onClick={() => lang !== "mn" && setLang("mn")}
         className={`px-2.5 h-7 rounded-pill transition ${lang === "mn" ? "bg-ink text-white" : "text-muted"}`}
-        aria-label="Монгол"
+        aria-label="МН — Монгол хэл"
       >МН</button>
       <button
         onClick={() => lang !== "en" && setLang("en")}
         className={`px-2.5 h-7 rounded-pill transition ${lang === "en" ? "bg-ink text-white" : "text-muted"}`}
-        aria-label="English"
+        aria-label="EN — English"
       >EN</button>
     </div>
   );

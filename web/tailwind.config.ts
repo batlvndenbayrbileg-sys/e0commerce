@@ -24,7 +24,7 @@ const config: Config = {
         lime:      { DEFAULT: "#D7F26B", deep: "#BFE03E", dark: "#9FBF24" },
         camel:     { DEFAULT: "#C19A6B", deep: "#A87E4E" },
         muted:     "#5C5F63",
-        subtle:    "#72767A", // darkened from #8A8F93 to meet WCAG AA (~4.6:1 on white)
+        subtle:    "#5C6166", // meets WCAG AA on white AND the light frost page bg (~4.5:1+)
         line:      "rgba(14,15,16,0.09)",
         surface: { 0:"#D3E0E3", 1:"#FFFFFF", 2:"#F2F5F5", 3:"#E8EEEF", dark:"#0E0F10" },
       },

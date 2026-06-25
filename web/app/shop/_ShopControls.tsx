@@ -32,6 +32,7 @@ export function SortSelect() {
     <select
       value={sp.get("sort") ?? ""}
       onChange={(e) => setParams({ sort: e.target.value || null })}
+      aria-label={t("shop.sort")}
       className="h-9 pl-3 pr-2 rounded-pill bg-surface-2 text-[13px] font-medium outline-none cursor-pointer border-none"
     >
       <option value="">{t("shop.sort")}</option>
