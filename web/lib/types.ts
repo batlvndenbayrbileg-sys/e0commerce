@@ -26,6 +26,7 @@ export type Product = {
   stock: number;
   accent: string;
   image?: string;
+  images?: string[];
   variants?: { id: string; size: string; stock: number }[];
 };
 

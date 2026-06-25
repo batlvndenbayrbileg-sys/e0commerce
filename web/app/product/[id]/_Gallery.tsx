@@ -10,7 +10,9 @@ const clamp = (n: number) => Math.min(100, Math.max(0, n));
 // CSS transform on an inner wrapper, so the reduced-motion guardrail removes the
 // easing while still allowing the magnify.
 export function Gallery({ product, img }: { product: Product; img: string }) {
+  const imgs = product.images?.length ? product.images : [img];
   const ref = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(imgs[0]);
   const [zoom, setZoom] = useState(false);
   const [pos, setPos] = useState({ x: 50, y: 50 });
   // Desktop uses hover; touch devices (no hover) tap to toggle zoom.
@@ -35,15 +37,19 @@ export function Gallery({ product, img }: { product: Product; img: string }) {
 
   return (
     <div className="flex flex-col-reverse lg:flex-row gap-3">
-      <div className="flex lg:flex-col gap-2.5 overflow-x-auto no-scrollbar">
-        {[0, 1, 2, 3].map(i => (
-          <div key={i} className={`w-16 h-16 lg:w-20 lg:h-20 shrink-0 rounded-xl overflow-hidden bg-graphite cursor-pointer ring-2 transition ${i === 0 ? "ring-accent" : "ring-transparent hover:ring-ink/30"}`}>
-            <Photo src={img} alt={product.name}
-              fallback={<div className="w-full h-full grid place-items-center card-dark"><ProductVisual product={product} size="sm"/></div>}
-              imgClassName="w-full h-full object-cover"/>
-          </div>
-        ))}
-      </div>
+      {imgs.length > 1 && (
+        <div className="flex lg:flex-col gap-2.5 overflow-x-auto no-scrollbar">
+          {imgs.map((src, i) => (
+            <button key={i} onClick={() => { setCurrent(src); setZoom(false); }}
+              aria-label={`${product.name} ${i + 1}`} aria-pressed={current === src}
+              className={`w-16 h-16 lg:w-20 lg:h-20 shrink-0 rounded-xl overflow-hidden bg-graphite cursor-pointer ring-2 transition ${current === src ? "ring-accent" : "ring-transparent hover:ring-ink/30"}`}>
+              <Photo src={src} alt={product.name}
+                fallback={<div className="w-full h-full grid place-items-center card-dark"><ProductVisual product={product} size="sm"/></div>}
+                imgClassName="w-full h-full object-cover"/>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div
         ref={ref}
@@ -61,7 +67,7 @@ export function Gallery({ product, img }: { product: Product; img: string }) {
             transition: "transform 0.25s ease-out",
           }}
         >
-          <Photo src={img} alt={product.name}
+          <Photo src={current} alt={product.name}
             fallback={<div className="absolute inset-0 grid place-items-center card-dark"><ProductVisual product={product} size="lg"/></div>}
             imgClassName="absolute inset-0 w-full h-full object-cover"/>
         </div>

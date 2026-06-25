@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Photo } from "./Photo";
 import { ArrowUpRight } from "./Icons";
+import { useT } from "./LangProvider";
 
 export type Slide = {
   kicker: string;
@@ -15,8 +16,12 @@ export type Slide = {
 
 export function HeroCarousel({ slides }: { slides: Slide[] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const imgRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [active, setActive] = useState(0);
   const paused = useRef(false);
+  const t = useT();
+  const canParallax = useRef(true);
+  useEffect(() => { canParallax.current = !window.matchMedia("(prefers-reduced-motion: reduce)").matches; }, []);
 
   const goTo = (i: number) => {
     const el = ref.current;
@@ -46,8 +51,12 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
     Array.from(el.children).forEach((c, i) => {
       const ch = c as HTMLElement;
       const cc = ch.offsetLeft + ch.offsetWidth / 2;
-      const d = Math.abs(cc - center);
+      const delta = cc - center;
+      const d = Math.abs(delta);
       if (d < bd) { bd = d; best = i; }
+      // Subtle parallax: the image drifts opposite to the slide's offset.
+      const wrap = imgRefs.current[i];
+      if (wrap) wrap.style.transform = `scale(1.12) translateX(${canParallax.current ? delta * -0.04 : 0}px)`;
     });
     setActive(best);
   };
@@ -70,8 +79,10 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
             href={s.href}
             className="snap-center shrink-0 w-[86%] sm:w-[70%] lg:w-full relative overflow-hidden rounded-[1.75rem] card-dark text-white grainy aspect-[16/11] sm:aspect-[5/2]"
           >
-            <Photo src={s.img} alt={`${s.top} ${s.accent}`} fallback={<div className="absolute inset-0"/>}
-              imgClassName="absolute inset-0 w-full h-full object-cover"/>
+            <div ref={el => { imgRefs.current[i] = el; }} className="absolute inset-0 will-change-transform" style={{ transform: "scale(1.12)" }}>
+              <Photo src={s.img} alt={`${s.top} ${s.accent}`} fallback={<div className="absolute inset-0"/>}
+                imgClassName="absolute inset-0 w-full h-full object-cover"/>
+            </div>
             <div className="absolute inset-0 bg-gradient-to-tr from-[#0B0C0D]/92 via-[#0B0C0D]/45 to-transparent"/>
             <div className="absolute -left-16 -top-16 w-56 h-56 rounded-full bg-accent/40 blur-3xl"/>
 
@@ -85,7 +96,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                 </h2>
                 <p className="text-white/70 text-[13px] mt-2 max-w-[260px]">{s.desc}</p>
                 <span className="inline-flex items-center gap-2.5 h-11 pl-5 pr-1.5 mt-5 rounded-pill bg-accent text-white text-[13px] font-semibold uppercase tracking-wide">
-                  Shop now
+                  {t("common.shopNow")}
                   <span className="w-8 h-8 rounded-full bg-white text-ink grid place-items-center"><ArrowUpRight width={14} height={14}/></span>
                 </span>
               </div>
@@ -100,7 +111,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
           <button
             key={i}
             onClick={() => { setActive(i); goTo(i); }}
-            aria-label={`Slide ${i + 1}`}
+            aria-label={`${t("a11y.slide")} ${i + 1}`}
             className={`h-1.5 rounded-pill transition-all ${i === active ? "w-6 bg-accent" : "w-1.5 bg-ink/20"}`}
           />
         ))}

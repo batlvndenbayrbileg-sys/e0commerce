@@ -83,7 +83,7 @@ const en: Dict = {
   "common.quickView": "Quick view", "common.viewDetails": "View details",
   "sg.chest": "Chest", "sg.waist": "Waist", "sg.hip": "Hip",
   "sg.note": "Measurements in cm. Between sizes? Size up for layering.",
-  "a11y.skip": "Skip to content",
+  "a11y.skip": "Skip to content", "a11y.slide": "Slide",
   "cart.viewBag": "View full bag",
   // product page
   "pdp.trustShipping": "Free standard shipping", "pdp.trustReturns": "Free 30-day returns", "pdp.trustWarranty": "1-year warranty",
@@ -202,7 +202,7 @@ const mn: Dict = {
   "common.quickView": "Хурдан үзэх", "common.viewDetails": "Дэлгэрэнгүй үзэх",
   "sg.chest": "Цээж", "sg.waist": "Бэлхүүс", "sg.hip": "Хонго",
   "sg.note": "Хэмжээ см-ээр. Хоёр хэмжээний дунд бол давхарлахад томыг сонго.",
-  "a11y.skip": "Үндсэн хэсэг рүү очих",
+  "a11y.skip": "Үндсэн хэсэг рүү очих", "a11y.slide": "Слайд",
   "cart.viewBag": "Сагсыг бүтнээр нь үзэх",
   // product page
   "pdp.trustShipping": "Үнэгүй энгийн хүргэлт", "pdp.trustReturns": "30 хоногийн үнэгүй буцаалт", "pdp.trustWarranty": "1 жилийн баталгаа",

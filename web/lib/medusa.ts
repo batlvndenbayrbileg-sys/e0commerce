@@ -58,6 +58,10 @@ function map(m: any): Product {
   };
   const variants = (m.variants || []).map((v: any) => ({ id: v.id, size: v.title, stock: variantStock(v) }));
   const stock = variants.reduce((a: number, v: any) => a + v.stock, 0);
+  // Real gallery images: thumbnail first, then any product images (de-duped).
+  const images: string[] = Array.from(new Set(
+    [m.thumbnail, ...((m.images || []).map((x: any) => x?.url))].filter(Boolean)
+  ));
 
   return {
     id: handle,
@@ -81,7 +85,8 @@ function map(m: any): Product {
     specs: e.specs,
     stock,
     accent: e.accent,
-    image: m.thumbnail || m.images?.[0]?.url,
+    image: images[0],
+    images,
     variants,
   };
 }
