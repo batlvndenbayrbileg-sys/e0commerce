@@ -112,8 +112,10 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
             key={i}
             onClick={() => { setActive(i); goTo(i); }}
             aria-label={`${t("a11y.slide")} ${i + 1}`}
-            className={`h-1.5 rounded-pill transition-all ${i === active ? "w-6 bg-accent" : "w-1.5 bg-ink/20"}`}
-          />
+            className="grid place-items-center h-6 px-1"
+          >
+            <span className={`block h-1.5 rounded-pill transition-all ${i === active ? "w-6 bg-accent" : "w-1.5 bg-ink/20"}`}/>
+          </button>
         ))}
       </div>
     </div>

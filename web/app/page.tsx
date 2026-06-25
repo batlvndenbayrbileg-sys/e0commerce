@@ -85,9 +85,9 @@ export default async function HomePage() {
             <div className="relative overflow-hidden rounded-[2rem] bg-accent text-white grid lg:grid-cols-2 items-center min-h-[280px]">
               <div className="absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-white/15 blur-2xl"/>
               <div className="relative z-10 p-8 sm:p-12">
-                <span className="eyebrow text-white/80">{t("home.promoKicker")}</span>
-                <h2 className="h-2 mt-3 text-white">{t("home.promoTitle")}</h2>
-                <p className="text-white/85 mt-3 max-w-[360px]">{t("home.promoDesc")}</p>
+                <span className="eyebrow text-ink/75">{t("home.promoKicker")}</span>
+                <h2 className="h-2 mt-3 text-ink">{t("home.promoTitle")}</h2>
+                <p className="text-ink/80 mt-3 max-w-[360px]">{t("home.promoDesc")}</p>
                 <Link href="/shop?filter=sale" className="btn btn-light mt-6">
                   {t("home.promoCta")}
                   <span className="arrow-cap"><ArrowUpRight width={14} height={14}/></span>
