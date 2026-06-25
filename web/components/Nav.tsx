@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SearchIcon, BagIcon, UserIcon } from "./Icons";
 import { useAuth, useCart } from "@/lib/store";
+import { useT } from "./LangProvider";
+import { LangToggle } from "./LangToggle";
 
 function Bell({ size = 18 }: { size?: number }) {
   return (
@@ -27,6 +29,7 @@ export function Nav() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const count = mounted ? items.reduce((a, b) => a + b.qty, 0) : 0;
+  const t = useT();
 
   const Bag = (
     <Link href="/cart" className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist transition" aria-label="Cart">
@@ -46,28 +49,30 @@ export function Nav() {
         </button>
         <div className="flex-1 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
           <SearchIcon width={16} height={16} className="text-subtle"/>
-          <input className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder="Search here…"/>
+          <input className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
           <button className="text-subtle hover:text-ink" aria-label="Filters"><Sliders size={17}/></button>
         </div>
+        <LangToggle/>
         {Bag}
       </div>
 
       {/* ---------- Desktop bar ---------- */}
       <nav className="hidden lg:flex items-center gap-4 bg-white/85 backdrop-blur rounded-pill pl-6 pr-2 py-2.5 border border-line shadow-soft">
         <div className="flex items-center gap-6">
-          {[["/shop","Shop"],["/shop?gender=Men","Men"],["/shop?gender=Women","Women"],["/shop?filter=new","New"]].map(([h,l]) => (
-            <Link key={l} href={h} className={`text-[12px] uppercase tracking-[.12em] font-medium transition-colors ${pathname===h?"text-ink":"text-muted hover:text-ink"}`}>{l}</Link>
+          {[["/shop","nav.shop"],["/shop?gender=Men","nav.men"],["/shop?gender=Women","nav.women"],["/shop?filter=new","nav.trending"]].map(([h,k]) => (
+            <Link key={k} href={h} className={`text-[12px] uppercase tracking-[.12em] font-medium transition-colors ${pathname===h?"text-ink":"text-muted hover:text-ink"}`}>{t(k)}</Link>
           ))}
         </div>
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-[22px] tracking-[.04em] leading-none">VEXO</Link>
         <div className="flex items-center gap-3 ml-auto">
-          <div className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[240px]">
+          <div className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[220px]">
             <SearchIcon width={16} height={16} className="text-subtle"/>
-            <input className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle" placeholder="Search…"/>
+            <input className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle" placeholder={t("nav.searchShort")}/>
           </div>
+          <LangToggle/>
           {Bag}
           <Link href={user ? "/account" : "/auth"} className="flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:opacity-90 transition">
-            {user ? user.firstName : "Sign in"}
+            {user ? user.firstName : t("nav.signin")}
             <span className="w-8 h-8 rounded-full bg-white/15 grid place-items-center"><UserIcon width={15} height={15}/></span>
           </Link>
         </div>

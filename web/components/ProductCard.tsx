@@ -7,6 +7,7 @@ import { HeartIcon, BagIcon } from "./Icons";
 import { useCart, useWish, useToast } from "@/lib/store";
 import { productImg } from "@/lib/images";
 import { money } from "@/lib/api";
+import { useT } from "./LangProvider";
 import type { Product } from "@/lib/types";
 import { useEffect, useState } from "react";
 
@@ -19,6 +20,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
   useEffect(() => setMounted(true), []);
   const wished = mounted && has(product.id);
   const soldOut = product.stock === 0;
+  const t = useT();
 
   const fallback = (
     <div className="absolute inset-0 grid place-items-center"
@@ -48,7 +50,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
 
         {/* badge */}
         {soldOut ? (
-          <span className="absolute top-3 left-3 z-10 text-[10px] uppercase tracking-[.14em] font-semibold px-2.5 h-6 rounded-pill grid place-items-center bg-ink text-white">Sold out</span>
+          <span className="absolute top-3 left-3 z-10 text-[10px] uppercase tracking-[.14em] font-semibold px-2.5 h-6 rounded-pill grid place-items-center bg-ink text-white">{t("common.soldOut")}</span>
         ) : product.badge && (
           <span className={`absolute top-3 left-3 z-10 text-[10px] uppercase tracking-[.14em] font-semibold px-2.5 h-6 rounded-pill grid place-items-center ${
             product.badge === "New" ? "bg-accent text-white" : "bg-white/90 text-ink"
@@ -75,7 +77,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         {/* add to bag */}
         <button
           disabled={soldOut}
-          onClick={(e) => { e.preventDefault(); if (soldOut) return; add(product); showToast(`${product.name} added to bag`); }}
+          onClick={(e) => { e.preventDefault(); if (soldOut) return; add(product); showToast(`${product.name} · ${t("common.addToBag")}`); }}
           className={`absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full grid place-items-center transition-all ${
             soldOut ? "bg-white/40 text-ink/40 cursor-not-allowed" : "bg-ink text-white hover:bg-accent hover:scale-105"
           }`}

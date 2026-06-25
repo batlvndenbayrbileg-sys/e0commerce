@@ -3,9 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --font-display: "Archivo Black", "Archivo", system-ui, sans-serif;
-  --font-serif: "Archivo", system-ui, sans-serif;
-  --font-body: "Archivo", system-ui, sans-serif;
+  /* Rubik carries Cyrillic (Mongolian); Archivo Black handles Latin headings */
+  --font-display: "Archivo Black", "Rubik", system-ui, sans-serif;
+  --font-serif: "Rubik", system-ui, sans-serif;
+  --font-body: "Rubik", "Archivo", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
