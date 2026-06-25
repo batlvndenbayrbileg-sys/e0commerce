@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { useAuth, useWish, useToast, useOrders, type OrderRecord } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
+import { Skeleton } from "@/components/Skeleton";
 import { api, money } from "@/lib/api";
 import type { Product } from "@/lib/types";
 
@@ -33,12 +34,13 @@ export default function AccountPage() {
   const orders = useOrders(s => s.orders);
   const [tab, setTab] = useState<Tab>("Overview");
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     if (!user) { router.push("/auth"); return; }
-    api.products.list({}).then(r => setAllProducts(r.data)).catch(() => {});
+    api.products.list({}).then(r => setAllProducts(r.data)).catch(() => {}).finally(() => setLoadingProducts(false));
   }, [user, router]);
 
   if (!mounted || !user) return null;
@@ -133,7 +135,11 @@ export default function AccountPage() {
             )}
 
             {tab === "Wishlist" && (
-              wished.length === 0 ? (
+              loadingProducts ? (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {[0, 1, 2, 3].map(i => <Skeleton key={i} className="aspect-[4/5] rounded-[1.4rem]"/>)}
+                </div>
+              ) : wished.length === 0 ? (
                 <Card><Empty msg={t("acc.wishEmpty")} cta/></Card>
               ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

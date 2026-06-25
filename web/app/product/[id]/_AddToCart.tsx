@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useCart, useToast } from "@/lib/store";
+import { useCart, useToast, useUI, flyToCart } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
+import { money } from "@/lib/api";
 import { ArrowUpRight, ArrowRight } from "@/components/Icons";
 import type { Product } from "@/lib/types";
 
@@ -18,6 +19,7 @@ export function AddToCart({ product }: { product: Product }) {
   const t = useT();
   const add = useCart(s => s.add);
   const showToast = useToast(s => s.show);
+  const openCart = useUI(s => s.openCart);
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(product.colors[0]);
   const sizable = product.sizes.length > 1;
@@ -26,14 +28,15 @@ export function AddToCart({ product }: { product: Product }) {
   const sizeStock = (s: string) => product.variants?.find(v => v.size === s)?.stock ?? 9999;
   const soldOut = (product.variants?.length ?? 0) > 0 && product.variants!.every(v => v.stock === 0);
 
-  function handleAdd(then?: () => void) {
+  function handleAdd(src?: HTMLElement | null, then?: () => void) {
     if (soldOut) { showToast(t("common.soldOut")); return; }
     if (sizable && !size) { showToast(t("toast.selectSize")); return; }
     if (size && sizeStock(size) === 0) { showToast(t("toast.sizeSoldOut")); return; }
     const variantId = product.variants?.find(v => v.size === size)?.id ?? product.variants?.[0]?.id;
     add(product, qty, { size, variantId });
-    showToast(`${product.name} ${t("toast.addedToBag")}`);
-    then?.();
+    flyToCart(src, product.accent);
+    // Buy now navigates away; plain add opens the drawer as confirmation.
+    if (then) then(); else openCart();
   }
 
   return (
@@ -84,14 +87,14 @@ export function AddToCart({ product }: { product: Product }) {
       ) : (
         <div className="flex gap-3 mt-6">
           <button
-            onClick={() => handleAdd()}
+            onClick={(e) => handleAdd(e.currentTarget)}
             className="btn btn-dark flex-1 justify-center"
           >
             {t("common.addToBag")}
             <span className="arrow-cap"><ArrowRight width={14} height={14}/></span>
           </button>
           <button
-            onClick={() => handleAdd(() => router.push("/checkout"))}
+            onClick={(e) => handleAdd(e.currentTarget, () => router.push("/checkout"))}
             className="btn flex-1 justify-center bg-white text-ink border border-ink/15 hover:border-ink hover:-translate-y-0.5 transition-all"
           >
             {t("common.buyNow")}
@@ -99,6 +102,24 @@ export function AddToCart({ product }: { product: Product }) {
           </button>
         </div>
       )}
+
+      {/* Sticky add-to-bag bar — mobile only (the tab bar is hidden on the PDP). */}
+      <div
+        className="lg:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-line px-4 py-3 flex items-center gap-3"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)" }}
+      >
+        <div className="min-w-0">
+          <div className="font-display text-[18px] num-tabular leading-none">{money(product.price)}</div>
+          {sizable && !size && <div className="tiny mt-0.5">{t("common.size")}</div>}
+        </div>
+        <button
+          disabled={soldOut}
+          onClick={(e) => handleAdd(e.currentTarget)}
+          className="btn btn-dark flex-1 justify-center disabled:opacity-50"
+        >
+          {soldOut ? t("common.soldOut") : t("common.addToBag")}
+        </button>
+      </div>
     </div>
   );
 }

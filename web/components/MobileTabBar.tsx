@@ -7,6 +7,8 @@ import { useT } from "./LangProvider";
 export function MobileTabBar() {
   const path = usePathname();
   const t = useT();
+  // The PDP shows its own sticky add-to-bag bar in this slot.
+  if (path.startsWith("/product/")) return null;
   const items = [
     { href: "/",         label: t("tab.home"), icon: HomeIcon },
     { href: "/shop",     label: t("tab.shop"), icon: SearchIcon },

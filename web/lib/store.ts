@@ -72,6 +72,53 @@ export const useToast = create<ToastState>(set => ({
   hide: () => set({ msg: null }),
 }));
 
+// Slide-in cart drawer open/close state.
+type UIState = { cartOpen: boolean; openCart: () => void; closeCart: () => void };
+export const useUI = create<UIState>(set => ({
+  cartOpen: false,
+  openCart: () => set({ cartOpen: true }),
+  closeCart: () => set({ cartOpen: false }),
+}));
+
+// "Fly to cart" animation: each add launches a short-lived flight that the
+// global FlyLayer renders from the source element to the cart icon.
+type Flight = { id: number; from: { x: number; y: number }; to: { x: number; y: number }; color: string };
+type FlyState = {
+  flights: Flight[];
+  launch: (from: { x: number; y: number }, to: { x: number; y: number }, color: string) => void;
+  land: (id: number) => void;
+};
+export const useFly = create<FlyState>(set => ({
+  flights: [],
+  launch: (from, to, color) =>
+    set(s => ({ flights: [...s.flights, { id: Date.now() + Math.random(), from, to, color }] })),
+  land: id => set(s => ({ flights: s.flights.filter(f => f.id !== id) })),
+}));
+
+// Find the visible cart icon (mobile or desktop Nav marks it with data-cart-anchor).
+function cartAnchorRect(): DOMRect | null {
+  if (typeof document === "undefined") return null;
+  const els = Array.from(document.querySelectorAll<HTMLElement>("[data-cart-anchor]"));
+  for (const el of els) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0 && el.offsetParent !== null) return r;
+  }
+  return els[0]?.getBoundingClientRect() ?? null;
+}
+
+// Launch a fly animation from a source element to the cart icon. No-op if either is missing.
+export function flyToCart(fromEl: HTMLElement | null | undefined, color: string) {
+  if (!fromEl || typeof window === "undefined") return;
+  const to = cartAnchorRect();
+  if (!to) return;
+  const r = fromEl.getBoundingClientRect();
+  useFly.getState().launch(
+    { x: r.left + r.width / 2, y: r.top + r.height / 2 },
+    { x: to.left + to.width / 2, y: to.top + to.height / 2 },
+    color,
+  );
+}
+
 export type OrderRecord = {
   id: string;
   email: string;

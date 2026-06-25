@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ProductVisual } from "./ProductVisual";
 import { Photo } from "./Photo";
 import { HeartIcon, BagIcon } from "./Icons";
-import { useCart, useWish, useToast } from "@/lib/store";
+import { useCart, useWish, useToast, flyToCart } from "@/lib/store";
 import { productImg } from "@/lib/images";
 import { money } from "@/lib/api";
 import { useT } from "./LangProvider";
@@ -77,7 +77,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         {/* add to bag */}
         <button
           disabled={soldOut}
-          onClick={(e) => { e.preventDefault(); if (soldOut) return; add(product); showToast(`${product.name} · ${t("common.addToBag")}`); }}
+          onClick={(e) => { e.preventDefault(); if (soldOut) return; add(product); flyToCart(e.currentTarget, product.accent); showToast(`${product.name} · ${t("common.addToBag")}`); }}
           className={`absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full grid place-items-center transition-all ${
             soldOut ? "bg-white/40 text-ink/40 cursor-not-allowed" : "bg-ink text-white hover:bg-accent hover:scale-105"
           }`}

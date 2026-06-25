@@ -30,6 +30,15 @@ html, body {
   }
 }
 
+/* Loading shimmer for skeleton placeholders. */
+.skeleton { position: relative; overflow: hidden; background: rgba(14, 15, 16, 0.06); }
+.skeleton::after {
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
 .grainy { position: relative; }
 .grainy::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;

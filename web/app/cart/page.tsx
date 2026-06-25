@@ -8,6 +8,7 @@ import { Photo } from "@/components/Photo";
 import { ArrowRight, TrashIcon } from "@/components/Icons";
 import { useCart } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
+import { Skeleton } from "@/components/Skeleton";
 import { money } from "@/lib/api";
 import { productImg } from "@/lib/images";
 
@@ -42,7 +43,18 @@ export default function CartPage() {
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 mt-6 pb-10">
             <div className="bg-white border border-line rounded-2xl p-2 shadow-soft">
               {!mounted ? (
-                <div className="p-16 text-center text-muted">{t("common.loading")}</div>
+                <div className="p-2">
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="flex gap-3 sm:gap-4 items-center p-3 sm:p-4 border-b border-line last:border-none">
+                      <Skeleton className="w-[78px] h-[78px] sm:w-[92px] sm:h-[92px] shrink-0"/>
+                      <div className="flex-1 space-y-2.5">
+                        <Skeleton className="h-4 w-1/2"/>
+                        <Skeleton className="h-3 w-1/4"/>
+                        <Skeleton className="h-8 w-32 rounded-pill"/>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : items.length === 0 ? (
                 <div className="py-16 px-6 text-center">
                   <h3 className="font-display text-[22px] mb-2">{t("cart.emptyTitle")}</h3>

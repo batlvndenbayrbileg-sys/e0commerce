@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Toast } from "@/components/Toast";
 import { MobileTabBar } from "@/components/MobileTabBar";
+import { CartDrawer } from "@/components/CartDrawer";
+import { FlyLayer } from "@/components/FlyLayer";
 import { LangProvider } from "@/components/LangProvider";
 import { getServerLang } from "@/lib/lang";
 
@@ -26,6 +28,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LangProvider lang={lang}>
           {children}
           <Toast />
+          <CartDrawer />
+          <FlyLayer />
           <MobileTabBar />
         </LangProvider>
       </body>

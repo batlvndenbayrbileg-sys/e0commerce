@@ -2,8 +2,9 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { SearchIcon, BagIcon, UserIcon } from "./Icons";
-import { useAuth, useCart } from "@/lib/store";
+import { useAuth, useCart, useUI } from "@/lib/store";
 import { useT } from "./LangProvider";
 import { LangToggle } from "./LangToggle";
 
@@ -28,6 +29,7 @@ export function Nav() {
   const searchParams = useSearchParams();
   const items = useCart(s => s.items);
   const user = useAuth(s => s.user);
+  const openCart = useUI(s => s.openCart);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const count = mounted ? items.reduce((a, b) => a + b.qty, 0) : 0;
@@ -43,12 +45,19 @@ export function Nav() {
   }
 
   const Bag = (
-    <Link href="/cart" className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist transition" aria-label={t("nav.cart")}>
+    <button onClick={openCart} data-cart-anchor className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist transition" aria-label={t("nav.cart")}>
       <BagIcon width={18} height={18}/>
-      {count > 0 && (
-        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold grid place-items-center border-2 border-white num-tabular">{count}</span>
-      )}
-    </Link>
+      <AnimatePresence>
+        {count > 0 && (
+          <motion.span
+            key={count}
+            initial={{ scale: 0.4 }} animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 500, damping: 14 }}
+            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold grid place-items-center border-2 border-white num-tabular"
+          >{count}</motion.span>
+        )}
+      </AnimatePresence>
+    </button>
   );
 
   return (
