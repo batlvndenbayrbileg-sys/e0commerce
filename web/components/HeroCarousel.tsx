@@ -95,7 +95,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                   {s.top}<br/><span className="text-accent">{s.accent}</span>
                 </h2>
                 <p className="text-white/70 text-[13px] mt-2 max-w-[260px]">{s.desc}</p>
-                <span className="inline-flex items-center gap-2.5 h-11 pl-5 pr-1.5 mt-5 rounded-pill bg-accent text-white text-[13px] font-semibold uppercase tracking-wide">
+                <span className="inline-flex items-center gap-2.5 h-11 pl-5 pr-1.5 mt-5 rounded-pill bg-accent text-ink text-[13px] font-semibold uppercase tracking-wide">
                   {t("common.shopNow")}
                   <span className="w-8 h-8 rounded-full bg-white text-ink grid place-items-center"><ArrowUpRight width={14} height={14}/></span>
                 </span>
