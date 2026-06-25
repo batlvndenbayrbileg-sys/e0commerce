@@ -87,7 +87,7 @@ export function QuickViewModal() {
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             role="dialog" aria-modal="true" aria-label={product.name}
-            className="relative w-[min(820px,96vw)] max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-deep grid sm:grid-cols-2"
+            className="relative w-[min(820px,96vw)] max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-deep grid grid-cols-1 sm:grid-cols-2"
           >
             <button ref={closeRef} onClick={close} aria-label={t("common.close")}
               className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full grid place-items-center bg-white/85 backdrop-blur hover:bg-white shadow-soft text-xl leading-none">×</button>

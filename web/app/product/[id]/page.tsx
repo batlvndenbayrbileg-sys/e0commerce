@@ -29,7 +29,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
             <span className="text-ink uppercase">{product.name}</span>
           </div>
 
-          <section className="grid lg:grid-cols-2 gap-6 lg:gap-12 mt-5">
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 mt-5">
             {/* Gallery */}
             <Gallery product={product} img={img}/>
 

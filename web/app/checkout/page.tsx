@@ -84,7 +84,7 @@ export default function CheckoutPage() {
           <Step n={4} label={t("co.confirm")}/>
         </div>
 
-        <form onSubmit={place} className="grid lg:grid-cols-[1.4fr_1fr] gap-5 lg:gap-8 pb-10">
+        <form onSubmit={place} className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 lg:gap-8 pb-10">
           <div>
             <FormCard title={t("co.contact")}>
               <div className="grid gap-3.5">

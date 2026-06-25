@@ -40,7 +40,7 @@ export default function CartPage() {
             </h1>
           </div>
 
-          <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 mt-6 pb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 mt-6 pb-10">
             <div className="bg-white border border-line rounded-2xl p-2 shadow-soft">
               {!mounted ? (
                 <div className="p-2">

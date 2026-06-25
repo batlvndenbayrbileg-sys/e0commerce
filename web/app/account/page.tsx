@@ -97,7 +97,7 @@ export default function AccountPage() {
           {/* Tab content */}
           <div className="mt-5 mb-10">
             {tab === "Overview" && (
-              <div className="grid lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card title={t("acc.recentOrder")}>
                   {orders.length === 0 ? <Empty msg={t("acc.noOrders")}/> : (
                     <OrderRow o={orders[orders.length - 1]}/>
@@ -150,7 +150,7 @@ export default function AccountPage() {
             )}
 
             {tab === "Addresses" && (
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Card title={t("acc.defaultHome")}>
                   <p className="text-muted leading-relaxed text-sm">{user.firstName} {user.lastName}<br/>140 Performance Ave, Apt 3B<br/>Los Angeles, CA 90012</p>
                   <button onClick={() => showToast(t("toast.editAddress"))} className="btn btn-outline btn-sm mt-4">{t("common.edit")}</button>
@@ -165,7 +165,7 @@ export default function AccountPage() {
 
             {tab === "Settings" && (
               <Card title={t("acc.profileSettings")}>
-                <form onSubmit={(e) => { e.preventDefault(); showToast(t("toast.profileSaved")); }} className="grid sm:grid-cols-2 gap-3">
+                <form onSubmit={(e) => { e.preventDefault(); showToast(t("toast.profileSaved")); }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label={t("co.firstName")} defaultValue={user.firstName}/>
                   <Field label={t("co.lastName")} defaultValue={user.lastName}/>
                   <Field label={t("co.email")} defaultValue={user.email} full type="email"/>

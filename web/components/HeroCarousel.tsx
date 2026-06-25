@@ -77,7 +77,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
           <Link
             key={i}
             href={s.href}
-            className="snap-center shrink-0 w-[86%] sm:w-[70%] lg:w-full relative overflow-hidden rounded-[1.75rem] card-dark text-white grainy aspect-[16/11] sm:aspect-[5/2]"
+            className="snap-center shrink-0 w-full relative overflow-hidden rounded-[1.75rem] card-dark text-white grainy aspect-[16/11] sm:aspect-[5/2]"
           >
             <div ref={el => { imgRefs.current[i] = el; }} className="absolute inset-0 will-change-transform" style={{ transform: "scale(1.12)" }}>
               <Photo src={s.img} alt={`${s.top} ${s.accent}`} fallback={<div className="absolute inset-0"/>}

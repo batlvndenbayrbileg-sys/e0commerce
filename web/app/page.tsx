@@ -82,7 +82,7 @@ export default async function HomePage() {
       <section className="py-16 lg:py-24">
         <div className="container">
           <Reveal>
-            <div className="relative overflow-hidden rounded-[2rem] bg-accent text-white grid lg:grid-cols-2 items-center min-h-[280px]">
+            <div className="relative overflow-hidden rounded-[2rem] bg-accent text-white grid grid-cols-1 lg:grid-cols-2 items-center min-h-[280px]">
               <div className="absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-white/15 blur-2xl"/>
               <div className="relative z-10 p-8 sm:p-12">
                 <span className="eyebrow text-ink/75">{t("home.promoKicker")}</span>
@@ -131,7 +131,7 @@ export default async function HomePage() {
       {/* ===================== NEWSLETTER ===================== */}
       <section className="pb-16 lg:pb-24">
         <div className="container">
-          <div className="relative overflow-hidden bg-ink text-white rounded-[2rem] p-8 sm:p-14 grid lg:grid-cols-2 gap-8 items-center grainy">
+          <div className="relative overflow-hidden bg-ink text-white rounded-[2rem] p-8 sm:p-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center grainy">
             <div className="absolute -right-24 -top-24 w-[420px] h-[420px] rounded-full bg-accent/30 blur-3xl"/>
             <div className="relative z-10">
               <span className="eyebrow text-white/55">{t("home.newsKicker")}</span>

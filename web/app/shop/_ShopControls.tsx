@@ -69,7 +69,7 @@ export function ShopFilters({ colors = [] }: { colors?: string[] }) {
         <svg className="transition-transform group-open:rotate-180" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
       </summary>
 
-      <div className="mt-3 grid sm:grid-cols-3 gap-4 bg-white border border-line rounded-2xl p-5 shadow-soft">
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white border border-line rounded-2xl p-5 shadow-soft">
         {/* Price */}
         <div>
           <div className="text-[12px] font-semibold uppercase tracking-wide text-muted">{t("shop.fPrice")}</div>
