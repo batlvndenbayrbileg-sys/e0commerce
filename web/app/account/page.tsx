@@ -8,6 +8,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { useAuth, useWish, useToast, useOrders, type OrderRecord } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
 import { Skeleton } from "@/components/Skeleton";
+import { CountUp } from "@/components/CountUp";
 import { api, money } from "@/lib/api";
 import type { Product } from "@/lib/types";
 
@@ -74,10 +75,10 @@ export default function AccountPage() {
 
             {/* Stat tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-              <Stat label={t("acc.statOrders")} value={String(orders.length)}/>
-              <Stat label={t("acc.statSpent")} value={money(totalSpent)}/>
-              <Stat label={t("acc.statWishlist")} value={String(wished.length)}/>
-              <Stat label={t("acc.statPoints")} value="1,240"/>
+              <Stat label={t("acc.statOrders")} value={<CountUp value={orders.length}/>}/>
+              <Stat label={t("acc.statSpent")} value={<CountUp value={totalSpent} format={money}/>}/>
+              <Stat label={t("acc.statWishlist")} value={<CountUp value={wished.length}/>}/>
+              <Stat label={t("acc.statPoints")} value={<CountUp value={1240}/>}/>
             </div>
           </div>
 
@@ -187,7 +188,7 @@ export default function AccountPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="bg-surface-2 rounded-2xl p-4">
       <div className="text-[12px] text-muted">{label}</div>

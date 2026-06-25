@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckIcon } from "@/components/Icons";
 import { useT } from "@/components/LangProvider";
+import { CountUp } from "@/components/CountUp";
 
 function Success() {
   const t = useT();
@@ -35,7 +36,7 @@ function Success() {
         <div className="bg-surface-2 rounded-xl p-5 my-7 text-left">
           <div className="flex justify-between mb-1.5"><span className="tiny">{t("ok.orderNo")}</span><span className="font-mono font-semibold">{id ?? "—"}</span></div>
           <div className="flex justify-between mb-1.5"><span className="tiny">{t("ok.eta")}</span><span className="font-medium">{eta}</span></div>
-          <div className="flex justify-between"><span className="tiny">{t("ok.total")}</span><span className="font-medium">{total ? `₮${Number(total).toLocaleString()}` : "—"}</span></div>
+          <div className="flex justify-between"><span className="tiny">{t("ok.total")}</span><span className="font-medium">{total ? <CountUp value={Number(total)} format={(n) => `₮${n.toLocaleString()}`}/> : "—"}</span></div>
         </div>
 
         <div className="flex justify-center gap-2.5">

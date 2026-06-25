@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { ProductVisual } from "@/components/ProductVisual";
-import { Photo } from "@/components/Photo";
 import { api, money } from "@/lib/api";
 import { productImg } from "@/lib/images";
 import { AddToCart } from "./_AddToCart";
 import { Tabs } from "./_Tabs";
+import { Gallery } from "./_Gallery";
+import { Reveal } from "@/app/_components/Reveal";
 import { getServerT } from "@/lib/lang";
 
 export const dynamic = "force-dynamic";
@@ -31,25 +31,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
           <section className="grid lg:grid-cols-2 gap-6 lg:gap-12 mt-5">
             {/* Gallery */}
-            <div className="flex flex-col-reverse lg:flex-row gap-3">
-              <div className="flex lg:flex-col gap-2.5 overflow-x-auto no-scrollbar">
-                {[0,1,2,3].map(i => (
-                  <div key={i} className={`w-16 h-16 lg:w-20 lg:h-20 shrink-0 rounded-xl overflow-hidden bg-graphite cursor-pointer ring-2 transition ${i===0?"ring-accent":"ring-transparent hover:ring-ink/30"}`}>
-                    <Photo src={img} alt={product.name}
-                      fallback={<div className="w-full h-full grid place-items-center card-dark"><ProductVisual product={product} size="sm"/></div>}
-                      imgClassName="w-full h-full object-cover"/>
-                  </div>
-                ))}
-              </div>
-              <div className="flex-1 rounded-[1.5rem] aspect-[4/5] sm:aspect-square overflow-hidden bg-graphite relative">
-                <Photo src={img} alt={product.name}
-                  fallback={<div className="absolute inset-0 grid place-items-center card-dark"><ProductVisual product={product} size="lg"/></div>}
-                  imgClassName="absolute inset-0 w-full h-full object-cover"/>
-                {product.badge && (
-                  <span className={`absolute top-4 left-4 text-[11px] uppercase tracking-[.14em] font-semibold px-3 h-7 rounded-pill grid place-items-center ${product.badge==="New"?"bg-accent text-white":"bg-white text-ink"}`}>{product.badge}</span>
-                )}
-              </div>
-            </div>
+            <Gallery product={product} img={img}/>
 
             {/* Side */}
             <div className="bg-white border border-line rounded-[1.5rem] p-6 sm:p-8 shadow-soft h-fit">
@@ -89,7 +71,9 @@ export default async function ProductPage({ params }: { params: { id: string } }
           <Tabs product={product}/>
 
           <section className="pt-8 pb-10">
-            <h2 className="font-display text-[24px] sm:text-[32px] uppercase tracking-tight mb-5">{t("pdp.youMayLikePre")} <span className="text-accent">{t("pdp.youMayLikeAccent")}</span></h2>
+            <Reveal>
+              <h2 className="font-display text-[24px] sm:text-[32px] uppercase tracking-tight mb-5">{t("pdp.youMayLikePre")} <span className="text-accent">{t("pdp.youMayLikeAccent")}</span></h2>
+            </Reveal>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {related.map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
             </div>

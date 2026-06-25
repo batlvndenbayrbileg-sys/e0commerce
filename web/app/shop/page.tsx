@@ -6,6 +6,7 @@ import { ArrowRight } from "@/components/Icons";
 import { api } from "@/lib/api";
 import { getServerT } from "@/lib/lang";
 import { SortSelect, ShopFilters } from "./_ShopControls";
+import { Reveal } from "@/app/_components/Reveal";
 
 export const dynamic = "force-dynamic";
 
@@ -35,13 +36,15 @@ export default async function ShopPage({
 
           {/* Title */}
           <header className="mt-6 sm:mt-8">
-            <div className="text-[11px] font-mono tracking-wider text-subtle flex items-center gap-2">
-              <Link href="/" className="hover:text-ink uppercase">{t("bc.home")}</Link><span className="opacity-40">/</span>
-              <span className="text-ink uppercase">{t("bc.shop")}</span><span className="opacity-40 mx-1">·</span><span>{total} {t("shop.items")}</span>
-            </div>
-            <h1 className="font-display text-[34px] sm:text-[52px] tracking-tight leading-[.95] uppercase mt-3">
-              {t("shop.titlePre")} <span className="text-accent">{t("shop.titleAccent")}</span>
-            </h1>
+            <Reveal>
+              <div className="text-[11px] font-mono tracking-wider text-subtle flex items-center gap-2">
+                <Link href="/" className="hover:text-ink uppercase">{t("bc.home")}</Link><span className="opacity-40">/</span>
+                <span className="text-ink uppercase">{t("bc.shop")}</span><span className="opacity-40 mx-1">·</span><span>{total} {t("shop.items")}</span>
+              </div>
+              <h1 className="font-display text-[34px] sm:text-[52px] tracking-tight leading-[.95] uppercase mt-3">
+                {t("shop.titlePre")} <span className="text-accent">{t("shop.titleAccent")}</span>
+              </h1>
+            </Reveal>
           </header>
 
           {/* Sticky toolbar: categories + sort */}
