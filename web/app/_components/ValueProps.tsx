@@ -18,7 +18,7 @@ export function ValueProps() {
   const t = getServerT();
   return (
     <section className="mt-9">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
         {ITEMS.map(({ Icon, k, s }) => (
           <div key={k} className="flex items-center gap-3 bg-white border border-line rounded-2xl p-3.5 sm:p-4 shadow-soft">
             <span className="w-10 h-10 rounded-full bg-surface-2 grid place-items-center text-ink shrink-0"><Icon /></span>

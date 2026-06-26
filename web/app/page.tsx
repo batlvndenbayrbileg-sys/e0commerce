@@ -76,7 +76,7 @@ export default async function HomePage() {
               <h2 className="font-display text-[22px] sm:text-[24px] tracking-tight">{t("home.recommended")}</h2>
               <Link href="/shop" className="text-accent text-[13px] font-semibold">{t("common.seeAll")}</Link>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {products.slice(0, 8).map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
             </div>
           </section>

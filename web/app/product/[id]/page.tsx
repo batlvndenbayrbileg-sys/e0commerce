@@ -74,7 +74,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
             <Reveal>
               <h2 className="font-display text-[24px] sm:text-[32px] uppercase tracking-tight mb-5">{t("pdp.youMayLikePre")} <span className="text-accent">{t("pdp.youMayLikeAccent")}</span></h2>
             </Reveal>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {related.map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
             </div>
           </section>
