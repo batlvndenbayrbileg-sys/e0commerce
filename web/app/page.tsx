@@ -9,6 +9,8 @@ import { api } from "@/lib/api";
 import { PRODUCT_IMG, HERO_IMG, FILM_IMG, productImg } from "@/lib/images";
 import { NewsletterForm } from "./_components/NewsletterForm";
 import { Reveal } from "./_components/Reveal";
+import { ValueProps } from "./_components/ValueProps";
+import { Marquee } from "./_components/Marquee";
 import { getServerT } from "@/lib/lang";
 
 export const dynamic = "force-dynamic";
@@ -65,6 +67,9 @@ export default async function HomePage() {
             </div>
           </section>
 
+          {/* ===================== VALUE PROPS ===================== */}
+          <ValueProps />
+
           {/* ===================== RECOMMEND ===================== */}
           <section className="mt-9">
             <div className="flex items-center justify-between mb-4">
@@ -77,6 +82,11 @@ export default async function HomePage() {
           </section>
         </div>
       </div>
+
+      {/* ===================== MARQUEE ===================== */}
+      <section className="py-7 sm:py-9 mt-2 bg-mist border-y border-line">
+        <Marquee items={[t("home.mqA"), "VEXO", t("home.mqB"), "VEXO", t("home.mqC"), "VEXO", t("home.mqD"), "VEXO"]} />
+      </section>
 
       {/* ===================== PROMO BANNER ===================== */}
       <section className="py-16 lg:py-24">
