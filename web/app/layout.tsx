@@ -6,6 +6,7 @@ import { MobileTabBar } from "@/components/MobileTabBar";
 import { CartDrawer } from "@/components/CartDrawer";
 import { QuickViewModal } from "@/components/QuickViewModal";
 import { FlyLayer } from "@/components/FlyLayer";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import { LangProvider } from "@/components/LangProvider";
 import { getServerLang, getServerT } from "@/lib/lang";
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans pb-24 lg:pb-0">
         <a href="#main" className="skip-link">{t("a11y.skip")}</a>
         <LangProvider lang={lang}>
+          <SmoothScroll />
           <main id="main">{children}</main>
           <Toast />
           <CartDrawer />

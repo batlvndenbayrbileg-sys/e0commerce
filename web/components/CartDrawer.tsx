@@ -75,7 +75,7 @@ export function CartDrawer() {
               </div>
             ) : (
               <>
-                <div className="flex-1 overflow-y-auto px-3 py-2">
+                <div data-lenis-prevent className="flex-1 overflow-y-auto px-3 py-2">
                   {items.map(it => (
                     <div key={it.variantId || it.id} className="flex gap-3 items-center p-2.5 border-b border-line last:border-none">
                       <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-graphite">
