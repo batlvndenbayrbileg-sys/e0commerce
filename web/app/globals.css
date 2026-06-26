@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-  /* Rubik carries Cyrillic (Mongolian); Archivo Black handles Latin headings */
-  --font-display: "Archivo Black", "Rubik", system-ui, sans-serif;
-  --font-serif: "Rubik", system-ui, sans-serif;
-  --font-body: "Rubik", "Archivo", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* next/font vars; Rubik carries Cyrillic (Mongolian), Archivo Black handles Latin display */
+  --font-display: var(--font-archivo-black), var(--font-rubik), system-ui, sans-serif;
+  --font-serif: var(--font-rubik), system-ui, sans-serif;
+  --font-body: var(--font-rubik), var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
 html, body {
@@ -124,9 +124,9 @@ textarea:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
   .h-hero    { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 6.4vw, 104px); line-height: .9; letter-spacing: -.02em; }
   /* Renamed from .h-1/.h-2/.h-3 — those collided with Tailwind height utilities
      (h-2 = 0.5rem) which clamped heading height and made text overlap siblings. */
-  .hd-1      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(36px, 5vw, 72px); line-height: .94; letter-spacing: -.015em; }
-  .hd-2      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 3.8vw, 58px); line-height: .98; letter-spacing: -.015em; }
-  .hd-3      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 22px; line-height: 1.05; letter-spacing: -.01em; }
+  .hd-1      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(36px, 5vw, 72px); line-height: .94; letter-spacing: -.015em; text-wrap: balance; }
+  .hd-2      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 3.8vw, 58px); line-height: .98; letter-spacing: -.015em; text-wrap: balance; }
+  .hd-3      { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 22px; line-height: 1.05; letter-spacing: -.01em; text-wrap: balance; }
 
   /* Ghost / outline display text */
   .ghost {

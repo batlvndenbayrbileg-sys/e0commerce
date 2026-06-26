@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Archivo, Archivo_Black, Rubik, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toast } from "@/components/Toast";
 import { MobileTabBar } from "@/components/MobileTabBar";
@@ -13,19 +14,17 @@ export const metadata: Metadata = {
   description: "Performance-driven workout wear engineered for every season — built for summer heat and winter cold.",
 };
 
+// Self-hosted via next/font: no render-blocking external CSS, no FOUT (swap + fallback).
+const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-archivo", display: "swap" });
+const archivoBlack = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo-black", display: "swap" });
+const rubik = Rubik({ subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-rubik", display: "swap" });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jetbrains", display: "swap" });
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = getServerLang();
   const t = getServerT();
   return (
-    <html lang={lang}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Rubik:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang={lang} className={`${archivo.variable} ${archivoBlack.variable} ${rubik.variable} ${mono.variable}`}>
       <body className="font-sans pb-24 lg:pb-0">
         <a href="#main" className="skip-link">{t("a11y.skip")}</a>
         <LangProvider lang={lang}>

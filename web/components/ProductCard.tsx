@@ -45,6 +45,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           src={product.image ?? productImg(product.id)}
           alt={product.name}
           fallback={fallback}
+          sizes="(max-width: 768px) 50vw, 25vw"
           imgClassName="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-elegant group-hover:scale-[1.06]"
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15 ${soldOut ? "backdrop-grayscale" : ""}`}/>

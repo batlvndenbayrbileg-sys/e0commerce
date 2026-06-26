@@ -81,6 +81,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
           >
             <div ref={el => { imgRefs.current[i] = el; }} className="absolute inset-0 will-change-transform" style={{ transform: "scale(1.12)" }}>
               <Photo src={s.img} alt={`${s.top} ${s.accent}`} fallback={<div className="absolute inset-0"/>}
+                priority={i === 0} sizes="100vw"
                 imgClassName="absolute inset-0 w-full h-full object-cover"/>
             </div>
             <div className="absolute inset-0 bg-gradient-to-tr from-[#0B0C0D]/92 via-[#0B0C0D]/45 to-transparent"/>
