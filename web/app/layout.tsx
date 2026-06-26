@@ -26,6 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const t = getServerT();
   return (
     <html lang={lang} className={`${archivo.variable} ${archivoBlack.variable} ${rubik.variable} ${mono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+      </head>
       <body className="font-sans pb-24 lg:pb-0">
         <a href="#main" className="skip-link">{t("a11y.skip")}</a>
         <LangProvider lang={lang}>
