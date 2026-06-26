@@ -97,7 +97,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
         {/* info — clean editorial row below the image */}
         <div className="flex items-start justify-between gap-2 mt-2.5 px-0.5">
           <div className="min-w-0">
-            <h3 className="font-semibold text-[13px] sm:text-[14px] text-ink truncate leading-tight group-hover:text-accent-deep transition-colors">{product.name}</h3>
+            <div className="font-semibold text-[13px] sm:text-[14px] text-ink truncate leading-tight group-hover:text-accent-deep transition-colors">{product.name}</div>
             <p className="tiny truncate mt-0.5">{t(`cat.${product.category}`)}</p>
           </div>
           <div className="text-right shrink-0">
