@@ -8,7 +8,7 @@
 - **Storefront:** Next.js 14 (App Router) → Vercel — https://e0commerce-web.vercel.app
 - **Backend:** Medusa v2 → Railway (Postgres 16 + Redis 7)
 - **Repo:** https://github.com/batlvndenbayrbileg-sys/e0commerce — branch `main`
-- **Сүүлийн commit:** `a7fb8a7` — Lighthouse a11y = 100 (Home/Shop/PDP)
+- **Сүүлийн commit:** `8d387c0` — Design elevation (Phase 0–5): perf, motion, card v2
 - **Төлбөр:** Wire Payment (QPay + Монгол банкны апп), одоогоор MOCK горим
 - **Имэйл:** Resend (mock/deployed), **Үнэ:** MNT (₮), USD→MNT = 3450
 - **Inventory:** Medusa-д track хийгддэг, "Дууссан" badge ажилладаг
@@ -31,6 +31,23 @@
 | **Lighthouse a11y → 100** | Headless Lighthouse-аар Home/Shop/PDP бүгд **100**: badge/CTA/tab/promo-д ink текст (accent+цагаан 2.86:1 унадаг байсан), `subtle`→#5C6166, select/link/lang aria, carousel цэгийн 24px target, үнэ accent-deep | `1c803cf`→`a7fb8a7` |
 
 > ⚠️ **Брэндийн өөрчлөлт:** accent (улбар #FF6A1A) дээрх **бүх текст одоо бараан (ink)** — btn-primary, badge, идэвхтэй tab, promo banner, hero "Shop now". Учир нь цагаан-улбар = 2.86:1 (AA унана), бараан-улбар = ~6.9:1. Хэрэв цагаан CTA текст заавал хэрэгтэй бол accent-ийг гүн болгох (#B5470A орчим) хэрэгтэй болно.
+
+### 🎨 Дизайн өргөтгөл (Phase 0–5, senior designer pass)
+| Юу | Commit |
+|---|---|
+| **Clean studio палитр** (neutral near-white, улбар ганц accent) | `aaeca70` |
+| **next/font** (self-host, FOUT арилгах) + `Photo` responsive Unsplash srcset + hero priority | `706d966` |
+| **Trust value-props зурвас** (`ValueProps`) + **brand marquee** | `20cb8a1` |
+| **Lenis гөлгөр скролл** (`SmoothScroll`, overlay+reduced-motion aware) | `897362c` |
+| **Product card v2** — нэр/ангилал/үнэ зургийн доор (clean editorial) | `8d387c0` |
+| **Perf засвар:** page-transition нь LCP-г нуудаг байсныг зассан (6.0→3.8s) | `166b95b` |
+
+**Хэмжсэн:** Lighthouse mobile — Performance **87**, LCP **3.8s**, CLS **0**, A11Y **100** (Home/Shop/PDP).
+
+> ⚠️ **Build gotcha 3:** breakpoint grid (`grid lg:grid-cols-2`) нь мобайлд **`grid-cols-1`** суурьгүй бол `auto` track контентоор ургаж хэвтээ overflow үүсгэдэг. Шинэ grid бүрд `grid grid-cols-1 lg:grid-cols-*` бич.
+> ⚠️ **Build gotcha 4:** `app/template.tsx` page-transition нь `initial={{opacity:0}}`-г SSR-д гаргавал LCP-г нуудаг — эхний paint-д харагдуулж, зөвхөн навигацид fade хий (одоогийн код ингэсэн).
+
+**Үлдсэн polish:** nav scroll-condense (shop/account-ийн sticky toolbar-тай зөрчилддөг тул болгоомжтой), PDP-г илүү editorial, LCP<2.5s болгох (hero-д `next/image`/preload).
 
 ### Шинэ дэд бүтэц (дараагийн хүн мэдэх ёстой)
 - **i18n:** `web/lib/i18n.ts` (толь, EN+MN), `web/lib/lang.ts` (server `getServerT`), `web/components/LangProvider.tsx` (client `useT`).
