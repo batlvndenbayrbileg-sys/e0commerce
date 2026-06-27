@@ -125,7 +125,7 @@ export default function AuthPage() {
                 autoComplete={isReg ? "new-password" : "current-password"}
                 value={form.password} onChange={update("password")} error={errors.password}
                 right={
-                  <button type="button" onClick={() => setShowPw(v => !v)} aria-label={showPw ? t("auth.hidePw") : t("auth.showPw")} className="text-subtle hover:text-ink transition-colors">
+                  <button type="button" onClick={() => setShowPw(v => !v)} aria-label={showPw ? t("auth.hidePw") : t("auth.showPw")} className="grid place-items-center w-9 h-9 -mr-1.5 rounded-full text-subtle hover:text-ink hover:bg-surface-2 transition-colors">
                     {showPw ? <EyeOffIcon width={18} height={18}/> : <EyeIcon width={18} height={18}/>}
                   </button>
                 }
@@ -141,9 +141,9 @@ export default function AuthPage() {
             </div>
 
             {!isReg && (
-              <div className="flex justify-between items-center mt-4 mb-4">
-                <label className="text-[13px] flex items-center gap-2 text-muted"><input type="checkbox" className="accent-ink"/> {t("auth.remember")}</label>
-                <button type="button" onClick={() => showToast(t("auth.forgotSoon"))} className="tiny underline hover:text-ink">{t("auth.forgot")}</button>
+              <div className="flex justify-between items-center mt-3 mb-3">
+                <label className="text-[13px] flex items-center gap-2 text-muted py-1.5 cursor-pointer"><input type="checkbox" className="accent-ink w-[18px] h-[18px]"/> {t("auth.remember")}</label>
+                <button type="button" onClick={() => showToast(t("auth.forgotSoon"))} className="tiny underline hover:text-ink py-1.5 px-0.5">{t("auth.forgot")}</button>
               </div>
             )}
 
