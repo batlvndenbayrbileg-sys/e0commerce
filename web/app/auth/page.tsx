@@ -82,8 +82,8 @@ export default function AuthPage() {
   const strengthColor = ["#9aa0a6", "#ef4444", "#f59e0b", "#16a34a"][score];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(165deg, #6E54EC 0%, #5230CC 100%)" }}>
-      <div className="w-full max-w-[480px] mx-auto flex-1 flex flex-col">
+    <div className="min-h-screen flex flex-col lg:justify-center lg:py-10" style={{ background: "linear-gradient(165deg, #6E54EC 0%, #5230CC 100%)" }}>
+      <div className="w-full max-w-[480px] mx-auto flex-1 flex flex-col lg:flex-none lg:rounded-[2.5rem] lg:overflow-hidden lg:shadow-[0_30px_80px_rgba(30,12,70,.4)]">
         {/* Purple header */}
         <header className="px-6 pt-10 sm:pt-12 pb-7 text-white shrink-0">
           <div className="flex items-center justify-between mb-9">
@@ -102,7 +102,7 @@ export default function AuthPage() {
         </header>
 
         {/* White sheet */}
-        <div className="flex-1 bg-white rounded-t-[2.25rem] px-7 pt-9 pb-10 shadow-[0_-12px_40px_rgba(40,20,90,.18)]">
+        <div className="flex-1 lg:flex-none bg-white rounded-t-[2.25rem] lg:rounded-none px-7 pt-9 pb-10 shadow-[0_-12px_40px_rgba(40,20,90,.18)] lg:shadow-none">
           <h1 className="text-center font-display text-[26px] tracking-tight">{isReg ? t("auth.getStartedFree") : t("auth.welcomeBack")}</h1>
           <p className="text-center text-muted text-[14px] mt-1.5">{isReg ? t("auth.freeForever") : t("auth.enterDetails")}</p>
 
@@ -160,7 +160,7 @@ export default function AuthPage() {
                 <GoogleLogo/> {t("auth.google")}
               </button>
               <button type="button" className="h-[52px] rounded-2xl border border-line bg-white hover:bg-surface-2 inline-flex items-center justify-center gap-2.5 text-[14px] font-medium transition">
-                <FacebookLogo/> {t("auth.apple")}
+                <FacebookLogo/> {t("auth.facebook")}
               </button>
             </div>
 
@@ -185,7 +185,7 @@ function FloatingField({ label, error, right, labelRight, name, ...props }: {
         <div className="flex items-center">
           <input id={name} name={name} {...props}
             aria-invalid={!!error} aria-describedby={error ? `${name}-err` : undefined}
-            className="flex-1 min-w-0 bg-transparent outline-none border-0 p-0 text-[15px] text-ink placeholder:text-subtle"/>
+            className="flex-1 min-w-0 bg-transparent outline-none focus-visible:outline-none border-0 p-0 text-[15px] text-ink placeholder:text-subtle"/>
           {right}
         </div>
       </div>

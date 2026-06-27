@@ -129,7 +129,7 @@ const en: Dict = {
   "auth.brandTag": "Gear up. Every season.",
   "auth.perk1": "Early access to every drop", "auth.perk2": "Free shipping & 30-day returns", "auth.perk3": "Members-only deals",
   "auth.enterDetails": "Enter your details below", "auth.getStartedFree": "Get started free.",
-  "auth.freeForever": "Free forever. No card needed.", "auth.yourName": "Your name", "auth.getStarted": "Get Started",
+  "auth.freeForever": "Free forever. No card needed.", "auth.yourName": "Your name", "auth.getStarted": "Get Started", "auth.facebook": "Facebook",
   // account
   "acc.goldMember": "Gold member", "acc.pts": "pts", "acc.loyalty": "Loyalty",
   "acc.loyaltyA": "You're", "acc.loyaltyPoints": "760 points", "acc.loyaltyB": "from Platinum. Every purchase earns points.",
@@ -260,7 +260,7 @@ const mn: Dict = {
   "auth.brandTag": "Бэлэн бай. Улирал бүрт.",
   "auth.perk1": "Шинэ бараанд эрт хандах", "auth.perk2": "Үнэгүй хүргэлт, 30 хоног буцаалт", "auth.perk3": "Зөвхөн гишүүдийн хямдрал",
   "auth.enterDetails": "Доорх мэдээллээ оруулна уу", "auth.getStartedFree": "Үнэгүй эхэл.",
-  "auth.freeForever": "Үргэлж үнэгүй. Карт хэрэггүй.", "auth.yourName": "Таны нэр", "auth.getStarted": "Эхлэх",
+  "auth.freeForever": "Үргэлж үнэгүй. Карт хэрэггүй.", "auth.yourName": "Таны нэр", "auth.getStarted": "Эхлэх", "auth.facebook": "Facebook",
   // account
   "acc.goldMember": "Алтан гишүүн", "acc.pts": "оноо", "acc.loyalty": "Урамшуулал",
   "acc.loyaltyA": "Та", "acc.loyaltyPoints": "760 оноо", "acc.loyaltyB": "Платинумаас хоцорч байна. Худалдан авалт бүр оноо нэмнэ.",
