@@ -35,3 +35,9 @@ export const LockIcon = (p: SVGProps<SVGSVGElement>) => (
 export const ChevronLeft = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base} {...p}><path d="m15 18-6-6 6-6"/></svg>
 );
+export const EyeIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+);
+export const EyeOffIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base} {...p}><path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.1 3.9M6.6 6.6A18.5 18.5 0 0 0 2 11s3.5 7 10 7a10.8 10.8 0 0 0 4.2-.8"/><path d="M3 3l18 18"/><path d="M9.6 9.6A3 3 0 0 0 14.4 14.4"/></svg>
+);

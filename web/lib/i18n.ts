@@ -123,6 +123,11 @@ const en: Dict = {
   // auth
   "auth.invalidEmail": "Enter a valid email", "auth.min8": "At least 8 characters",
   "auth.demo": "Demo account:", "auth.welcomeName": "Welcome", "auth.google": "Google", "auth.apple": "Apple",
+  "auth.showPw": "Show password", "auth.hidePw": "Hide password",
+  "auth.pwStrength": "Password strength", "auth.pwWeak": "Weak", "auth.pwFair": "Fair", "auth.pwStrong": "Strong",
+  "auth.forgotSoon": "Password reset is coming soon.",
+  "auth.brandTag": "Gear up. Every season.",
+  "auth.perk1": "Early access to every drop", "auth.perk2": "Free shipping & 30-day returns", "auth.perk3": "Members-only deals",
   // account
   "acc.goldMember": "Gold member", "acc.pts": "pts", "acc.loyalty": "Loyalty",
   "acc.loyaltyA": "You're", "acc.loyaltyPoints": "760 points", "acc.loyaltyB": "from Platinum. Every purchase earns points.",
@@ -247,6 +252,11 @@ const mn: Dict = {
   // auth
   "auth.invalidEmail": "Зөв имэйл оруулна уу", "auth.min8": "Дор хаяж 8 тэмдэгт",
   "auth.demo": "Туршилтын бүртгэл:", "auth.welcomeName": "Тавтай морил", "auth.google": "Google", "auth.apple": "Apple",
+  "auth.showPw": "Нууц үг харах", "auth.hidePw": "Нууц үг нуух",
+  "auth.pwStrength": "Нууц үгийн хүч", "auth.pwWeak": "Сул", "auth.pwFair": "Дунд", "auth.pwStrong": "Хүчтэй",
+  "auth.forgotSoon": "Нууц үг сэргээх удахгүй нэмэгдэнэ.",
+  "auth.brandTag": "Бэлэн бай. Улирал бүрт.",
+  "auth.perk1": "Шинэ бараанд эрт хандах", "auth.perk2": "Үнэгүй хүргэлт, 30 хоног буцаалт", "auth.perk3": "Зөвхөн гишүүдийн хямдрал",
   // account
   "acc.goldMember": "Алтан гишүүн", "acc.pts": "оноо", "acc.loyalty": "Урамшуулал",
   "acc.loyaltyA": "Та", "acc.loyaltyPoints": "760 оноо", "acc.loyaltyB": "Платинумаас хоцорч байна. Худалдан авалт бүр оноо нэмнэ.",
