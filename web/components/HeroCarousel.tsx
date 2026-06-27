@@ -84,7 +84,8 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                 priority={i === 0} sizes="100vw"
                 imgClassName="absolute inset-0 w-full h-full object-cover"/>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#0B0C0D]/92 via-[#0B0C0D]/45 to-transparent"/>
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#0B0C0D]/92 via-[#0B0C0D]/55 to-[#0B0C0D]/10"/>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C0D]/70 via-transparent to-transparent"/>
             <div className="absolute -left-16 -top-16 w-56 h-56 rounded-full bg-accent/40 blur-3xl"/>
 
             <div className="relative z-10 h-full flex flex-col justify-between p-6 sm:p-9">

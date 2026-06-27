@@ -11,8 +11,15 @@ import { LangProvider } from "@/components/LangProvider";
 import { getServerLang, getServerT } from "@/lib/lang";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://e0commerce-web.vercel.app"),
   title: "VEXO — Gear Up Every Season.",
   description: "Performance-driven workout wear engineered for every season — built for summer heat and winter cold.",
+  openGraph: {
+    title: "VEXO — Gear Up Every Season.",
+    description: "Performance-driven workout wear engineered for every season.",
+    type: "website",
+    siteName: "VEXO",
+  },
 };
 
 // Self-hosted via next/font: no render-blocking external CSS, no FOUT (swap + fallback).
