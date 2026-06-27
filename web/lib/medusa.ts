@@ -8,10 +8,17 @@ const REGION = process.env.NEXT_PUBLIC_MEDUSA_REGION || "reg_01KVYG28Y7T54Y110SX
 const FIELDS = "id,title,handle,description,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
 const H = { "content-type": "application/json", "x-publishable-api-key": PK };
 
-async function mfetch(path: string) {
-  const res = await fetch(`${URL}/store/${path}`, { headers: H, cache: "no-store" });
-  if (!res.ok) throw new Error(`Medusa ${res.status}`);
-  return res.json();
+async function mfetch(path: string, retries = 1): Promise<any> {
+  try {
+    const res = await fetch(`${URL}/store/${path}`, { headers: H, cache: "no-store" });
+    if (!res.ok) throw new Error(`Medusa ${res.status}`);
+    return res.json();
+  } catch (e) {
+    // Retry once — smooths over transient backend hiccups / cold starts so a
+    // single slow request doesn't 500 the whole page.
+    if (retries > 0) { await new Promise(r => setTimeout(r, 350)); return mfetch(path, retries - 1); }
+    throw e;
+  }
 }
 const mpost = async (path: string, body: any) => {
   const res = await fetch(`${URL}/store/${path}`, { method: "POST", headers: H, body: JSON.stringify(body) });
