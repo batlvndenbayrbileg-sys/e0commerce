@@ -72,9 +72,26 @@ if (R2_ENDPOINT && R2_BUCKET) {
   })
 }
 
+// Redis-backed infra for the server/worker split (production only). Locally
+// (NODE_ENV !== production) Medusa uses its in-memory event bus + workflow
+// engine, so dev boots without Redis even if REDIS_URL is set in .env.
+const REDIS_URL = process.env.REDIS_URL
+const useRedis = process.env.NODE_ENV === 'production' && !!REDIS_URL
+if (useRedis) {
+  modules.push(
+    { resolve: '@medusajs/event-bus-redis', options: { redisUrl: REDIS_URL } },
+    { resolve: '@medusajs/workflow-engine-redis', options: { redis: { url: REDIS_URL } } },
+    { resolve: '@medusajs/cache-redis', options: { redisUrl: REDIS_URL, ttl: 30 } },
+  )
+}
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    redisUrl: useRedis ? REDIS_URL : undefined,
+    // shared (default) | server (HTTP only) | worker (background jobs only).
+    // For a large store: one `server` + one `worker` container sharing Redis.
+    workerMode: (process.env.MEDUSA_WORKER_MODE as 'shared' | 'server' | 'worker') || 'shared',
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,

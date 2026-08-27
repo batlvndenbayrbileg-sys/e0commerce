@@ -53,6 +53,7 @@ services:
       - meilidata:/meili_data
     networks: [naran]
 
+  # HTTP server (admin + store/API). Runs DB migrations on start (Dockerfile CMD).
   medusa:
     build:
       context: ../medusa-backend/apps/backend
@@ -61,7 +62,11 @@ services:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
       meilisearch: { condition: service_started }
-    environment:
+    environment: &medusa-env
+      NODE_ENV: production
+      # Redis-backed event bus + workflow engine are enabled in production so the
+      # server and worker share events/jobs.
+      MEDUSA_WORKER_MODE: server
       DATABASE_URL: postgres://${POSTGRES_USER:-naran}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-naran}
       REDIS_URL: redis://redis:6379
       MEILISEARCH_HOST: http://meilisearch:7700
@@ -81,6 +86,23 @@ services:
       S3_REGION: ${S3_REGION:-auto}
     expose:
       - "9000"
+    networks: [naran]
+
+  # Background worker (subscribers, scheduled jobs — MeiliSearch indexing, emails).
+  # Same image; reuses the server's env but MEDUSA_WORKER_MODE=worker. Skips
+  # migrations (the server runs them) and waits briefly for them to finish.
+  medusa-worker:
+    build:
+      context: ../medusa-backend/apps/backend
+    <<: *restart
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      medusa: { condition: service_started }
+    environment:
+      <<: *medusa-env
+      MEDUSA_WORKER_MODE: worker
+    command: ["sh", "-c", "sleep 25 && cd .medusa/server && npm run start"]
     networks: [naran]
 
   api:

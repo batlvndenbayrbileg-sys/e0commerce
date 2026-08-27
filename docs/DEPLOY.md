@@ -163,8 +163,13 @@ curl -s -X POST http://meilisearch:7700/indexes/products/search \
   Meili (`meilidata`) болон R2/зураг мөн backup-д хамруул.
 - **Шинэчлэлт**: Git-д push → Dokploy → Redeploy. Medusa migration автоматаар ажиллана.
 - **Лог**: Dokploy → сервис → Logs.
-- **Хэмжээ**: 10k бараа + Meili-д 4GB RAM хангалттай; ачаалал ихсвэл VPS-ээ өсгө
-  эсвэл Medusa-г server/worker горимд салга.
+- **Хэмжээ / server-worker split**: compose нь Medusa-г **хоёр контейнер**-аар
+  ажиллуулна — `medusa` (HTTP, `MEDUSA_WORKER_MODE=server`) + `medusa-worker`
+  (арын ажил: Meili индекс, имэйл, scheduled job — `MEDUSA_WORKER_MODE=worker`).
+  Production-д (`NODE_ENV=production` + `REDIS_URL`) event bus, workflow engine,
+  cache нь **Redis**-ээр ажиллаж, хоёр контейнер event/job хуваалцана. Локал
+  dev-д (development) in-memory хэвээр — Redis шаардахгүй. Ачаалал ихсвэл `medusa`
+  контейнерийг олшруулж (replica) Traefik-ээр балансал, эсвэл VPS-ээ өсгө.
 
 ---
 
