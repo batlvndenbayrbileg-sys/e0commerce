@@ -1,0 +1,134 @@
+import { ExecArgs } from "@medusajs/framework/types";
+import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { createProductsWorkflow } from "@medusajs/medusa/core-flows";
+import * as fs from "fs";
+
+/**
+ * Bulk product importer — built to ingest a large catalog (10,000+ products).
+ *
+ *   IMPORT_FILE=./data/catalog.csv  npx medusa exec ./src/scripts/import-products.ts
+ *   PURGE_PREFIX=bulk-              npx medusa exec ./src/scripts/import-products.ts   # delete imported test data
+ *
+ * CSV columns (header row required):
+ *   handle,title,price,category,sizes,image,description
+ *   - price: integer MNT (₮)
+ *   - sizes: pipe-separated (e.g. "50ml|100ml"); blank → "Нэг хэмжээ"
+ *   - image: URL or /products/x.avif; blank allowed
+ */
+
+const BATCH = 100; // products created per workflow call
+
+// Minimal RFC-4180-ish CSV parser (handles quoted fields, commas, "" escapes).
+function parseCsv(text: string): Record<string, string>[] {
+  const rows: string[][] = [];
+  let field = "", row: string[] = [], inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
+      else field += c;
+    } else if (c === '"') inQ = true;
+    else if (c === ",") { row.push(field); field = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.length > 1 || row[0] !== "") rows.push(row);
+      row = [];
+    } else field += c;
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  if (!rows.length) return [];
+  const header = rows[0].map(h => h.trim());
+  return rows.slice(1).map(r => Object.fromEntries(header.map((h, i) => [h, (r[i] ?? "").trim()])));
+}
+
+export default async function importProducts({ container }: ExecArgs) {
+  const logger = container.resolve("logger");
+  const productModule = container.resolve(Modules.PRODUCT);
+  const salesChannelModule = container.resolve(Modules.SALES_CHANNEL);
+  const fulfillmentModule = container.resolve(Modules.FULFILLMENT);
+  const link = container.resolve(ContainerRegistrationKeys.LINK);
+
+  // ---- Purge mode: remove previously imported rows by handle prefix ----
+  const purge = process.env.PURGE_PREFIX;
+  if (purge) {
+    let removed = 0;
+    // Delete matches from the front repeatedly until a full pass finds none
+    // (deleting shifts pagination, so never advance a skip offset here).
+    for (;;) {
+      const page = await productModule.listProducts({}, { take: 1000, skip: 0, select: ["id", "handle"] as any });
+      const match = page.filter(p => p.handle?.startsWith(purge));
+      if (!match.length) break;
+      await productModule.deleteProducts(match.map(p => p.id));
+      removed += match.length;
+    }
+    logger.info(`Purged ${removed} products with handle prefix "${purge}".`);
+    return;
+  }
+
+  // ---- Import mode ----
+  const file = process.env.IMPORT_FILE;
+  if (!file) throw new Error("Set IMPORT_FILE=<path to .csv> (or PURGE_PREFIX=<prefix> to delete).");
+  if (!fs.existsSync(file)) throw new Error(`File not found: ${file}`);
+
+  const [channel] = await salesChannelModule.listSalesChannels({ name: "Default Sales Channel" });
+  const [profile] = await fulfillmentModule.listShippingProfiles({});
+  if (!channel || !profile) throw new Error("Missing default sales channel or shipping profile");
+
+  const rows = parseCsv(fs.readFileSync(file, "utf8")).filter(r => r.handle && r.title);
+  logger.info(`Parsed ${rows.length} rows from ${file}.`);
+
+  // Skip handles that already exist (idempotent re-runs).
+  const existing = new Set<string>();
+  for (let o = 0; ; o += 1000) {
+    const page = await productModule.listProducts({}, { take: 1000, skip: o, select: ["handle"] as any });
+    page.forEach(p => p.handle && existing.add(p.handle));
+    if (page.length < 1000) break;
+  }
+  const toImport = rows.filter(r => !existing.has(r.handle));
+  logger.info(`${toImport.length} new products to import (${rows.length - toImport.length} already present).`);
+
+  const t0 = Date.now();
+  let created = 0;
+  for (let i = 0; i < toImport.length; i += BATCH) {
+    const chunk = toImport.slice(i, i + BATCH);
+    const products = chunk.map(r => {
+      const price = Math.max(0, Math.round(Number(r.price) || 0));
+      const sizes = (r.sizes ? r.sizes.split("|").map(s => s.trim()).filter(Boolean) : []);
+      const values = sizes.length ? sizes : ["Нэг хэмжээ"];
+      const img = r.image || undefined;
+      return {
+        title: r.title,
+        handle: r.handle,
+        description: r.description || "",
+        status: "published" as const,
+        ...(img ? { thumbnail: img, images: [{ url: img }] } : {}),
+        shipping_profile_id: profile.id,
+        options: [{ title: "Хэмжээ", values }],
+        variants: values.map(s => ({
+          title: s,
+          sku: `${r.handle}-${s}`.toLowerCase().replace(/\s+/g, "-"),
+          manage_inventory: false,
+          options: { "Хэмжээ": s },
+          prices: [{ amount: price, currency_code: "mnt" }],
+        })),
+        sales_channels: [{ id: channel.id }],
+      };
+    });
+
+    const { result } = await createProductsWorkflow(container).run({ input: { products } });
+    // Ensure sales-channel link (workflow usually does this, belt-and-braces).
+    for (const p of result as any[]) {
+      try { await link.create({ [Modules.PRODUCT]: { product_id: p.id }, [Modules.SALES_CHANNEL]: { sales_channel_id: channel.id } }); } catch { /* linked */ }
+    }
+    created += chunk.length;
+    if (created % 500 === 0 || created === toImport.length) {
+      const rate = Math.round(created / ((Date.now() - t0) / 1000));
+      logger.info(`Imported ${created}/${toImport.length} (${rate}/s)…`);
+    }
+  }
+
+  const total = await productModule.listProducts({}, { take: 1 });
+  void total;
+  logger.info(`Done. Imported ${created} products in ${Math.round((Date.now() - t0) / 1000)}s.`);
+}

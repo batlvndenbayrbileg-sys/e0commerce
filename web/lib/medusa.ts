@@ -141,17 +141,22 @@ function map(m: any): Product {
   };
 }
 
-async function fetchAll(): Promise<Product[]> {
-  const q = new URLSearchParams({ limit: "100", region_id: REGION, fields: FIELDS });
-  const { products } = await mfetch(`products?${q.toString()}`);
-  return (products || []).map(map);
+// Server-side product fetch. Passing `q` runs Medusa's full-text search, which
+// scales to large catalogs (10,000+) — the storefront never loads everything.
+async function fetchProducts(opts: { q?: string; limit?: number; offset?: number } = {}): Promise<{ products: Product[]; total: number }> {
+  const p = new URLSearchParams({ limit: String(opts.limit ?? 100), offset: String(opts.offset ?? 0), region_id: REGION, fields: FIELDS });
+  if (opts.q) p.set("q", opts.q);
+  const res = await mfetch(`products?${p.toString()}`);
+  return { products: (res.products || []).map(map), total: res.count ?? (res.products?.length ?? 0) };
 }
+const fetchAll = async (): Promise<Product[]> => (await fetchProducts()).products;
 
 export const medusa = {
   products: {
     list: async (params: Record<string, string | undefined> = {}) => {
-      let list = await fetchAll();
       const { category, q, sort, gender, filter, color, tech, minPrice, maxPrice } = params;
+      // Free-text search hits Medusa server-side (scales to 10k+); browse loads the page set.
+      let list = (await fetchProducts({ q: q || undefined })).products;
       if (category && category !== "all") list = list.filter(p => p.category === category);
       // A gender page also shows Unisex pieces.
       if (gender) list = list.filter(p => p.gender === gender || p.gender === "Unisex");
@@ -162,7 +167,7 @@ export const medusa = {
       const min = Number(minPrice), max = Number(maxPrice);
       if (minPrice && !isNaN(min)) list = list.filter(p => p.price >= min);
       if (maxPrice && !isNaN(max)) list = list.filter(p => p.price <= max);
-      if (q) { const n = q.toLowerCase(); list = list.filter(p => p.name.toLowerCase().includes(n) || p.shortDesc.toLowerCase().includes(n)); }
+      // (free-text `q` already applied server-side)
       switch (sort) {
         case "price-asc": list.sort((a, b) => a.price - b.price); break;
         case "price-desc": list.sort((a, b) => b.price - a.price); break;
