@@ -4,6 +4,29 @@
 
 ---
 
+## 🔧 2026-08-24 — Локал орчин сэргээсэн (Docker-гүй)
+
+- **Шалтгаан:** Railway дээрх Medusa backend болон Vercel storefront хоёулаа **500** буцааж
+  байсан; локалд ч Medusa (:9000) асаагүй — Docker Desktop 4.79 нь
+  `%LOCALAPPDATA%/Docker/run/dockerInference` хуучин socket-оос болж crash хийж байв.
+- **Шийдэл:** машинд суусан PostgreSQL 18-ийн binary-аар `.localdb/` дотор тусдаа
+  cluster (порт **5433**) үүсгэж, migrate + бүх seed-ийг ажиллуулсан. Дэлгэрэнгүй:
+  [LOCAL_DEV.md](./LOCAL_DEV.md).
+- **Кодын алдаа:** `seed-vexo.ts` нь Medusa 2.17-д байхгүй `sales_channel_ids` талбар
+  дамжуулдаг байсан тул 12 бараа sales channel-д холбогдоогүй → Store API 0 бараа
+  буцааж, storefront унаж байсан. `sales_channels: [{ id }]` болгож зассан + байгаа
+  бараануудыг дахин холбодог idempotent алхам нэмсэн.
+- **Env:** шинэ DB тул `NEXT_PUBLIC_MEDUSA_PK` / `NEXT_PUBLIC_MEDUSA_REGION` шинэчлэгдсэн
+  (`web/.env.local`, `api/.env`). Хуучин утга код дотор fallback болж үлдсэнийг мөн зассан.
+- **Frontend warning 2:** `Photo.tsx` `fetchpriority` → `fetchPriority` (React DOM warning),
+  `app/template.tsx` module flag-ийг render дотор өөрчилдөг байсныг `useState`+`useEffect`
+  болгосон (StrictMode-ийн 2 дахь render → hydration mismatch).
+- **Шалгасан:** Home/Shop/PDP/Cart/Checkout/Auth/Account = 200, console цэвэр,
+  `npm run build` (web+api) цэвэр, бүрэн checkout урсгал (Wire MOCK) → **NT-1, ₮144,900**,
+  бүртгэл/нэвтрэлт (Medusa customer auth) ажиллаж байна.
+
+---
+
 ## 🟢 Одоогийн төлөв (бүгд live)
 - **Storefront:** Next.js 14 (App Router) → Vercel — https://e0commerce-web.vercel.app
 - **Backend:** Medusa v2 → Railway (Postgres 16 + Redis 7)

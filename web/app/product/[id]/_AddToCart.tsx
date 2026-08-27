@@ -5,15 +5,7 @@ import { useCart, useToast, useUI, flyToCart } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { ArrowUpRight, ArrowRight } from "@/components/Icons";
-import { SizeGuideModal } from "@/components/SizeGuideModal";
 import type { Product } from "@/lib/types";
-
-const COLOR_NAMES: Record<string, string> = {
-  "#1A1A1A": "Black", "#3A3B3F": "Graphite", "#2A3142": "Navy", "#5A5246": "Khaki",
-  "#7A6E62": "Taupe", "#EDEAE2": "Bone", "#C9B7A4": "Sand", "#4A4636": "Olive",
-  "#5A5246FF": "Khaki",
-};
-const colorName = (hex: string) => COLOR_NAMES[hex.toUpperCase()] ?? COLOR_NAMES[hex] ?? "Colour";
 
 export function AddToCart({ product }: { product: Product }) {
   const router = useRouter();
@@ -22,8 +14,6 @@ export function AddToCart({ product }: { product: Product }) {
   const showToast = useToast(s => s.show);
   const openCart = useUI(s => s.openCart);
   const [qty, setQty] = useState(1);
-  const [color, setColor] = useState(product.colors[0]);
-  const [guideOpen, setGuideOpen] = useState(false);
   const sizable = product.sizes.length > 1;
   const [size, setSize] = useState(sizable ? "" : product.sizes[0]);
 
@@ -43,21 +33,8 @@ export function AddToCart({ product }: { product: Product }) {
 
   return (
     <div className="mt-2">
-      <Group label={t("common.colour")} sub={colorName(color)}>
-        <div className="flex gap-2.5">
-          {product.colors.map(c => (
-            <button key={c}
-              onClick={() => setColor(c)}
-              className="w-9 h-9 rounded-full border-[3px] border-white"
-              style={{ background: c, boxShadow: color === c ? "0 0 0 2px #0A0A0B" : "0 0 0 1px rgba(10,10,11,.08)" }}
-              aria-label={colorName(c)}
-            />
-          ))}
-        </div>
-      </Group>
-
       {sizable && (
-        <Group label={t("common.size")} action={<button type="button" onClick={() => setGuideOpen(true)} className="text-subtle font-normal underline hover:text-ink">{t("common.sizeGuide")}</button>}>
+        <Group label={t("pdp.option")}>
           <div className="flex flex-wrap gap-2">
             {product.sizes.map(s => {
               const out = sizeStock(s) === 0;
@@ -122,8 +99,6 @@ export function AddToCart({ product }: { product: Product }) {
           {soldOut ? t("common.soldOut") : t("common.addToBag")}
         </button>
       </div>
-
-      <SizeGuideModal open={guideOpen} onClose={() => setGuideOpen(false)}/>
     </div>
   );
 }

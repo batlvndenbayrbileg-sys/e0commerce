@@ -16,13 +16,12 @@ import { getServerT } from "@/lib/lang";
 export const dynamic = "force-dynamic";
 
 const CATS = [
-  { key: "cat.all",          href: "/shop",                       img: HERO_IMG },
-  { key: "nav.men",          href: "/shop?gender=Men",            img: PRODUCT_IMG.p1 },
-  { key: "nav.women",        href: "/shop?gender=Women",          img: PRODUCT_IMG.p7 },
-  { key: "cat.Outerwear",    href: "/shop?category=Outerwear",    img: PRODUCT_IMG.p5 },
-  { key: "cat.Tops",         href: "/shop?category=Tops",         img: PRODUCT_IMG.p2 },
-  { key: "cat.Bottoms",      href: "/shop?category=Bottoms",      img: PRODUCT_IMG.p3 },
-  { key: "cat.Accessories",  href: "/shop?category=Accessories",  img: PRODUCT_IMG.p9 },
+  { key: "cat.all",        href: "/shop",                     img: HERO_IMG },
+  { key: "cat.Fragrance",  href: "/shop?category=Fragrance",  img: PRODUCT_IMG.p1 },
+  { key: "cat.Skincare",   href: "/shop?category=Skincare",   img: PRODUCT_IMG.p4 },
+  { key: "cat.Makeup",     href: "/shop?category=Makeup",     img: PRODUCT_IMG.p6 },
+  { key: "cat.Body",       href: "/shop?category=Body",       img: PRODUCT_IMG.p3 },
+  { key: "cat.Gift",       href: "/shop?category=Gift",       img: PRODUCT_IMG.p5 },
 ];
 
 export default async function HomePage() {
@@ -32,8 +31,8 @@ export default async function HomePage() {
 
   const slides: Slide[] = [
     { kicker: t("home.s1Kicker"), top: t("home.s1Top"), accent: t("home.s1Accent"), desc: t("home.s1Desc"), img: FILM_IMG, href: "/shop" },
-    { kicker: t("home.s2Kicker"), top: t("home.s2Top"), accent: t("home.s2Accent"), desc: t("home.s2Desc"), img: PRODUCT_IMG.p5, href: "/shop?category=Outerwear" },
-    { kicker: t("home.s3Kicker"), top: t("home.s3Top"), accent: t("home.s3Accent"), desc: t("home.s3Desc"), img: PRODUCT_IMG.p2, href: "/shop?filter=new" },
+    { kicker: t("home.s2Kicker"), top: t("home.s2Top"), accent: t("home.s2Accent"), desc: t("home.s2Desc"), img: PRODUCT_IMG.p4, href: "/shop?category=Skincare" },
+    { kicker: t("home.s3Kicker"), top: t("home.s3Top"), accent: t("home.s3Accent"), desc: t("home.s3Desc"), img: PRODUCT_IMG.p6, href: "/shop?category=Makeup" },
   ];
 
   return (
@@ -85,7 +84,7 @@ export default async function HomePage() {
 
       {/* ===================== MARQUEE ===================== */}
       <section className="py-7 sm:py-9 mt-2 bg-mist border-y border-line">
-        <Marquee items={[t("home.mqA"), "VEXO", t("home.mqB"), "VEXO", t("home.mqC"), "VEXO", t("home.mqD"), "VEXO"]} />
+        <Marquee items={[t("home.mqA"), "NARAN", t("home.mqB"), "NARAN", t("home.mqC"), "NARAN", t("home.mqD"), "NARAN"]} />
       </section>
 
       {/* ===================== PROMO BANNER ===================== */}

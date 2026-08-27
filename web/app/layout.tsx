@@ -12,13 +12,13 @@ import { getServerLang, getServerT } from "@/lib/lang";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://e0commerce-web.vercel.app"),
-  title: "VEXO — Gear Up Every Season.",
-  description: "Performance-driven workout wear engineered for every season — built for summer heat and winter cold.",
+  title: "NARAN — Гоо сайхан, нэг дороос",
+  description: "Дээд зэрэглэлийн үнэртэй ус, арьс арчилгаа, гоо сайхны бараа — нэг дороос. QPay-ээр төлж, хурдан хүргүүлээрэй.",
   openGraph: {
-    title: "VEXO — Gear Up Every Season.",
-    description: "Performance-driven workout wear engineered for every season.",
+    title: "NARAN — Гоо сайхан, нэг дороос",
+    description: "Дээд зэрэглэлийн үнэртэй ус, арьс арчилгаа, гоо сайхны бараа — нэг дороос.",
     type: "website",
-    siteName: "VEXO",
+    siteName: "NARAN",
   },
 };
 

@@ -28,7 +28,7 @@ export function Photo({
   const [failed, setFailed] = useState(false);
   if (!src || failed) return <>{fallback}</>;
   const srcSet = buildSrcSet(src);
-  const extra: Record<string, string> = priority ? { fetchpriority: "high" } : {};
+  const extra: Record<string, string> = priority ? { fetchPriority: "high" } : {};
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img

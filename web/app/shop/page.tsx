@@ -10,7 +10,7 @@ import { Reveal } from "@/app/_components/Reveal";
 
 export const dynamic = "force-dynamic";
 
-const cats = ["all", "Outerwear", "Tops", "Bottoms", "Base Layers", "Accessories"];
+const cats = ["all", "Fragrance", "Skincare", "Makeup", "Body", "Gift"];
 
 export default async function ShopPage({
   searchParams,

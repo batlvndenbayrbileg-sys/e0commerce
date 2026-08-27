@@ -10,7 +10,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   return (
     <div className="min-h-screen grid place-items-center p-6 mesh-light text-center">
       <div className="max-w-[440px]">
-        <div className="font-display text-[22px] tracking-[.04em]">VEXO</div>
+        <div className="font-display text-[22px] tracking-[.04em]">NARAN</div>
         <h1 className="hd-2 !text-[26px] mt-6">Уучлаарай / Something went wrong</h1>
         <p className="text-muted mt-3">Түр зуурын алдаа гарлаа. Дахин оролдоно уу.<br/>A temporary error occurred — please try again.</p>
         <div className="flex flex-wrap gap-2.5 justify-center mt-6">

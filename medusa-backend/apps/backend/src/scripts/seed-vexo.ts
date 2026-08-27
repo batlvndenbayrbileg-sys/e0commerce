@@ -1,5 +1,5 @@
 import { ExecArgs } from "@medusajs/framework/types";
-import { Modules } from "@medusajs/framework/utils";
+import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { createProductsWorkflow } from "@medusajs/medusa/core-flows";
 
 const IMG = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=900&q=80`;
@@ -44,7 +44,11 @@ export default async function seedVexo({ container }: ExecArgs) {
   const existing = await productModule.listProducts({ handle: CATALOG.map(c => c.handle) });
   const existingHandles = new Set(existing.map(p => p.handle));
   const toCreate = CATALOG.filter(c => !existingHandles.has(c.handle));
-  if (!toCreate.length) { logger.info("VEXO catalog already seeded"); return; }
+  if (!toCreate.length) {
+    logger.info("VEXO catalog already seeded");
+    await linkToChannel(container, channel.id, existing.map(p => p.id), logger);
+    return;
+  }
 
   await createProductsWorkflow(container).run({
     input: {
@@ -64,10 +68,31 @@ export default async function seedVexo({ container }: ExecArgs) {
           options: { Size: s },
           prices: [{ amount: p.price, currency_code: "usd" }],
         })),
-        sales_channel_ids: [channel.id],
+        sales_channels: [{ id: channel.id }],
       })),
     },
   });
 
   logger.info(`Seeded ${toCreate.length} VEXO products`);
+
+  // A product is only visible through the Store API when it is linked to the sales
+  // channel the publishable key points at — re-check every catalog product.
+  const all = await productModule.listProducts({ handle: CATALOG.map(c => c.handle) });
+  await linkToChannel(container, channel.id, all.map(p => p.id), logger);
+}
+
+// Idempotent product <-> sales-channel link (create() throws when it already exists).
+async function linkToChannel(container: any, salesChannelId: string, productIds: string[], logger: any) {
+  const link = container.resolve(ContainerRegistrationKeys.LINK);
+  let created = 0;
+  for (const product_id of productIds) {
+    try {
+      await link.create({
+        [Modules.PRODUCT]: { product_id },
+        [Modules.SALES_CHANNEL]: { sales_channel_id: salesChannelId },
+      });
+      created++;
+    } catch { /* already linked */ }
+  }
+  logger.info(`Sales-channel links: ${created} created, ${productIds.length - created} already present`);
 }

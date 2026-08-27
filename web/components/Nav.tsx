@@ -97,11 +97,11 @@ export function Nav() {
       {/* ---------- Desktop bar ---------- */}
       <nav className="hidden lg:flex items-center gap-4 bg-white/85 backdrop-blur rounded-pill pl-6 pr-2 py-2.5 border border-line shadow-soft">
         <div className="flex items-center gap-6">
-          {[["/shop","nav.shop"],["/shop?gender=Men","nav.men"],["/shop?gender=Women","nav.women"],["/shop?filter=new","nav.trending"]].map(([h,k]) => (
+          {[["/shop","nav.shop"],["/shop?category=Fragrance","cat.Fragrance"],["/shop?category=Skincare","cat.Skincare"],["/shop?category=Makeup","cat.Makeup"]].map(([h,k]) => (
             <Link key={k} href={h} className={`text-[12px] uppercase tracking-[.12em] font-medium transition-colors ${pathname===h?"text-ink":"text-muted hover:text-ink"}`}>{t(k)}</Link>
           ))}
         </div>
-        <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-[22px] tracking-[.04em] leading-none">VEXO</Link>
+        <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-[22px] tracking-[.04em] leading-none">NARAN</Link>
         <div className="flex items-center gap-3 ml-auto">
           <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[220px]">
             <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>

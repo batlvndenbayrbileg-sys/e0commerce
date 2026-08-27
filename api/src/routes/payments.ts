@@ -7,7 +7,7 @@ import {
 import { sendOrderConfirmation } from "../lib/email.js";
 
 const MEDUSA_URL = process.env.MEDUSA_URL || "http://localhost:9000";
-const MEDUSA_PK = process.env.MEDUSA_PK || "pk_6352a937fd8593d7cff1b41f32d7dd564df486a1b789b75533bed1abd3cf5271";
+const MEDUSA_PK = process.env.MEDUSA_PK || "pk_e1804f58f4011bb9e1dafab18baff34de60dd2be69bd20f6c7cd75e14780208d";
 
 type OrderItem = { title: string; quantity: number; amount: number };
 type Record = {

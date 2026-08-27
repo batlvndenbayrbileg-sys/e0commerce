@@ -52,7 +52,7 @@ function Processing() {
   return (
     <div className="min-h-screen grid place-items-center p-6 mesh-light">
       <div className="bg-white rounded-3xl p-10 max-w-[460px] w-full border border-line shadow-lift text-center">
-        <span className="font-display text-[22px] tracking-[.04em]">VEXO</span>
+        <span className="font-display text-[22px] tracking-[.04em]">NARAN</span>
         {!error ? (
           <>
             <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full border-4 border-surface-3 border-t-accent animate-spin"/>

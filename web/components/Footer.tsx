@@ -13,7 +13,7 @@ export function Footer() {
           <div className="grid lg:grid-cols-[1.6fr_1fr] gap-10 items-end">
             <div>
               <span className="eyebrow text-white/40">Performance · Worldwide</span>
-              <h2 className="h-mega gradient-text-light mt-6">VEXO</h2>
+              <h2 className="h-mega gradient-text-light mt-6">NARAN</h2>
             </div>
             <p className="text-white/55 text-[17px] leading-relaxed max-w-[380px]">
               {t("foot.tagline")}
@@ -26,15 +26,15 @@ export function Footer() {
           <div className="col-span-2">
             <h5 className="text-[12px] uppercase tracking-[.2em] text-white/55 font-semibold mb-5">{t("foot.flagship")}</h5>
             <p className="text-sm text-white/80 leading-relaxed">
-              140 Performance Ave<br/>
-              Los Angeles, CA 90012<br/>
-              United States
+              Сүхбаатарын талбай<br/>
+              Улаанбаатар хот<br/>
+              Монгол Улс
             </p>
-            <p className="text-sm text-white/55 mt-4">support@vexo.gear</p>
+            <p className="text-sm text-white/55 mt-4">support@naran.mn</p>
           </div>
-          <FootCol title={t("foot.shop")} links={[["/shop?category=Outerwear",t("cat.Outerwear")],["/shop?category=Tops",t("cat.Tops")],["/shop?category=Bottoms",t("cat.Bottoms")],["/shop?category=Accessories",t("cat.Accessories")]]}/>
-          <FootCol title={t("foot.support")} links={[["#","Contact"],["#","Shipping"],["#","Returns"],["#",t("common.sizeGuide")]]}/>
-          <FootCol title={t("foot.brand")} links={[["#","About"],["#","Athletes"],["#","Stores"],["#","Journal"]]}/>
+          <FootCol title={t("foot.shop")} links={[["/shop?category=Fragrance",t("cat.Fragrance")],["/shop?category=Skincare",t("cat.Skincare")],["/shop?category=Makeup",t("cat.Makeup")],["/shop?category=Gift",t("cat.Gift")]]}/>
+          <FootCol title={t("foot.support")} links={[["#","Contact"],["#","Shipping"],["#","Returns"],["/product/edp-bloom","FAQ"]]}/>
+          <FootCol title={t("foot.brand")} links={[["#","About"],["#","Brands"],["#","Stores"],["#","Journal"]]}/>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4 pt-8 text-[13px] text-white/45">

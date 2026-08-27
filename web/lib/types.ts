@@ -1,7 +1,7 @@
-export type Category = "Outerwear" | "Tops" | "Bottoms" | "Base Layers" | "Accessories";
+export type Category = "Fragrance" | "Skincare" | "Makeup" | "Body" | "Gift";
 export type Shape =
-  | "jacket" | "hoodie" | "tank" | "tee" | "longsleeve"
-  | "joggers" | "shorts" | "leggings" | "cap" | "bag";
+  | "perfume" | "serum" | "cream" | "cleanser" | "lipstick"
+  | "foundation" | "mascara" | "lotion" | "showergel" | "giftset";
 
 export type Product = {
   id: string;

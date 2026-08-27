@@ -98,7 +98,7 @@ export default function AuthPage() {
               </button>
             </div>
           </div>
-          <div className="text-center font-display text-[30px] tracking-[.04em]">VEXO</div>
+          <div className="text-center font-display text-[30px] tracking-[.04em]">NARAN</div>
         </header>
 
         {/* White sheet */}

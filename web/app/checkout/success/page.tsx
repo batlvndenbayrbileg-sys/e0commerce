@@ -23,7 +23,7 @@ function Success() {
     >
       <div className="bg-white rounded-3xl p-10 max-w-[560px] w-full border border-border shadow-lift text-center">
         <Link href="/" className="flex items-center justify-center font-display text-[22px] tracking-[.04em]">
-          VEXO
+          NARAN
         </Link>
 
         <div className="my-8 mx-auto w-[88px] h-[88px] rounded-full bg-ink grid place-items-center animate-pop">

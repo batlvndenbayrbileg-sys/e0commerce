@@ -2,8 +2,8 @@ import type { Product, User } from "./types";
 import { ENRICH, DEFAULT_ENRICH } from "./enrich";
 
 const URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000";
-const PK = process.env.NEXT_PUBLIC_MEDUSA_PK || "pk_6352a937fd8593d7cff1b41f32d7dd564df486a1b789b75533bed1abd3cf5271";
-const REGION = process.env.NEXT_PUBLIC_MEDUSA_REGION || "reg_01KVYG28Y7T54Y110SXWV6CTAX";
+const PK = process.env.NEXT_PUBLIC_MEDUSA_PK || "pk_e1804f58f4011bb9e1dafab18baff34de60dd2be69bd20f6c7cd75e14780208d";
+const REGION = process.env.NEXT_PUBLIC_MEDUSA_REGION || "reg_01M0T6Q2HE0A9R8MHXTXDR3P29";
 
 const FIELDS = "id,title,handle,description,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
 const H = { "content-type": "application/json", "x-publishable-api-key": PK };
@@ -54,7 +54,9 @@ function map(m: any): Product {
     .map((v: any) => v?.calculated_price?.calculated_amount)
     .filter((n: any) => typeof n === "number");
   const price = prices.length ? Math.round(Math.min(...prices)) : 0;
-  const sizeOpt = (m.options || []).find((o: any) => o.title?.toLowerCase() === "size");
+  // Variant option: match common titles, else fall back to the first option that has values.
+  const sizeOpt = (m.options || []).find((o: any) => ["size", "хэмжээ", "хувилбар", "өнгө"].includes(o.title?.toLowerCase()))
+    || (m.options || []).find((o: any) => (o.values?.length ?? 0) > 0);
   const sizes = sizeOpt?.values?.map((v: any) => v.value) ?? ["One size"];
   const description = m.description || "";
 
