@@ -22,12 +22,50 @@ export default function CheckoutPage() {
   const [shipMethod, setShipMethod] = useState<"standard" | "express">("standard");
   const [busy, setBusy] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Coupon state
+  const [promoInput, setPromoInput] = useState("");
+  const [promoCode, setPromoCode] = useState<string | null>(null);
+  const [promo, setPromo] = useState<{ discountTotal: number; shippingTotal: number; total: number } | null>(null);
+  const [promoBusy, setPromoBusy] = useState(false);
+  const [promoErr, setPromoErr] = useState("");
   useEffect(() => { setMounted(true); if (user?.email) setEmail(e => e || user.email); }, [user]);
 
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
   const shipping = shipMethod === "express" ? 62100 : 0; // Standard free, Express ₮62,100
   const tax = 0;
-  const total = subtotal + shipping + tax;
+  // Effective totals — Medusa's numbers when a coupon is applied, else local.
+  // Shipping is shown at its base rate; the coupon's effect (incl. free shipping)
+  // is reflected in the discount line, so subtotal + shipping − discount = total.
+  const discount = promo ? promo.discountTotal : 0;
+  const total = promo ? promo.total : subtotal + shipping + tax;
+
+  const lineItemsFor = () => items.filter(i => i.variantId).map(i => ({ variantId: i.variantId!, quantity: i.qty }));
+
+  async function applyPromo(code: string) {
+    const c = code.trim();
+    if (!c) return;
+    const li = lineItemsFor();
+    if (li.length === 0) { setPromoErr(t("toast.readd")); return; }
+    setPromoBusy(true); setPromoErr("");
+    try {
+      const res = await medusa.previewPromo({ items: li, shippingMethod: shipMethod, promoCode: c });
+      if (!res.valid) { setPromo(null); setPromoCode(null); setPromoErr(t("co.promoInvalid")); return; }
+      setPromo({ discountTotal: res.discountTotal, shippingTotal: res.shippingTotal, total: res.total });
+      setPromoCode(res.code);
+    } catch { setPromoErr(t("co.promoInvalid")); }
+    finally { setPromoBusy(false); }
+  }
+  function clearPromo() { setPromo(null); setPromoCode(null); setPromoInput(""); setPromoErr(""); }
+  // Re-price the coupon if the shipping method changes (FREESHIP etc.).
+  useEffect(() => {
+    if (!promoCode) return;
+    let cancelled = false;
+    medusa.previewPromo({ items: lineItemsFor(), shippingMethod: shipMethod, promoCode: promoCode })
+      .then(res => { if (!cancelled && res.valid) setPromo({ discountTotal: res.discountTotal, shippingTotal: res.shippingTotal, total: res.total }); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shipMethod]);
 
   async function place(e: React.FormEvent) {
     e.preventDefault();
@@ -49,7 +87,7 @@ export default function CheckoutPage() {
     setBusy(true);
     try {
       // 1. Build the Medusa cart (not completed yet)
-      const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingMethod: shipMethod, address, token: token ?? undefined });
+      const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingMethod: shipMethod, address, token: token ?? undefined, promoCode: promoCode ?? undefined });
       // 2. Start a Wire payment (QPay / bank apps)
       const intent = await wire.createIntent({ cartId, amount: cartTotal, email, shippingMethod: shipMethod });
       // 3a. Live → redirect to Wire hosted checkout; 3b. mock → our processing page polls
@@ -148,7 +186,37 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
+            {/* Coupon */}
+            <div className="mb-3.5">
+              {!promoCode ? (
+                <>
+                  <div className="flex gap-2">
+                    <input
+                      value={promoInput}
+                      onChange={e => { setPromoInput(e.target.value); setPromoErr(""); }}
+                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); applyPromo(promoInput); } }}
+                      placeholder={t("co.promoPlaceholder")}
+                      className="flex-1 min-w-0 uppercase tracking-wide"
+                      aria-label={t("co.promoTitle")}
+                    />
+                    <button type="button" onClick={() => applyPromo(promoInput)} disabled={promoBusy || !promoInput.trim()}
+                      className="btn btn-ghost px-4 whitespace-nowrap disabled:opacity-50">
+                      {promoBusy ? "…" : t("co.promoApply")}
+                    </button>
+                  </div>
+                  {promoErr && <div className="text-[12px] text-red-600 mt-1.5">{promoErr}</div>}
+                </>
+              ) : (
+                <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-green-50 border border-green-200">
+                  <span className="text-[13px] font-semibold text-green-700 flex items-center gap-1.5">
+                    <CheckIcon width={13} height={13}/> {promoCode} {t("co.promoApplied")}
+                  </span>
+                  <button type="button" onClick={clearPromo} className="text-[12px] text-muted hover:text-ink underline">{t("co.promoRemove")}</button>
+                </div>
+              )}
+            </div>
             <Row k={t("cart.subtotal")} v={money(subtotal)}/>
+            {discount > 0 && <Row k={t("co.discount")} v={`− ${money(discount)}`}/>}
             <Row k={t("cart.shipping")} v={shipping === 0 ? t("common.free") : money(shipping)}/>
             <Row k={t("cart.tax")} v={money(tax)}/>
             <div className="flex justify-between border-t border-border pt-4.5 mt-3 text-[18px] font-semibold">

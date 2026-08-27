@@ -57,6 +57,8 @@ const en: Dict = {
   "co.payWire": "Pay with Wire", "co.starting": "Starting payment…",
   "co.terms": "By placing this order you agree to our Terms & Privacy.",
   "co.order": "Order", "co.secure": "256-bit SSL · PCI compliant",
+  "co.promoTitle": "Discount code", "co.promoPlaceholder": "Promo code", "co.promoApply": "Apply",
+  "co.promoApplied": "applied", "co.promoRemove": "Remove", "co.promoInvalid": "Invalid or expired code", "co.discount": "Discount",
   // processing / success
   "proc.title": "Confirming payment", "proc.desc": "Approve the request in QPay or your bank app. This page updates automatically.",
   "proc.waiting": "Waiting for Wire confirmation…",
@@ -193,6 +195,8 @@ const mn: Dict = {
   "co.payWire": "Wire-ээр төлөх", "co.starting": "Төлбөр эхлүүлж байна…",
   "co.terms": "Захиалга өгснөөр та Үйлчилгээний нөхцөл, Нууцлалыг зөвшөөрнө.",
   "co.order": "Захиалга", "co.secure": "256-bit SSL · PCI стандарт",
+  "co.promoTitle": "Хямдралын код", "co.promoPlaceholder": "Промо код", "co.promoApply": "Идэвхжүүлэх",
+  "co.promoApplied": "идэвхжлээ", "co.promoRemove": "Хасах", "co.promoInvalid": "Код буруу эсвэл хүчингүй", "co.discount": "Хямдрал",
   "proc.title": "Төлбөр баталгаажуулж байна", "proc.desc": "QPay эсвэл банкны аппаасаа хүсэлтийг зөвшөөрнө үү. Энэ хуудас автоматаар шинэчлэгдэнэ.",
   "proc.waiting": "Wire-ийн баталгаажуулалтыг хүлээж байна…",
   "ok.title": "Захиалга баталгаажлаа", "ok.desc": "Баталгаажуулах имэйл илгээгдлээ. Таны бараа савлагдаж байна — 24 цагийн дотор хяналтын мэдээлэл ирнэ.",

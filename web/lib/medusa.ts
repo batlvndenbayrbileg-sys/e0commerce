@@ -307,6 +307,7 @@ export const medusa = {
     shippingMethod?: "standard" | "express";
     address: { first_name: string; last_name: string; address_1: string; city: string; postal_code: string; country_code: string; phone?: string };
     token?: string; // logged-in customer → link the order to their account
+    promoCode?: string; // optional coupon applied before payment
   }) => {
     const { cart } = await mpostAuth("carts", {
       region_id: REGION,
@@ -323,10 +324,49 @@ export const medusa = {
     const opt = shipping_options.find((o: any) => (wantExpress ? /express/i : /standard/i).test(o.name)) || shipping_options[0];
     if (!opt) throw new Error("No shipping option available");
     await mpost(`carts/${cart.id}/shipping-methods`, { option_id: opt.id });
+    // Apply coupon after shipping so both item- and shipping-target promos compute.
+    if (input.promoCode) {
+      try { await mpost(`carts/${cart.id}/promotions`, { promo_codes: [input.promoCode] }); } catch { /* invalid code → ignore, charge full */ }
+    }
     const { payment_collection } = await mpost("payment-collections", { cart_id: cart.id });
     await mpost(`payment-collections/${payment_collection.id}/payment-sessions`, { provider_id: "pp_system_default" });
     const updated = await mfetch(`carts/${cart.id}`);
     return { cartId: cart.id, total: Math.round(updated.cart?.total ?? cart.total ?? 0) };
+  },
+
+  // Validate a coupon and preview the discount on a throwaway cart. Medusa is
+  // authoritative here and again at prepareCart, so the preview matches the charge.
+  previewPromo: async (input: {
+    items: { variantId: string; quantity: number }[];
+    shippingMethod?: "standard" | "express";
+    promoCode: string;
+  }) => {
+    const code = input.promoCode.trim();
+    const { cart } = await mpost("carts", {
+      region_id: REGION,
+      items: input.items.map(i => ({ variant_id: i.variantId, quantity: i.quantity })),
+    });
+    // Minimal MN address + shipping method so FREESHIP-style promos can compute.
+    await mpost(`carts/${cart.id}`, {
+      shipping_address: { first_name: "Preview", last_name: "", address_1: "-", city: "Ulaanbaatar", postal_code: "14200", country_code: "mn" },
+    });
+    try {
+      const { shipping_options } = await mfetch(`shipping-options?cart_id=${cart.id}`);
+      const wantExpress = input.shippingMethod === "express";
+      const opt = shipping_options.find((o: any) => (wantExpress ? /express/i : /standard/i).test(o.name)) || shipping_options[0];
+      if (opt) await mpost(`carts/${cart.id}/shipping-methods`, { option_id: opt.id });
+    } catch { /* shipping optional for preview */ }
+    const res = await mpost(`carts/${cart.id}/promotions`, { promo_codes: [code] });
+    const c = res.cart || {};
+    const valid = (c.promotions || []).some((p: any) => (p.code || "").toUpperCase() === code.toUpperCase());
+    return {
+      valid,
+      code: code.toUpperCase(),
+      discountTotal: Math.round(c.discount_total ?? 0),
+      shippingTotal: Math.round(c.shipping_total ?? 0),
+      itemTotal: Math.round(c.item_total ?? 0),
+      total: Math.round(c.total ?? 0),
+    };
   },
 
   // Full Medusa cart → order flow (system payment provider, no Stripe yet — P3)
