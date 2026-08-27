@@ -10,6 +10,9 @@ const HANDLE_TO_CATEGORY: Record<string, Category> = {
 const URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000";
 const PK = process.env.NEXT_PUBLIC_MEDUSA_PK || "pk_e1804f58f4011bb9e1dafab18baff34de60dd2be69bd20f6c7cd75e14780208d";
 const REGION = process.env.NEXT_PUBLIC_MEDUSA_REGION || "reg_01M0T6Q2HE0A9R8MHXTXDR3P29";
+// When set, free-text search routes through the MeiliSearch plugin endpoint
+// (typo-tolerant, fast at 10k+). Falls back to Medusa's built-in `q` on any error.
+const MEILI_ENABLED = (process.env.NEXT_PUBLIC_MEILISEARCH ?? "") === "1";
 
 const FIELDS = "id,title,handle,description,thumbnail,*categories,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
 const H = { "content-type": "application/json", "x-publishable-api-key": PK };
@@ -162,6 +165,20 @@ async function fetchProducts(opts: { q?: string; limit?: number; offset?: number
 }
 const fetchAll = async (): Promise<Product[]> => (await fetchProducts()).products;
 
+// Free-text search. Prefers MeiliSearch (typo-tolerant) via the plugin's store
+// endpoint, which hydrates full products (with prices). Any failure — or Meili
+// disabled — falls back to Medusa's built-in `q` search so search never breaks.
+async function searchProducts(q: string): Promise<Product[]> {
+  if (MEILI_ENABLED) {
+    try {
+      const p = new URLSearchParams({ query: q, region_id: REGION, fields: FIELDS, limit: "100" });
+      const res = await mfetch(`meilisearch/products?${p.toString()}`);
+      return (res.products || []).map(map);
+    } catch { /* fall through to built-in search */ }
+  }
+  return (await fetchProducts({ q })).products;
+}
+
 // Resolve storefront Category key → Medusa category id (cached for the session).
 // Lets browse filter server-side (category_id[]) instead of loading everything.
 let _catIds: Promise<Record<string, string>> | null = null;
@@ -184,13 +201,18 @@ export const medusa = {
   products: {
     list: async (params: Record<string, string | undefined> = {}) => {
       const { category, q, sort, gender, filter, color, tech, minPrice, maxPrice } = params;
-      // Category filter resolves to a Medusa category id → filtered server-side
-      // (scales to 10k+); free-text `q` also hits Medusa. Browse never loads all.
       const wantCat = category && category !== "all" ? category : undefined;
-      const categoryId = wantCat ? (await categoryIds())[wantCat] : undefined;
-      let list = (await fetchProducts({ q: q || undefined, categoryId })).products;
-      // Fallback: if the id couldn't be resolved, filter by mapped category client-side.
-      if (wantCat && !categoryId) list = list.filter(p => p.category === wantCat);
+      let list: Product[];
+      if (q) {
+        // Free-text search (MeiliSearch when enabled); category narrows the result set.
+        list = await searchProducts(q);
+        if (wantCat) list = list.filter(p => p.category === wantCat);
+      } else {
+        // Browse: category resolves to a Medusa id → filtered server-side (scales to 10k+).
+        const categoryId = wantCat ? (await categoryIds())[wantCat] : undefined;
+        list = (await fetchProducts({ categoryId })).products;
+        if (wantCat && !categoryId) list = list.filter(p => p.category === wantCat);
+      }
       // A gender page also shows Unisex pieces.
       if (gender) list = list.filter(p => p.gender === gender || p.gender === "Unisex");
       if (filter === "new") list = list.filter(p => p.badge === "New");

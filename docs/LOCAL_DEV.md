@@ -69,6 +69,59 @@ SQL-ээр шалгах:
 "$PG/psql.exe" -h 127.0.0.1 -p 5433 -U vexo -d vexo_store -c "select token from api_key; select id,name,currency_code from region;"
 ```
 
+## 5. Хайлт — MeiliSearch (сонголтоор, 10k+ каталогт)
+
+Чөлөөт-текст хайлт нь `MEILISEARCH_HOST` тохируулагдсан үед MeiliSearch руу
+(алдаа тэсвэрлэдэг, фасет шүүлттэй) чиглэнэ; тохируулаагүй бол Medusa-ийн дотоод
+`q` хайлт руу автоматаар уначина (`web/lib/medusa.ts` → `searchProducts`).
+
+**Локал (Docker-гүй) — албан ёсны binary:**
+```bash
+cd medusa-backend/apps/backend/.meili   # (.gitignore-д — binary/өгөгдөл commit хийхгүй)
+MEILI_MASTER_KEY=naran_dev_master_key_0329 MEILI_ENV=development \
+  ./meilisearch.exe --http-addr 127.0.0.1:7700 --db-path ./data.ms
+```
+Binary-г эндээс татна: `https://github.com/meilisearch/meilisearch/releases` →
+`meilisearch-windows-amd64.exe`.
+
+`.env` (backend): `MEILISEARCH_HOST=http://127.0.0.1:7700`,
+`MEILISEARCH_API_KEY=<master key>`. `web/.env.local`: `NEXT_PUBLIC_MEILISEARCH=1`.
+
+Индексжүүлэлт **автоматаар** хийгдэнэ — плагины `meilisearch-products-index` job
+Medusa ачаалагдсаны дараа бүтэн sync хийж, бараа өөрчлөгдөх бүрд шинэчилнэ.
+Шалгах:
+```bash
+curl -s -X POST http://127.0.0.1:7700/indexes/products/search \
+  -H "Authorization: Bearer <master key>" -H "content-type: application/json" \
+  -d '{"q":"serom"}'      # алдаатай бичсэн ч "serum" бараанууд гарна
+```
+
+**VPS/prod:** MeiliSearch-ийг Dokploy/Docker-оор ажиллуулж, backend-ийн
+`MEILISEARCH_HOST`-г түүн рүү заа. `MEILISEARCH_API_KEY`-д master биш, **admin key**
+хэрэглэ. Storefront шууд Meili рүү ярьдаггүй (backend proxy-лдог) тул хайлтын
+түлхүүр хөтчид задрахгүй.
+
+## 6. Зураг — Cloudflare R2 (сонголтоор)
+
+Медиа хадгалалт нь `S3_ENDPOINT` + `S3_BUCKET` тохируулагдсан үед R2 (S3-нийцтэй)
+руу шилжинэ; үгүй бол dev-д локал файл provider ашиглана (`medusa-config.ts`).
+
+`.env` (зөвхөн **VPS дээр** — бодит түлхүүрийг хэзээ ч commit хийхгүй):
+```
+S3_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
+S3_BUCKET=naran-media
+S3_FILE_URL=https://cdn.naran.mn        # public/CDN base URL
+S3_ACCESS_KEY_ID=…
+S3_SECRET_ACCESS_KEY=…
+S3_REGION=auto
+```
+Одоо байгаа локал зургийг provider руу зөөж, бараануудын URL-г шинэчлэх:
+```bash
+npx medusa exec ./src/scripts/upload-images-to-r2.ts
+```
+(Provider нь local байвал энэ нь механизмыг локал дээр батлана; R2 env
+тохируулсан үед зургийг шууд R2 руу байршуулна. Дахин ажиллуулахад аюулгүй.)
+
 ## Анхаарах зүйл
 
 - **`npm run build` нь dev server-ийн `.next`-ийг дарж бичдэг.** Build хийсний дараа

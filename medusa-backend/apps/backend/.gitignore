@@ -24,3 +24,5 @@ build
 !.yarn/versions
 
 .medusa
+# Local Meilisearch (dev only — never commit the binary/data)
+.meili/
