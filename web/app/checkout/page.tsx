@@ -19,7 +19,9 @@ export default function CheckoutPage() {
   const user = useAuth(s => s.user);
   const token = useAuth(s => s.token);
   const [email, setEmail] = useState("");
-  const [shipMethod, setShipMethod] = useState<"standard" | "express">("standard");
+  // Shipping options come from Medusa (single source of truth — no hardcoded prices).
+  const [shipOptions, setShipOptions] = useState<{ id: string; name: string; amount: number }[]>([]);
+  const [shipOptionId, setShipOptionId] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [mounted, setMounted] = useState(false);
   // Coupon state
@@ -31,15 +33,28 @@ export default function CheckoutPage() {
   useEffect(() => { setMounted(true); if (user?.email) setEmail(e => e || user.email); }, [user]);
 
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
-  const shipping = shipMethod === "express" ? 62100 : 0; // Standard free, Express ₮62,100
+  const lineItemsFor = () => items.filter(i => i.variantId).map(i => ({ variantId: i.variantId!, quantity: i.qty }));
+
+  // Fetch real, priced shipping options once the cart items are known.
+  useEffect(() => {
+    const li = lineItemsFor();
+    if (!mounted || li.length === 0 || shipOptions.length) return;
+    let cancelled = false;
+    medusa.shippingQuote(li)
+      .then(opts => { if (!cancelled && opts.length) { setShipOptions(opts); setShipOptionId(id => id || opts[0].id); } })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, items]);
+
+  const selectedShip = shipOptions.find(o => o.id === shipOptionId);
+  const shipping = selectedShip ? selectedShip.amount : 0;
   const tax = 0;
   // Effective totals — Medusa's numbers when a coupon is applied, else local.
   // Shipping is shown at its base rate; the coupon's effect (incl. free shipping)
   // is reflected in the discount line, so subtotal + shipping − discount = total.
   const discount = promo ? promo.discountTotal : 0;
   const total = promo ? promo.total : subtotal + shipping + tax;
-
-  const lineItemsFor = () => items.filter(i => i.variantId).map(i => ({ variantId: i.variantId!, quantity: i.qty }));
 
   async function applyPromo(code: string) {
     const c = code.trim();
@@ -48,7 +63,7 @@ export default function CheckoutPage() {
     if (li.length === 0) { setPromoErr(t("toast.readd")); return; }
     setPromoBusy(true); setPromoErr("");
     try {
-      const res = await medusa.previewPromo({ items: li, shippingMethod: shipMethod, promoCode: c });
+      const res = await medusa.previewPromo({ items: li, shippingOptionId: shipOptionId || undefined, promoCode: c });
       if (!res.valid) { setPromo(null); setPromoCode(null); setPromoErr(t("co.promoInvalid")); return; }
       setPromo({ discountTotal: res.discountTotal, shippingTotal: res.shippingTotal, total: res.total });
       setPromoCode(res.code);
@@ -56,16 +71,16 @@ export default function CheckoutPage() {
     finally { setPromoBusy(false); }
   }
   function clearPromo() { setPromo(null); setPromoCode(null); setPromoInput(""); setPromoErr(""); }
-  // Re-price the coupon if the shipping method changes (FREESHIP etc.).
+  // Re-price the coupon if the selected shipping option changes (FREESHIP etc.).
   useEffect(() => {
     if (!promoCode) return;
     let cancelled = false;
-    medusa.previewPromo({ items: lineItemsFor(), shippingMethod: shipMethod, promoCode: promoCode })
+    medusa.previewPromo({ items: lineItemsFor(), shippingOptionId: shipOptionId || undefined, promoCode: promoCode })
       .then(res => { if (!cancelled && res.valid) setPromo({ discountTotal: res.discountTotal, shippingTotal: res.shippingTotal, total: res.total }); })
       .catch(() => {});
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shipMethod]);
+  }, [shipOptionId]);
 
   async function place(e: React.FormEvent) {
     e.preventDefault();
@@ -86,10 +101,12 @@ export default function CheckoutPage() {
 
     setBusy(true);
     try {
+      // Coarse method label for the payment intent (metadata only).
+      const coarse: "standard" | "express" = /express/i.test(selectedShip?.name || "") ? "express" : "standard";
       // 1. Build the Medusa cart (not completed yet)
-      const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingMethod: shipMethod, address, token: token ?? undefined, promoCode: promoCode ?? undefined });
+      const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingOptionId: shipOptionId || undefined, address, token: token ?? undefined, promoCode: promoCode ?? undefined });
       // 2. Start a Wire payment (QPay / bank apps)
-      const intent = await wire.createIntent({ cartId, amount: cartTotal, email, shippingMethod: shipMethod });
+      const intent = await wire.createIntent({ cartId, amount: cartTotal, email, shippingMethod: coarse });
       // 3a. Live → redirect to Wire hosted checkout; 3b. mock → our processing page polls
       if (intent.live && intent.checkoutUrl) {
         window.location.href = intent.checkoutUrl;
@@ -149,10 +166,18 @@ export default function CheckoutPage() {
             </FormCard>
 
             <FormCard title={t("co.shippingMethod")}>
-              <Radio name="ship" checked={shipMethod === "standard"} onChange={() => setShipMethod("standard")}
-                title={t("co.standard")} sub={t("co.standardSub")} right={t("common.free")}/>
-              <Radio name="ship" checked={shipMethod === "express"} onChange={() => setShipMethod("express")}
-                title={t("co.express")} sub={t("co.expressSub")} right="₮62,100"/>
+              {shipOptions.length === 0 ? (
+                <div className="text-sm text-muted py-2">{t("common.pleaseWait")}</div>
+              ) : shipOptions.map(o => {
+                const isExpress = /express/i.test(o.name);
+                const isStandard = /standard/i.test(o.name);
+                const title = isExpress ? t("co.express") : isStandard ? t("co.standard") : o.name;
+                const sub = isExpress ? t("co.expressSub") : isStandard ? t("co.standardSub") : undefined;
+                return (
+                  <Radio key={o.id} name="ship" checked={shipOptionId === o.id} onChange={() => setShipOptionId(o.id)}
+                    title={title} sub={sub} right={o.amount === 0 ? t("common.free") : money(o.amount)}/>
+                );
+              })}
             </FormCard>
 
             <FormCard title={t("co.payment")}>
