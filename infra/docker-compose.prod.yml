@@ -1,0 +1,141 @@
+# NARAN — production stack for a single VPS (Dokploy / Coolify / plain compose).
+#
+# Values are interpolated from an `.env` file placed NEXT TO this file
+# (infra/.env — see infra/.env.prod.example). Secrets never live in git.
+#
+# Dokploy: create a "Docker Compose" app pointing at this file, then assign
+# public domains (with TLS) to the `web`, `medusa`, and `api` services in the UI
+# — Dokploy's Traefik routes them. Services talk to each other over the internal
+# `naran` network by service name (postgres, redis, meilisearch, medusa, api).
+name: naran
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    <<: *restart
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-naran}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in infra/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-naran}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-naran} -d ${POSTGRES_DB:-naran}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [naran]
+
+  redis:
+    image: redis:7-alpine
+    <<: *restart
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [naran]
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.53
+    <<: *restart
+    environment:
+      MEILI_MASTER_KEY: ${MEILISEARCH_API_KEY:?set MEILISEARCH_API_KEY in infra/.env}
+      MEILI_ENV: production
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - meilidata:/meili_data
+    networks: [naran]
+
+  medusa:
+    build:
+      context: ../medusa-backend/apps/backend
+    <<: *restart
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      meilisearch: { condition: service_started }
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-naran}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-naran}
+      REDIS_URL: redis://redis:6379
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_API_KEY: ${MEILISEARCH_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in infra/.env}
+      COOKIE_SECRET: ${COOKIE_SECRET:?set COOKIE_SECRET in infra/.env}
+      # Public origins allowed to call Medusa (your real domains).
+      STORE_CORS: ${STORE_CORS}
+      ADMIN_CORS: ${ADMIN_CORS}
+      AUTH_CORS: ${AUTH_CORS}
+      # Optional Cloudflare R2 / S3 image storage (leave blank → local files).
+      S3_FILE_URL: ${S3_FILE_URL:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_REGION: ${S3_REGION:-auto}
+    expose:
+      - "9000"
+    networks: [naran]
+
+  api:
+    build:
+      context: ../api
+    <<: *restart
+    depends_on:
+      - medusa
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      JWT_SECRET: ${JWT_SECRET}
+      WEB_ORIGIN: ${STORE_CORS}
+      # Medusa (internal service URL) + publishable key — the gateway completes orders.
+      MEDUSA_URL: http://medusa:9000
+      MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK}
+      NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
+      # Wire (wire.mn → QPay & bank apps). Blank WIRE_SECRET_KEY → MOCK mode.
+      # Real production key is sensitive — set only here, never in git.
+      WIRE_SECRET_KEY: ${WIRE_SECRET_KEY:-}
+      WIRE_WEBHOOK_SECRET: ${WIRE_WEBHOOK_SECRET:-}
+      # Email (Resend).
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
+    expose:
+      - "4000"
+    networks: [naran]
+
+  web:
+    build:
+      context: ../web
+      args:
+        # NEXT_PUBLIC_* are inlined at build time → must be the PUBLIC URLs the
+        # browser will use (your medusa domain), not internal service names.
+        NEXT_PUBLIC_MEDUSA_URL: ${NEXT_PUBLIC_MEDUSA_URL:?set NEXT_PUBLIC_MEDUSA_URL in infra/.env}
+        NEXT_PUBLIC_MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK:?set NEXT_PUBLIC_MEDUSA_PK in infra/.env}
+        NEXT_PUBLIC_MEDUSA_REGION: ${NEXT_PUBLIC_MEDUSA_REGION:?set NEXT_PUBLIC_MEDUSA_REGION in infra/.env}
+        NEXT_PUBLIC_USE_MEDUSA: "1"
+        NEXT_PUBLIC_MEILISEARCH: ${NEXT_PUBLIC_MEILISEARCH:-1}
+    <<: *restart
+    depends_on:
+      - medusa
+      - api
+    environment:
+      # Runtime: the storefront proxies /api/* to the Express gateway.
+      API_URL: http://api:4000
+    expose:
+      - "3000"
+    networks: [naran]
+
+volumes:
+  pgdata:
+  redisdata:
+  meilidata:
+
+networks:
+  naran:
+    driver: bridge

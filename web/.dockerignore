@@ -1,9 +1,9 @@
 node_modules
-.medusa
-.meili
+.next
 .git
 .env
 .env.*
 npm-debug.log*
 Dockerfile
 .dockerignore
+README.md

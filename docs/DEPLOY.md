@@ -1,122 +1,183 @@
-# VEXO — Production Deployment Runbook
+# NARAN — Production deploy (нэг VPS + Dokploy)
 
-Three services + two managed datastores:
+Энэ заавар нь бүх стекийг (**Postgres, Redis, MeiliSearch, Medusa, Express API,
+Next.js storefront**) нэг VPS дээр **Dokploy**-оор байршуулах алхмуудыг тайлбарлана.
+Ойролцоо зардал: **VPS ~₮30,000–50,000/сар** (Hetzner CX22 / Contabo VPS S).
 
-| Service | Platform | Notes |
+> ⚠️ **Нууц түлхүүр**: QPay, R2, DB нууц үг зэргийг **зөвхөн VPS дээр** (Dokploy env
+> эсвэл `infra/.env`) оруулна. Git-д хэзээ ч commit хийхгүй (`infra/.env` gitignore-д).
+
+---
+
+## 0. Урьдчилсан нөхцөл
+
+| Зүйл | Тайлбар |
+|---|---|
+| VPS | Ubuntu 22.04+, 2 vCPU / 4GB RAM доод тал (10k бараа + Meili-д тохиромжтой) |
+| Домэйн | `naran.mn` (+ `api.naran.mn`, `admin.naran.mn` дэд домэйн) |
+| Cloudflare | DNS (заавал биш ч санал болгоно) + R2 (зургийн хадгалалт, сонголтоор) |
+
+---
+
+## 1. VPS + Dokploy суулгах
+
+VPS дээр (root):
+```bash
+curl -sSL https://dokploy.com/install.sh | sh
+```
+Дуусмагц `http://<VPS-IP>:3000` дээр Dokploy admin нээгдэнэ. Эхний хэрэглэгчээ үүсгэ.
+
+---
+
+## 2. DNS тохируулах
+
+Домэйн бүрийг VPS-ийн IP рүү заа (A record):
+
+| Хост | Төрөл | Утга |
 |---|---|---|
-| Storefront (Next.js) | **Vercel** | Native Next support |
-| Medusa backend | **Railway** | + Postgres plugin + Redis plugin |
-| Wire payment gateway (Express) | **Railway** | Small Node service |
+| `naran.mn` | A | `<VPS-IP>` |
+| `www` | A | `<VPS-IP>` |
+| `api` | A | `<VPS-IP>` |
+| `admin` | A | `<VPS-IP>` |
 
-> You need accounts on **Vercel** and **Railway** (both have free tiers). Domain optional.
-
-Production builds are already verified locally (`web` and `api` both build clean).
+(Cloudflare ашиглаж байвал эхлээд proxy-г **DNS only** болго; TLS-г Dokploy Let's Encrypt-ээр авна.)
 
 ---
 
-## 1. Railway — Medusa backend + datastores
+## 3. Dokploy дээр Compose апп үүсгэх
 
-1. **New Project** → "Deploy from GitHub repo" → pick this repo.
-2. Add plugins: **+ New → Database → PostgreSQL**, then **+ New → Database → Redis**.
-3. **Add a service** for Medusa:
-   - Root directory: `medusa-backend/apps/backend`
-   - It will use the included `Dockerfile`.
-   - **Variables**:
-     ```
-     DATABASE_URL   = ${{Postgres.DATABASE_URL}}
-     REDIS_URL      = ${{Redis.REDIS_URL}}
-     JWT_SECRET     = <long random string>
-     COOKIE_SECRET  = <long random string>
-     STORE_CORS     = https://<your-vercel-domain>
-     ADMIN_CORS     = https://<this-medusa-domain>
-     AUTH_CORS      = https://<your-vercel-domain>,https://<this-medusa-domain>
-     MEDUSA_ADMIN_ONBOARDING_TYPE = default
-     ```
-4. Deploy. First boot runs `medusa db:migrate` (in the Dockerfile CMD).
-5. **Seed data** (one-off — Railway → service → "Run command", or `railway run`):
+1. Dokploy → **Create Application → Docker Compose**.
+2. **Source**: энэ Git repo, branch `main`.
+3. **Compose path**: `infra/docker-compose.prod.yml`.
+4. **Environment**: `infra/.env.prod.example`-г хуулж бүх утгыг бөглө
+   (доорх [4-р хэсэг](#4-env-утгууд)). Dokploy-ийн Environment талбарт буулга.
+5. **Domains** (Dokploy UI → Domains, сервис бүрд):
+   | Сервис | Домэйн | Порт | TLS |
+   |---|---|---|---|
+   | `web` | `naran.mn`, `www.naran.mn` | 3000 | Let's Encrypt |
+   | `medusa` | `api.naran.mn` | 9000 | Let's Encrypt |
+   | `api` | (заавал биш; web дотроосоо `/api/*` proxy-лдог) | 4000 | — |
+
+   Medusa admin панель нь `https://api.naran.mn/app` дээр гарна.
+
+---
+
+## 4. ENV утгууд
+
+`infra/.env.prod.example` доторх бүх түлхүүрийг бөглө. Нууцуудыг үүсгэх:
+```bash
+openssl rand -base64 32   # JWT_SECRET
+openssl rand -base64 32   # COOKIE_SECRET
+openssl rand -base64 32   # MEILISEARCH_API_KEY
+```
+Анхаарах:
+- **`NEXT_PUBLIC_MEDUSA_URL`** = `https://api.naran.mn` (хөтөч хандах **нийтийн** URL).
+- **`NEXT_PUBLIC_MEDUSA_PK` / `NEXT_PUBLIC_MEDUSA_REGION`** — DB seed хийсний **дараа**
+  авна ([6-р хэсэг](#6-эхний-seed)), дараа нь web-ийг дахин build хийнэ.
+- **CORS** утгуудад бодит домэйнуудаа оруул.
+- QPay production түлхүүр байхгүй бол `WIRE_MODE=mock` үлдээ.
+
+---
+
+## 5. Эхний deploy
+
+Dokploy → **Deploy**. Build дуусаад:
+- `postgres`, `redis`, `meilisearch` — эрүүл болно.
+- `medusa` — эхэлж, **migration автоматаар** ажиллана (Dockerfile-д `db:migrate`).
+- `web`, `api` — асна.
+
+---
+
+## 6. Эхний seed
+
+Medusa контейнерийн терминал руу ор (Dokploy → medusa → **Terminal**, эсвэл
+`docker exec -it <medusa-container> sh`). Seed script-уудыг төслийн үндсэн
+директороос ажиллуул (`cd /app` — эндээс `medusa exec` эх кодыг шууд ажиллуулна):
+
+```bash
+# 1) Суурь бүсчлэл + Монгол (MNT) бүс, хүргэлт
+npx medusa exec ./src/scripts/seed-region.ts
+npx medusa exec ./src/scripts/seed-mnt.ts
+# 2) Гоо сайхны ангилал → БАРАА (эрэмбэ чухал: ангилал эхэлнэ)
+npx medusa exec ./src/scripts/seed-categories.ts
+npx medusa exec ./src/scripts/seed-naran.ts          # 16 demo бараа
+# 3) Купон + буцаалтын хүргэлт
+npx medusa exec ./src/scripts/seed-promotions.ts
+npx medusa exec ./src/scripts/seed-return-shipping.ts
+# 4) Admin хэрэглэгч
+npx medusa user -e admin@naran.mn -p '<STRONG_PASSWORD>'
+```
+
+**Бодит 10,000 бараа** оруулах (CSV):
+```bash
+IMPORT_FILE=./data/catalog.csv npx medusa exec ./src/scripts/import-products.ts
+```
+(CSV багана: `handle,title,price,category,sizes,image,description` — `category` нь
+`fragrance/skincare/...` эсвэл монгол нэр аль нь ч болно.)
+
+### PK + Region авах
+Postgres-оос шууд унш (postgres контейнер дотор):
+```bash
+psql -U naran -d naran -c "SELECT token FROM api_key WHERE type='publishable';"
+psql -U naran -d naran -c "SELECT id FROM region WHERE currency_code='mnt';"
+```
+Эсвэл Medusa admin (`https://api.naran.mn/app`) → **Settings → Publishable API Keys**
+болон **Regions** хэсгээс хараарай.
+
+Гарсан `pk_...` ба `reg_...`-г `infra/.env`-ийн `NEXT_PUBLIC_MEDUSA_PK` /
+`NEXT_PUBLIC_MEDUSA_REGION`-д оруулаад **web-ийг дахин deploy** (rebuild) хий
+(NEXT_PUBLIC нь build-д шингэдэг).
+
+---
+
+## 7. MeiliSearch индекс
+
+Автоматаар — плагины `meilisearch-products-index` job Medusa ачаалагдсаны дараа
+бүтэн sync хийж, бараа өөрчлөгдөх бүрд шинэчилнэ. Гараар шалгах:
+```bash
+curl -s -X POST http://meilisearch:7700/indexes/products/search \
+  -H "Authorization: Bearer $MEILISEARCH_API_KEY" -H 'content-type: application/json' \
+  -d '{"q":"serum"}'
+```
+
+---
+
+## 8. Зураг → Cloudflare R2 (сонголтоор)
+
+1. Cloudflare → R2 → bucket үүсгэ (`naran-media`), API token авах.
+2. `infra/.env`-д `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`,
+   `S3_SECRET_ACCESS_KEY`, `S3_FILE_URL` (нийтийн CDN URL) бөглө → medusa redeploy.
+3. Одоо байгаа зургийг R2 руу зөөх:
+   ```bash
+   npx medusa exec ./src/scripts/upload-images-to-r2.ts
    ```
-   npx medusa exec ./src/scripts/seed-region.ts
-   npx medusa exec ./src/scripts/seed-shipping.ts
-   npx medusa exec ./src/scripts/seed-vexo.ts
-   ```
-6. **Create admin user**:
-   ```
-   npx medusa user -e admin@vexo.gear -p <strong-password>
-   ```
-7. In Medusa Admin (`https://<medusa-domain>/app`) → **Settings → Publishable API Keys** → copy the key (`pk_…`).
-   Also grab the **USD region id** (Settings → Regions) for the storefront env.
 
 ---
 
-## 2. Railway — Wire payment gateway (Express)
+## 9. Ажиллагаа (Ops)
 
-1. **Add a service** in the same project:
-   - Root directory: `api`
-   - Uses the included `Dockerfile`.
-   - **Variables**:
-     ```
-     MEDUSA_URL          = http://<medusa-internal-host>:9000   (Railway internal URL)
-     MEDUSA_PK           = pk_…                                  (from step 1.7)
-     WEB_ORIGIN          = https://<your-vercel-domain>
-     WIRE_SECRET_KEY     = sk_live_…        (empty = MOCK mode)
-     WIRE_WEBHOOK_SECRET = whsec_…
-     NEXT_PUBLIC_SITE_URL= https://<your-vercel-domain>
-     ```
-2. Deploy → note the public URL (e.g. `https://vexo-api.up.railway.app`).
+- **Backup**: Postgres volume-ийг тогтмол dump хий:
+  ```bash
+  docker exec <postgres> pg_dump -U naran naran | gzip > naran-$(date +%F).sql.gz
+  ```
+  Meili (`meilidata`) болон R2/зураг мөн backup-д хамруул.
+- **Шинэчлэлт**: Git-д push → Dokploy → Redeploy. Medusa migration автоматаар ажиллана.
+- **Лог**: Dokploy → сервис → Logs.
+- **Хэмжээ**: 10k бараа + Meili-д 4GB RAM хангалттай; ачаалал ихсвэл VPS-ээ өсгө
+  эсвэл Medusa-г server/worker горимд салга.
 
 ---
 
-## 3. Vercel — storefront
-
-1. **New Project** → import this repo.
-2. **Root Directory: `web`** (important — monorepo).
-3. **Environment Variables**:
-   ```
-   NEXT_PUBLIC_USE_MEDUSA   = 1
-   NEXT_PUBLIC_MEDUSA_URL   = https://<medusa-domain>
-   NEXT_PUBLIC_MEDUSA_PK    = pk_…
-   NEXT_PUBLIC_MEDUSA_REGION= reg_…           (USD region id)
-   API_URL                  = https://<vexo-api railway url>   (for /api/* rewrite → Wire)
-   ```
-4. Deploy. Vercel builds `next build` automatically.
-
----
-
-## 4. Wire dashboard (go live with real QPay)
-
-1. https://wire.mn → register, verify org.
-2. **API Keys** → copy `sk_live_…` → set `WIRE_SECRET_KEY` on the Express service.
-3. **Webhooks** → add `https://<vexo-api-domain>/api/webhooks/wire`, events
-   `payment_intent.succeeded` (+ `payment_intent.canceled`). Copy signing secret → `WIRE_WEBHOOK_SECRET`.
-4. Enable **QPay** operator. Price products in **MNT** (integers).
-
-> Leave `WIRE_SECRET_KEY` empty to keep MOCK mode (auto-succeeds) for a soft launch / demo.
-
----
-
-## 5. Domain (optional)
-
-- Vercel → Project → Domains → add `vexo.mn` (or your domain), follow DNS records.
-- Update `STORE_CORS` / `AUTH_CORS` (Medusa) and `WEB_ORIGIN` / `NEXT_PUBLIC_SITE_URL` (Express) to the final domain.
-
----
-
-## 6. Post-deploy smoke test
-
-- [ ] `https://<medusa-domain>/health` → 200
-- [ ] `https://<vexo-api-domain>/health` → 200
-- [ ] Storefront home shows products (from Medusa)
-- [ ] Register + login (Medusa customer)
-- [ ] Add to cart → checkout → Wire/QPay → order appears in Medusa Admin
-- [ ] Lighthouse: Performance ≥ 90 mobile, SEO 100
-
----
-
-## Architecture in production
+## Архитектур
 
 ```
-Browser ──► Vercel (Next.js storefront)
-               ├─ products/cart/auth ──► Medusa (Railway) ──► Postgres + Redis (Railway)
-               └─ /api/payments/*   ──► Express Wire gateway (Railway) ──► Wire (QPay)
-                                                          └─ completes Medusa cart on payment
+                 ┌────────── Dokploy / Traefik (TLS) ──────────┐
+ naran.mn ──────▶│  web (Next.js :3000, standalone)            │
+ api.naran.mn ──▶│  medusa (:9000)  ──┐                        │
+                 └────────────────────┼────────────────────────┘
+                        internal "naran" network
+        ┌───────────────┼───────────────┬──────────────┐
+   postgres:5432    redis:6379     meilisearch:7700   api:4000 (Wire/QPay)
 ```
+Storefront нь **зөвхөн API-аар** Medusa-той харилцна (`web/lib/medusa.ts`); хайлт нь
+backend-аар дамжин Meili рүү ордог тул хайлтын түлхүүр хөтөчид задрахгүй.

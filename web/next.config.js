@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Standalone output → small production image (only the needed node_modules).
+  output: "standalone",
   async rewrites() {
     return [
       {
