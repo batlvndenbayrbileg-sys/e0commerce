@@ -1,6 +1,7 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { createProductsWorkflow } from "@medusajs/medusa/core-flows";
+import { MN_TO_HANDLE } from "./seed-categories";
 
 // Relative path — resolved against the storefront's own origin (port-independent).
 // Files live in web/public/products/*. In production these move to Cloudflare R2 (F5).
@@ -55,6 +56,18 @@ export default async function seedNaran({ container }: ExecArgs) {
   const [profile] = await fulfillmentModule.listShippingProfiles({});
   if (!channel || !profile) throw new Error("Missing default sales channel or shipping profile");
 
+  // Resolve category ids by handle (categories seeded by seed-categories.ts).
+  const cats = await productModule.listProductCategories(
+    { handle: Object.values(MN_TO_HANDLE) },
+    { select: ["id", "handle"] as any },
+  );
+  const catIdByHandle = new Map(cats.map(c => [c.handle, c.id]));
+  if (!cats.length) logger.warn("No product categories found — run seed-categories.ts first.");
+  const categoryIdsFor = (mnName: string): string[] => {
+    const id = catIdByHandle.get(MN_TO_HANDLE[mnName]);
+    return id ? [id] : [];
+  };
+
   // Remove old VEXO catalog + any previous Naran products (fresh, correct data each run)
   const stale = await productModule.listProducts({ handle: [...OLD_HANDLES, ...CATALOG.map(c => c.handle)] });
   if (stale.length) {
@@ -71,6 +84,7 @@ export default async function seedNaran({ container }: ExecArgs) {
           handle: p.handle,
           description: p.desc,
           status: "published" as const,
+          category_ids: categoryIdsFor(p.cat),
           thumbnail: IMG(p.img),
           images: [{ url: IMG(p.img) }],
           shipping_profile_id: profile.id,

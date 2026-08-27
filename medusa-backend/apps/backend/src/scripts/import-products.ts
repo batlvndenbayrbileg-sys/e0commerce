@@ -1,6 +1,7 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { createProductsWorkflow } from "@medusajs/medusa/core-flows";
+import { MN_TO_HANDLE } from "./seed-categories";
 import * as fs from "fs";
 
 /**
@@ -75,6 +76,23 @@ export default async function importProducts({ container }: ExecArgs) {
   const [profile] = await fulfillmentModule.listShippingProfiles({});
   if (!channel || !profile) throw new Error("Missing default sales channel or shipping profile");
 
+  // Category resolver — CSV `category` may hold a handle (fragrance) or the
+  // Mongolian display name (Үнэртэй ус); both map to the same category id.
+  const cats = await productModule.listProductCategories({}, { select: ["id", "handle", "name"] as any });
+  const catIndex = new Map<string, string>();
+  for (const c of cats) {
+    if (c.handle) catIndex.set(c.handle.toLowerCase(), c.id);
+    if (c.name) catIndex.set(c.name.trim(), c.id);
+  }
+  const unknownCats = new Set<string>();
+  const categoryIdsFor = (raw: string): string[] => {
+    const v = (raw || "").trim();
+    if (!v) return [];
+    const id = catIndex.get(v) ?? catIndex.get(v.toLowerCase()) ?? catIndex.get(MN_TO_HANDLE[v]);
+    if (!id) { unknownCats.add(v); return []; }
+    return [id];
+  };
+
   const rows = parseCsv(fs.readFileSync(file, "utf8")).filter(r => r.handle && r.title);
   logger.info(`Parsed ${rows.length} rows from ${file}.`);
 
@@ -102,6 +120,7 @@ export default async function importProducts({ container }: ExecArgs) {
         handle: r.handle,
         description: r.description || "",
         status: "published" as const,
+        category_ids: categoryIdsFor(r.category),
         ...(img ? { thumbnail: img, images: [{ url: img }] } : {}),
         shipping_profile_id: profile.id,
         options: [{ title: "Хэмжээ", values }],
@@ -128,7 +147,8 @@ export default async function importProducts({ container }: ExecArgs) {
     }
   }
 
-  const total = await productModule.listProducts({}, { take: 1 });
-  void total;
+  if (unknownCats.size) {
+    logger.warn(`Unmapped categories (products imported uncategorised): ${[...unknownCats].join(", ")}`);
+  }
   logger.info(`Done. Imported ${created} products in ${Math.round((Date.now() - t0) / 1000)}s.`);
 }

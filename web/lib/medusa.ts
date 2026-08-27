@@ -1,11 +1,17 @@
-import type { Product, User } from "./types";
+import type { Category, Product, User } from "./types";
 import { ENRICH, DEFAULT_ENRICH } from "./enrich";
+
+// Medusa category handle → storefront Category key. Taxonomy lives in Medusa
+// (product categories), so this scales to a 10k+ catalog with no per-product map.
+const HANDLE_TO_CATEGORY: Record<string, Category> = {
+  fragrance: "Fragrance", skincare: "Skincare", makeup: "Makeup", body: "Body", gift: "Gift",
+};
 
 const URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000";
 const PK = process.env.NEXT_PUBLIC_MEDUSA_PK || "pk_e1804f58f4011bb9e1dafab18baff34de60dd2be69bd20f6c7cd75e14780208d";
 const REGION = process.env.NEXT_PUBLIC_MEDUSA_REGION || "reg_01M0T6Q2HE0A9R8MHXTXDR3P29";
 
-const FIELDS = "id,title,handle,description,thumbnail,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
+const FIELDS = "id,title,handle,description,thumbnail,*categories,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
 const H = { "content-type": "application/json", "x-publishable-api-key": PK };
 
 async function mfetch(path: string, retries = 1): Promise<any> {
@@ -91,6 +97,10 @@ async function fetchOrders(token: string): Promise<CustomerOrder[]> {
 function map(m: any): Product {
   const handle = m.handle as string;
   const e = ENRICH[handle] || DEFAULT_ENRICH;
+  // Category comes from Medusa's product categories (source of truth); the
+  // enrich map is a fallback for products that predate the taxonomy.
+  const catHandle = (m.categories || [])[0]?.handle as string | undefined;
+  const category: Category = (catHandle && HANDLE_TO_CATEGORY[catHandle]) || e.category;
   const prices = (m.variants || [])
     .map((v: any) => v?.calculated_price?.calculated_amount)
     .filter((n: any) => typeof n === "number");
@@ -117,7 +127,7 @@ function map(m: any): Product {
     id: handle,
     slug: handle,
     name: m.title,
-    category: e.category,
+    category,
     shape: e.shape,
     gender: e.gender,
     season: e.season,
@@ -143,21 +153,44 @@ function map(m: any): Product {
 
 // Server-side product fetch. Passing `q` runs Medusa's full-text search, which
 // scales to large catalogs (10,000+) — the storefront never loads everything.
-async function fetchProducts(opts: { q?: string; limit?: number; offset?: number } = {}): Promise<{ products: Product[]; total: number }> {
+async function fetchProducts(opts: { q?: string; limit?: number; offset?: number; categoryId?: string } = {}): Promise<{ products: Product[]; total: number }> {
   const p = new URLSearchParams({ limit: String(opts.limit ?? 100), offset: String(opts.offset ?? 0), region_id: REGION, fields: FIELDS });
   if (opts.q) p.set("q", opts.q);
+  if (opts.categoryId) p.append("category_id[]", opts.categoryId);
   const res = await mfetch(`products?${p.toString()}`);
   return { products: (res.products || []).map(map), total: res.count ?? (res.products?.length ?? 0) };
 }
 const fetchAll = async (): Promise<Product[]> => (await fetchProducts()).products;
 
+// Resolve storefront Category key → Medusa category id (cached for the session).
+// Lets browse filter server-side (category_id[]) instead of loading everything.
+let _catIds: Promise<Record<string, string>> | null = null;
+function categoryIds(): Promise<Record<string, string>> {
+  if (!_catIds) _catIds = (async () => {
+    try {
+      const res = await mfetch(`product-categories?limit=100&fields=id,handle`);
+      const out: Record<string, string> = {};
+      for (const c of (res.product_categories || [])) {
+        const key = HANDLE_TO_CATEGORY[c.handle];
+        if (key) out[key] = c.id;
+      }
+      return out;
+    } catch { return {}; }
+  })();
+  return _catIds;
+}
+
 export const medusa = {
   products: {
     list: async (params: Record<string, string | undefined> = {}) => {
       const { category, q, sort, gender, filter, color, tech, minPrice, maxPrice } = params;
-      // Free-text search hits Medusa server-side (scales to 10k+); browse loads the page set.
-      let list = (await fetchProducts({ q: q || undefined })).products;
-      if (category && category !== "all") list = list.filter(p => p.category === category);
+      // Category filter resolves to a Medusa category id → filtered server-side
+      // (scales to 10k+); free-text `q` also hits Medusa. Browse never loads all.
+      const wantCat = category && category !== "all" ? category : undefined;
+      const categoryId = wantCat ? (await categoryIds())[wantCat] : undefined;
+      let list = (await fetchProducts({ q: q || undefined, categoryId })).products;
+      // Fallback: if the id couldn't be resolved, filter by mapped category client-side.
+      if (wantCat && !categoryId) list = list.filter(p => p.category === wantCat);
       // A gender page also shows Unisex pieces.
       if (gender) list = list.filter(p => p.gender === gender || p.gender === "Unisex");
       if (filter === "new") list = list.filter(p => p.badge === "New");
@@ -185,8 +218,12 @@ export const medusa = {
       const { products } = await mfetch(`products?${q.toString()}`);
       const product = products?.[0] ? map(products[0]) : null;
       if (!product) throw new Error("Product not found");
-      const all = await fetchAll();
-      const related = all.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
+      // Related = same category, fetched server-side by category id (scales to 10k+).
+      const relCatId = (await categoryIds())[product.category];
+      const pool = relCatId
+        ? (await fetchProducts({ categoryId: relCatId, limit: 8 })).products
+        : await fetchAll();
+      const related = pool.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
       return { data: product, related };
     },
   },
