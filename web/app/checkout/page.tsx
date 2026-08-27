@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { CheckIcon, LockIcon } from "@/components/Icons";
-import { useCart, useToast } from "@/lib/store";
+import { useCart, useToast, useAuth } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { medusa } from "@/lib/medusa";
@@ -16,11 +16,13 @@ export default function CheckoutPage() {
   const items = useCart(s => s.items);
   const clear = useCart(s => s.clear);
   const showToast = useToast(s => s.show);
+  const user = useAuth(s => s.user);
+  const token = useAuth(s => s.token);
   const [email, setEmail] = useState("");
   const [shipMethod, setShipMethod] = useState<"standard" | "express">("standard");
   const [busy, setBusy] = useState(false);
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  useEffect(() => { setMounted(true); if (user?.email) setEmail(e => e || user.email); }, [user]);
 
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
   const shipping = shipMethod === "express" ? 62100 : 0; // Standard free, Express ₮62,100
@@ -47,7 +49,7 @@ export default function CheckoutPage() {
     setBusy(true);
     try {
       // 1. Build the Medusa cart (not completed yet)
-      const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingMethod: shipMethod, address });
+      const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingMethod: shipMethod, address, token: token ?? undefined });
       // 2. Start a Wire payment (QPay / bank apps)
       const intent = await wire.createIntent({ cartId, amount: cartTotal, email, shippingMethod: shipMethod });
       // 3a. Live → redirect to Wire hosted checkout; 3b. mock → our processing page polls

@@ -43,7 +43,7 @@ export type CartItem = {
   variantId?: string;
 };
 
-export type User = { id: string; email: string; firstName: string; lastName: string };
+export type User = { id: string; email: string; firstName: string; lastName: string; phone?: string };
 
 export type Order = {
   id: string;

@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { useAuth, useWish, useToast, useOrders, type OrderRecord } from "@/lib/store";
+import { useAuth, useWish, useToast } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
 import { Skeleton } from "@/components/Skeleton";
 import { CountUp } from "@/components/CountUp";
 import { api, money } from "@/lib/api";
 import type { Product } from "@/lib/types";
+import type { CustomerOrder } from "@/lib/medusa";
 
 const TABS = ["Overview", "Orders", "Wishlist", "Addresses", "Settings"] as const;
 type Tab = (typeof TABS)[number];
@@ -29,24 +30,57 @@ export default function AccountPage() {
   const router = useRouter();
   const t = useT();
   const user = useAuth(s => s.user);
+  const token = useAuth(s => s.token);
+  const setSession = useAuth(s => s.setSession);
   const signOut = useAuth(s => s.signOut);
   const wishIds = useWish(s => s.ids);
   const showToast = useToast(s => s.show);
-  const orders = useOrders(s => s.orders);
+  const [orders, setOrders] = useState<CustomerOrder[]>([]);
+  const [addresses, setAddresses] = useState<any[]>([]);
   const [tab, setTab] = useState<Tab>("Overview");
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Wait for the persisted auth store to rehydrate before deciding to redirect,
+  // so refreshing a protected page doesn't bounce a logged-in user to /auth.
+  useEffect(() => {
+    setHydrated(useAuth.persist.hasHydrated());
+    return useAuth.persist.onFinishHydration(() => setHydrated(true));
+  }, []);
 
   useEffect(() => {
-    setMounted(true);
-    if (!user) { router.push("/auth"); return; }
+    if (!hydrated) return;
+    if (!user || !token) { router.push("/auth"); return; }
+    api.customers.orders(token).then(r => setOrders(r.data)).catch(() => {});
+    api.customers.addresses(token).then(r => setAddresses(r.data)).catch(() => {});
     api.products.list({}).then(r => setAllProducts(r.data)).catch(() => {}).finally(() => setLoadingProducts(false));
-  }, [user, router]);
+  }, [hydrated, user, token, router]);
 
-  if (!mounted || !user) return null;
+  if (!hydrated) return null;
+  if (!user || !token) return null;
+
+  async function saveProfile(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!token) return;
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    try {
+      const { user: updated } = await api.customers.update(token, {
+        firstName: String(fd.get("first") || ""),
+        lastName: String(fd.get("last") || ""),
+        phone: String(fd.get("phone") || ""),
+      });
+      setSession(updated, token);
+      showToast(t("toast.profileSaved"));
+    } catch {
+      showToast(t("acc.saveError"));
+    } finally { setSaving(false); }
+  }
 
   const totalSpent = orders.reduce((a, b) => a + b.total, 0);
+  const primaryAddress = addresses[0];
   const wished = allProducts.filter(p => wishIds.includes(p.id));
 
   return (
@@ -75,10 +109,10 @@ export default function AccountPage() {
 
             {/* Stat tiles */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-              <Stat label={t("acc.statOrders")} value={<CountUp value={orders.length}/>}/>
-              <Stat label={t("acc.statSpent")} value={<CountUp value={totalSpent} format={money}/>}/>
-              <Stat label={t("acc.statWishlist")} value={<CountUp value={wished.length}/>}/>
-              <Stat label={t("acc.statPoints")} value={<CountUp value={1240}/>}/>
+              <Stat label={t("acc.statOrders")} value={<CountUp key={`o${orders.length}`} value={orders.length}/>}/>
+              <Stat label={t("acc.statSpent")} value={<CountUp key={`s${totalSpent}`} value={totalSpent} format={money}/>}/>
+              <Stat label={t("acc.statWishlist")} value={<CountUp key={`w${wished.length}`} value={wished.length}/>}/>
+              <Stat label={t("acc.statAddresses")} value={<CountUp key={`a${addresses.length}`} value={addresses.length}/>}/>
             </div>
           </div>
 
@@ -99,26 +133,26 @@ export default function AccountPage() {
             {tab === "Overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card title={t("acc.recentOrder")}>
-                  {orders.length === 0 ? <Empty msg={t("acc.noOrders")}/> : (
-                    <OrderRow o={orders[orders.length - 1]}/>
+                  {orders.length === 0 ? <Empty msg={t("acc.noOrders")} cta/> : (
+                    <OrderRow o={orders[0]}/>
                   )}
                 </Card>
+                <Card title={t("acc.summary")}>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Stat label={t("acc.ordersWord")} value={orders.length}/>
+                    <Stat label={t("acc.totalSpent")} value={money(totalSpent)}/>
+                  </div>
+                </Card>
                 <Card title={t("acc.defaultAddress")}>
-                  <p className="text-muted leading-relaxed text-sm">
-                    {user.firstName} {user.lastName}<br/>
-                    140 Performance Ave, Apt 3B<br/>
-                    Los Angeles, CA 90012<br/>+1 (213) 555-0142
-                  </p>
+                  {primaryAddress ? <AddressBlock a={primaryAddress}/> : (
+                    <button onClick={() => setTab("Addresses")} className="text-sm text-muted hover:text-ink">{t("acc.noAddress")}</button>
+                  )}
                 </Card>
                 <Card title={t("acc.paymentMethod")}>
                   <div className="flex items-center gap-3 p-3 bg-surface-2 rounded-xl">
-                    <svg width={40} height={26} viewBox="0 0 40 26"><rect width="40" height="26" rx="4" fill="#1A1F71"/><circle cx="15" cy="13" r="7" fill="#EB001B"/><circle cx="24" cy="13" r="7" fill="#F79E1B" opacity=".85"/></svg>
-                    <div><div className="font-semibold text-sm">•••• 4242</div><div className="tiny">{t("acc.expires")} 09/28</div></div>
+                    <svg width={40} height={26} viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="5" fill="#00B14F"/><path d="M7 12.5l2.6 2.6L17 8.6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <div><div className="font-semibold text-sm">QPay</div><div className="tiny">{t("acc.qpayNote")}</div></div>
                   </div>
-                </Card>
-                <Card title={t("acc.loyalty")}>
-                  <p className="text-sm text-muted">{t("acc.loyaltyA")} <span className="text-ink font-semibold">{t("acc.loyaltyPoints")}</span> {t("acc.loyaltyB")}</p>
-                  <div className="h-2 bg-surface-2 rounded-pill mt-3 overflow-hidden"><div className="h-full bg-accent rounded-pill" style={{ width: "62%" }}/></div>
                 </Card>
               </div>
             )}
@@ -129,7 +163,7 @@ export default function AccountPage() {
                   <Empty msg={t("acc.noOrders")} cta/>
                 ) : (
                   <div className="divide-y divide-line">
-                    {orders.slice().reverse().map(o => <OrderRow key={o.id} o={o}/>)}
+                    {orders.map(o => <OrderRow key={o.id} o={o}/>)}
                   </div>
                 )}
               </Card>
@@ -150,31 +184,31 @@ export default function AccountPage() {
             )}
 
             {tab === "Addresses" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card title={t("acc.defaultHome")}>
-                  <p className="text-muted leading-relaxed text-sm">{user.firstName} {user.lastName}<br/>140 Performance Ave, Apt 3B<br/>Los Angeles, CA 90012</p>
-                  <button onClick={() => showToast(t("toast.editAddress"))} className="btn btn-outline btn-sm mt-4">{t("common.edit")}</button>
-                </Card>
-                <button onClick={() => showToast(t("toast.addAddress"))}
-                  className="border-2 border-dashed border-line rounded-2xl p-6 text-muted hover:border-ink/30 hover:text-ink transition grid place-items-center min-h-[140px]">
-                  <span className="text-3xl leading-none">+</span>
-                  <span className="text-sm mt-2">{t("acc.addAddress")}</span>
-                </button>
-              </div>
+              addresses.length === 0 ? (
+                <Card><Empty msg={t("acc.noAddress")} cta/></Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {addresses.map((a, i) => (
+                    <Card key={a.id || i} title={i === 0 ? t("acc.defaultHome") : t("acc.address")}>
+                      <AddressBlock a={a}/>
+                    </Card>
+                  ))}
+                </div>
+              )
             )}
 
             {tab === "Settings" && (
               <Card title={t("acc.profileSettings")}>
-                <form onSubmit={(e) => { e.preventDefault(); showToast(t("toast.profileSaved")); }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label={t("co.firstName")} defaultValue={user.firstName}/>
-                  <Field label={t("co.lastName")} defaultValue={user.lastName}/>
-                  <Field label={t("co.email")} defaultValue={user.email} full type="email"/>
-                  <Field label={t("co.phone")} defaultValue="+1 (213) 555-0142" full/>
+                <form onSubmit={saveProfile} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field name="first" label={t("co.firstName")} defaultValue={user.firstName}/>
+                  <Field name="last" label={t("co.lastName")} defaultValue={user.lastName}/>
+                  <Field name="email" label={t("co.email")} defaultValue={user.email} full type="email" readOnly/>
+                  <Field name="phone" label={t("co.phone")} defaultValue={user.phone} full/>
                   <label className="sm:col-span-2 flex items-center gap-2.5 text-sm text-muted">
                     <input type="checkbox" defaultChecked className="accent-accent"/> {t("acc.emailOptin")}
                   </label>
                   <div className="sm:col-span-2 flex gap-3 mt-2">
-                    <button type="submit" className="btn btn-primary">{t("acc.saveChanges")}</button>
+                    <button type="submit" disabled={saving} className="btn btn-primary disabled:opacity-60">{saving ? t("common.pleaseWait") : t("acc.saveChanges")}</button>
                     <button type="button" onClick={() => { signOut(); router.push("/"); }} className="btn btn-outline sm:hidden">{t("acc.signOut")}</button>
                   </div>
                 </form>
@@ -204,17 +238,27 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
     </div>
   );
 }
-function OrderRow({ o }: { o: OrderRecord }) {
+function OrderRow({ o }: { o: CustomerOrder }) {
   const t = useT();
   return (
     <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-sm truncate">{o.items.map(i => i.name).join(", ")}</div>
-        <div className="tiny">#{o.id} · {o.createdAt.slice(0, 10)}</div>
+        <div className="tiny">{o.id} · {o.createdAt.slice(0, 10)}</div>
       </div>
-      <span className={`px-2.5 py-1 rounded-pill text-[11px] font-semibold ${statusStyle[o.status]}`}>{t(`acc.status_${o.status}`)}</span>
+      <span className={`px-2.5 py-1 rounded-pill text-[11px] font-semibold ${statusStyle[o.status] ?? statusStyle.processing}`}>{t(`acc.status_${o.status}`)}</span>
       <span className="font-semibold text-sm num-tabular">{money(o.total)}</span>
     </div>
+  );
+}
+function AddressBlock({ a }: { a: any }) {
+  return (
+    <p className="text-muted leading-relaxed text-sm">
+      {[a.first_name, a.last_name].filter(Boolean).join(" ")}<br/>
+      {a.address_1}{a.address_2 ? `, ${a.address_2}` : ""}<br/>
+      {[a.city, a.province, a.postal_code].filter(Boolean).join(", ")}
+      {a.phone && <><br/>{a.phone}</>}
+    </p>
   );
 }
 function Empty({ msg, cta }: { msg: string; cta?: boolean }) {
@@ -226,11 +270,11 @@ function Empty({ msg, cta }: { msg: string; cta?: boolean }) {
     </div>
   );
 }
-function Field({ label, defaultValue, full, type = "text" }: { label: string; defaultValue?: string; full?: boolean; type?: string }) {
+function Field({ label, defaultValue, full, type = "text", name, readOnly }: { label: string; defaultValue?: string; full?: boolean; type?: string; name?: string; readOnly?: boolean }) {
   return (
     <label className={`field flex flex-col gap-1.5 ${full ? "sm:col-span-2" : ""}`}>
       <span className="text-xs font-medium text-muted">{label}</span>
-      <input type={type} defaultValue={defaultValue}/>
+      <input type={type} name={name} defaultValue={defaultValue} readOnly={readOnly} className={readOnly ? "opacity-60 cursor-not-allowed" : undefined}/>
     </label>
   );
 }

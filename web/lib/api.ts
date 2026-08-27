@@ -73,6 +73,21 @@ export const api = {
       return json<{ data: Order[] }>(r);
     },
   },
+  // Authenticated customer data (Medusa customer).
+  customers: {
+    orders: async (token: string) => {
+      if (USE_MEDUSA) return medusa.customers.orders(token);
+      return { data: [] as Awaited<ReturnType<typeof medusa.customers.orders>>["data"] };
+    },
+    addresses: async (token: string) => {
+      if (USE_MEDUSA) return medusa.customers.addresses(token);
+      return { data: [] as any[] };
+    },
+    update: async (token: string, patch: { firstName?: string; lastName?: string; phone?: string }) => {
+      if (USE_MEDUSA) return medusa.customers.update(token, patch);
+      throw new Error("Not supported");
+    },
+  },
 };
 
 export const money = (n: number) => `₮${Math.round(n).toLocaleString("en-US")}`;

@@ -32,6 +32,7 @@ const mapCustomer = (c: any): User => ({
   email: c.email,
   firstName: c.first_name || c.email?.split("@")[0] || "",
   lastName: c.last_name || "",
+  phone: c.phone || "",
 });
 
 async function authPost(path: string, body: any) {
@@ -45,6 +46,46 @@ async function fetchMe(token: string): Promise<User> {
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.customer) throw new Error("Could not load account");
   return mapCustomer(data.customer);
+}
+
+// POST that optionally carries the customer's auth token (links carts to the customer).
+async function mpostAuth(path: string, body: any, token?: string) {
+  const headers = token ? { ...H, authorization: `Bearer ${token}` } : H;
+  const res = await fetch(`${URL}/store/${path}`, { method: "POST", headers, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || `Medusa ${res.status}`);
+  return data;
+}
+
+// A customer's real order, mapped to the storefront's order shape.
+export type CustomerOrder = {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: string;
+  items: { name: string; quantity: number; amount: number }[];
+};
+async function fetchOrders(token: string): Promise<CustomerOrder[]> {
+  const q = new URLSearchParams({
+    limit: "50", order: "-created_at",
+    fields: "id,display_id,total,currency_code,created_at,status,fulfillment_status,*items",
+  });
+  const res = await fetch(`${URL}/store/orders?${q}`, { headers: { ...H, authorization: `Bearer ${token}` }, cache: "no-store" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || "Could not load orders");
+  return (data.orders || []).map((o: any): CustomerOrder => ({
+    id: o.display_id ? `NT-${o.display_id}` : o.id,
+    total: Math.round(o.total ?? 0),
+    // Medusa fulfillment_status drives the visible order state.
+    status: /delivered/.test(o.fulfillment_status) ? "delivered"
+      : /shipped|fulfilled/.test(o.fulfillment_status) ? "shipped" : "processing",
+    createdAt: o.created_at,
+    items: (o.items || []).map((it: any) => ({
+      name: it.product_title || it.title || "Бараа",
+      quantity: it.quantity,
+      amount: Math.round(Number(it.total ?? (it.unit_price * it.quantity)) || 0),
+    })),
+  }));
 }
 
 function map(m: any): Product {
@@ -166,6 +207,34 @@ export const medusa = {
     me: async (token: string) => ({ user: await fetchMe(token) }),
   },
 
+  // Authenticated customer data.
+  customers: {
+    // Real order history for the logged-in customer.
+    orders: async (token: string) => ({ data: await fetchOrders(token) }),
+    // Saved addresses (from the customer record).
+    addresses: async (token: string) => {
+      const res = await fetch(`${URL}/store/customers/me?fields=*addresses`, { headers: { ...H, authorization: `Bearer ${token}` }, cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Could not load addresses");
+      return { data: (data.customer?.addresses || []) as any[] };
+    },
+    // Update the customer's profile (name / phone).
+    update: async (token: string, patch: { firstName?: string; lastName?: string; phone?: string }) => {
+      const res = await fetch(`${URL}/store/customers/me`, {
+        method: "POST",
+        headers: { ...H, authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          ...(patch.firstName !== undefined ? { first_name: patch.firstName } : {}),
+          ...(patch.lastName !== undefined ? { last_name: patch.lastName } : {}),
+          ...(patch.phone !== undefined ? { phone: patch.phone } : {}),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.customer) throw new Error(data?.message || "Could not update profile");
+      return { user: mapCustomer(data.customer) };
+    },
+  },
+
   // Build a Medusa cart up to (but not including) completion. The order is
   // completed server-side by the Wire webhook/poll once payment succeeds.
   prepareCart: async (input: {
@@ -173,17 +242,18 @@ export const medusa = {
     items: { variantId: string; quantity: number }[];
     shippingMethod?: "standard" | "express";
     address: { first_name: string; last_name: string; address_1: string; city: string; postal_code: string; country_code: string; phone?: string };
+    token?: string; // logged-in customer → link the order to their account
   }) => {
-    const { cart } = await mpost("carts", {
+    const { cart } = await mpostAuth("carts", {
       region_id: REGION,
       email: input.email,
       items: input.items.map(i => ({ variant_id: i.variantId, quantity: i.quantity })),
-    });
-    await mpost(`carts/${cart.id}`, {
+    }, input.token);
+    await mpostAuth(`carts/${cart.id}`, {
       email: input.email,
       shipping_address: input.address,
       billing_address: input.address,
-    });
+    }, input.token);
     const { shipping_options } = await mfetch(`shipping-options?cart_id=${cart.id}`);
     const wantExpress = input.shippingMethod === "express";
     const opt = shipping_options.find((o: any) => (wantExpress ? /express/i : /standard/i).test(o.name)) || shipping_options[0];
