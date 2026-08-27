@@ -50,6 +50,8 @@ export default function AccountPage() {
     return useAuth.persist.onFinishHydration(() => setHydrated(true));
   }, []);
 
+  const refreshOrders = () => { if (token) api.customers.orders(token).then(r => setOrders(r.data)).catch(() => {}); };
+
   useEffect(() => {
     if (!hydrated) return;
     if (!user || !token) { router.push("/auth"); return; }
@@ -134,7 +136,7 @@ export default function AccountPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card title={t("acc.recentOrder")}>
                   {orders.length === 0 ? <Empty msg={t("acc.noOrders")} cta/> : (
-                    <OrderRow o={orders[0]}/>
+                    <OrderRow o={orders[0]} onReturned={refreshOrders}/>
                   )}
                 </Card>
                 <Card title={t("acc.summary")}>
@@ -163,7 +165,7 @@ export default function AccountPage() {
                   <Empty msg={t("acc.noOrders")} cta/>
                 ) : (
                   <div className="divide-y divide-line">
-                    {orders.map(o => <OrderRow key={o.id} o={o}/>)}
+                    {orders.map(o => <OrderRow key={o.id} o={o} onReturned={refreshOrders}/>)}
                   </div>
                 )}
               </Card>
@@ -238,16 +240,68 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
     </div>
   );
 }
-function OrderRow({ o }: { o: CustomerOrder }) {
+function OrderRow({ o, onReturned }: { o: CustomerOrder; onReturned?: () => void }) {
   const t = useT();
+  const token = useAuth(s => s.token);
+  const showToast = useToast(s => s.show);
+  const [open, setOpen] = useState(false);
+  const [sel, setSel] = useState<Record<string, boolean>>({});
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  // Only fulfilled orders can be returned (Medusa rejects unfulfilled items).
+  const returnable = (o.status === "delivered" || o.status === "shipped") && o.items.some(i => i.id);
+
+  async function submit() {
+    const items = o.items.filter(i => sel[i.id]).map(i => ({ id: i.id, quantity: i.quantity }));
+    if (!items.length) { showToast(t("acc.returnPick")); return; }
+    setBusy(true);
+    try {
+      await api.customers.createReturn({ token: token ?? undefined, orderId: o.orderId, items, note: note || undefined });
+      setDone(true); setOpen(false);
+      showToast(t("acc.returnSent"));
+      onReturned?.();
+    } catch (e: any) {
+      showToast(e?.message || t("acc.returnFailed"));
+    } finally { setBusy(false); }
+  }
+
   return (
-    <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-      <div className="min-w-0 flex-1">
-        <div className="font-semibold text-sm truncate">{o.items.map(i => i.name).join(", ")}</div>
-        <div className="tiny">{o.id} · {o.createdAt.slice(0, 10)}</div>
+    <div className="py-3 first:pt-0 last:pb-0">
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="font-semibold text-sm truncate">{o.items.map(i => i.name).join(", ")}</div>
+          <div className="tiny">{o.id} · {o.createdAt.slice(0, 10)}</div>
+        </div>
+        <span className={`px-2.5 py-1 rounded-pill text-[11px] font-semibold ${statusStyle[o.status] ?? statusStyle.processing}`}>{t(`acc.status_${o.status}`)}</span>
+        <span className="font-semibold text-sm num-tabular">{money(o.total)}</span>
       </div>
-      <span className={`px-2.5 py-1 rounded-pill text-[11px] font-semibold ${statusStyle[o.status] ?? statusStyle.processing}`}>{t(`acc.status_${o.status}`)}</span>
-      <span className="font-semibold text-sm num-tabular">{money(o.total)}</span>
+      {done ? (
+        <div className="mt-2 flex justify-end"><span className="tiny text-green-700 font-medium">{t("acc.returnRequested")}</span></div>
+      ) : returnable && (
+        <div className="mt-2 flex justify-end">
+          <button type="button" onClick={() => setOpen(v => !v)} className="text-[12px] text-accent hover:underline">
+            {open ? t("common.cancel") : t("acc.requestReturn")}
+          </button>
+        </div>
+      )}
+      {open && !done && (
+        <div className="mt-2 rounded-xl border border-line p-3 bg-surface-2">
+          <div className="text-[12px] font-medium mb-2">{t("acc.returnPick")}</div>
+          <div className="grid gap-1.5 mb-2.5">
+            {o.items.map(i => (
+              <label key={i.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                <input type="checkbox" className="accent-accent" checked={!!sel[i.id]} onChange={e => setSel(s => ({ ...s, [i.id]: e.target.checked }))}/>
+                <span className="flex-1 truncate">{i.name} × {i.quantity}</span>
+              </label>
+            ))}
+          </div>
+          <input value={note} onChange={e => setNote(e.target.value)} placeholder={t("acc.returnNote")} className="w-full mb-2.5 text-sm"/>
+          <button type="button" onClick={submit} disabled={busy} className="btn btn-primary text-sm px-4 py-2 disabled:opacity-60">
+            {busy ? t("common.pleaseWait") : t("acc.returnSubmit")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

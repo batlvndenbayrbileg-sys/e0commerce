@@ -86,7 +86,7 @@ const en: Dict = {
   // breadcrumbs + extra common
   "bc.home": "Home", "bc.shop": "Shop", "bc.cart": "Cart", "bc.checkout": "Checkout",
   "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
-  "common.required": "Required", "common.pleaseWait": "Please wait…", "common.close": "Close",
+  "common.required": "Required", "common.pleaseWait": "Please wait…", "common.close": "Close", "common.cancel": "Cancel",
   "common.decrease": "Decrease quantity", "common.increase": "Increase quantity", "common.rating": "Rating",
   "common.quickView": "Quick view", "common.viewDetails": "View details",
   "sg.chest": "Chest", "sg.waist": "Waist", "sg.hip": "Hip",
@@ -139,6 +139,8 @@ const en: Dict = {
   "acc.defaultHome": "Default · Home", "acc.expires": "Expires", "acc.addAddress": "Add address",
   "acc.wishEmpty": "Your wishlist is empty", "acc.ordersWord": "orders", "acc.emailOptin": "Email me about drops & restocks",
   "acc.status_processing": "Processing", "acc.status_shipped": "Shipped", "acc.status_delivered": "Delivered",
+  "acc.requestReturn": "Request return", "acc.returnPick": "Choose items to return", "acc.returnNote": "Reason (optional)",
+  "acc.returnSubmit": "Submit request", "acc.returnSent": "Return request submitted", "acc.returnFailed": "Return could not be requested", "acc.returnRequested": "Return requested",
   // shop
   "shop.items": "items", "shop.sort": "Sort", "shop.sortNew": "Newest", "shop.sortPriceAsc": "Price ↑",
   "shop.sortPriceDesc": "Price ↓", "shop.sortRating": "Top rated",
@@ -220,7 +222,7 @@ const mn: Dict = {
   // breadcrumbs + extra common
   "bc.home": "Нүүр", "bc.shop": "Дэлгүүр", "bc.cart": "Сагс", "bc.checkout": "Төлбөр",
   "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
-  "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…", "common.close": "Хаах",
+  "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…", "common.close": "Хаах", "common.cancel": "Болих",
   "common.decrease": "Тоо хорогдуулах", "common.increase": "Тоо нэмэгдүүлэх", "common.rating": "Үнэлгээ",
   "common.quickView": "Хурдан үзэх", "common.viewDetails": "Дэлгэрэнгүй үзэх",
   "sg.chest": "Цээж", "sg.waist": "Бэлхүүс", "sg.hip": "Хонго",
@@ -273,6 +275,8 @@ const mn: Dict = {
   "acc.defaultHome": "Үндсэн · Гэр", "acc.expires": "Дуусах", "acc.addAddress": "Хаяг нэмэх",
   "acc.wishEmpty": "Таны хадгалсан жагсаалт хоосон байна", "acc.ordersWord": "захиалга", "acc.emailOptin": "Шинэ бараа, нөөцийн талаар имэйл авах",
   "acc.status_processing": "Боловсруулж байна", "acc.status_shipped": "Илгээсэн", "acc.status_delivered": "Хүргэгдсэн",
+  "acc.requestReturn": "Буцаах хүсэлт", "acc.returnPick": "Буцаах бараагаа сонго", "acc.returnNote": "Шалтгаан (заавал биш)",
+  "acc.returnSubmit": "Хүсэлт илгээх", "acc.returnSent": "Буцаалтын хүсэлт илгээгдлээ", "acc.returnFailed": "Буцаалт илгээж чадсангүй", "acc.returnRequested": "Буцаалт хүссэн",
   // shop
   "shop.items": "бараа", "shop.sort": "Эрэмбэлэх", "shop.sortNew": "Шинэ", "shop.sortPriceAsc": "Үнэ ↑",
   "shop.sortPriceDesc": "Үнэ ↓", "shop.sortRating": "Үнэлгээгээр",

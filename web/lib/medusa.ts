@@ -68,11 +68,12 @@ async function mpostAuth(path: string, body: any, token?: string) {
 
 // A customer's real order, mapped to the storefront's order shape.
 export type CustomerOrder = {
-  id: string;
+  id: string;         // display id like NT-4 (for the customer)
+  orderId: string;    // Medusa order id (for returns)
   total: number;
   status: string;
   createdAt: string;
-  items: { name: string; quantity: number; amount: number }[];
+  items: { id: string; name: string; quantity: number; amount: number }[];
 };
 async function fetchOrders(token: string): Promise<CustomerOrder[]> {
   const q = new URLSearchParams({
@@ -84,12 +85,14 @@ async function fetchOrders(token: string): Promise<CustomerOrder[]> {
   if (!res.ok) throw new Error(data?.message || "Could not load orders");
   return (data.orders || []).map((o: any): CustomerOrder => ({
     id: o.display_id ? `NT-${o.display_id}` : o.id,
+    orderId: o.id,
     total: Math.round(o.total ?? 0),
     // Medusa fulfillment_status drives the visible order state.
     status: /delivered/.test(o.fulfillment_status) ? "delivered"
       : /shipped|fulfilled/.test(o.fulfillment_status) ? "shipped" : "processing",
     createdAt: o.created_at,
     items: (o.items || []).map((it: any) => ({
+      id: it.id,
       name: it.product_title || it.title || "Бараа",
       quantity: it.quantity,
       amount: Math.round(Number(it.total ?? (it.unit_price * it.quantity)) || 0),
@@ -281,6 +284,20 @@ export const medusa = {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.message || "Could not load addresses");
       return { data: (data.customer?.addresses || []) as any[] };
+    },
+    // Request a return for delivered items. Fetches the return shipping option
+    // (via our /store/return-options route) and posts to /store/returns.
+    createReturn: async (input: { token?: string; orderId: string; items: { id: string; quantity: number }[]; note?: string }) => {
+      const { return_options } = await mfetch(`return-options`);
+      const opt = (return_options || [])[0];
+      if (!opt) throw new Error("Буцаалтын хүргэлт тохируулаагүй байна.");
+      const data = await mpostAuth("returns", {
+        order_id: input.orderId,
+        items: input.items.map(i => ({ id: i.id, quantity: i.quantity })),
+        return_shipping: { option_id: opt.id },
+        ...(input.note ? { note: input.note } : {}),
+      }, input.token);
+      return { id: data.return?.id, status: data.return?.status ?? "requested" };
     },
     // Update the customer's profile (name / phone).
     update: async (token: string, patch: { firstName?: string; lastName?: string; phone?: string }) => {

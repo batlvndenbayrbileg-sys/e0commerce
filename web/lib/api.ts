@@ -87,6 +87,10 @@ export const api = {
       if (USE_MEDUSA) return medusa.customers.update(token, patch);
       throw new Error("Not supported");
     },
+    createReturn: async (input: { token?: string; orderId: string; items: { id: string; quantity: number }[]; note?: string }) => {
+      if (USE_MEDUSA) return medusa.customers.createReturn(input);
+      throw new Error("Not supported");
+    },
   },
 };
 
