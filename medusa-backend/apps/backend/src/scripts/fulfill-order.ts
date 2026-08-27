@@ -1,5 +1,5 @@
 import { ExecArgs } from "@medusajs/framework/types";
-import { Modules } from "@medusajs/framework/utils";
+import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import {
   createOrderFulfillmentWorkflow,
   createOrderShipmentWorkflow,
@@ -24,21 +24,40 @@ export default async function fulfillOrder({ container }: ExecArgs) {
   }
   if (!orderId) throw new Error("No order found.");
 
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
   const order = await orderModule.retrieveOrder(orderId, { relations: ["items"] });
   const items = (order.items || []).map((i: any) => ({ id: i.id, quantity: i.quantity }));
   if (!items.length) throw new Error(`Order ${orderId} has no items.`);
 
-  await createOrderFulfillmentWorkflow(container).run({ input: { order_id: orderId, items } });
-  logger.info(`Fulfilled order ${orderId}`);
+  // Fulfillments are linked to the order — resolve them via the query graph.
+  const fulfillmentsOf = async () => {
+    const { data } = await query.graph({
+      entity: "order",
+      fields: ["fulfillments.id", "fulfillments.shipped_at", "fulfillments.delivered_at"],
+      filters: { id: orderId },
+    });
+    return ((data?.[0] as any)?.fulfillments || []) as any[];
+  };
 
-  // Re-read to get the created fulfillment id.
-  const withFul = await orderModule.retrieveOrder(orderId, { relations: ["fulfillments"] });
-  const ful = (withFul as any).fulfillments?.[0];
-  if (ful) {
-    await createOrderShipmentWorkflow(container).run({ input: { order_id: orderId, fulfillment_id: ful.id, items } });
-    logger.info(`Shipped fulfillment ${ful.id}`);
-    await markOrderFulfillmentAsDeliveredWorkflow(container).run({ input: { order_id: orderId, fulfillment_id: ful.id } });
-    logger.info(`Delivered fulfillment ${ful.id}`);
+  let fulfillments = await fulfillmentsOf();
+  if (!fulfillments.length) {
+    await createOrderFulfillmentWorkflow(container).run({ input: { order_id: orderId, items } });
+    logger.info(`Fulfilled order ${orderId}`);
+    fulfillments = await fulfillmentsOf();
+  } else {
+    logger.info(`Order ${orderId} already has ${fulfillments.length} fulfillment(s)`);
   }
-  logger.info(`Order ${orderId} is now delivered — returns can be requested.`);
+
+  const deliver = process.env.DELIVER === "1";
+  for (const ful of fulfillments) {
+    if (!ful.shipped_at) {
+      await createOrderShipmentWorkflow(container).run({ input: { order_id: orderId, fulfillment_id: ful.id, items } });
+      logger.info(`Shipped fulfillment ${ful.id} → shipment.created emitted`);
+    }
+    if (deliver && !ful.delivered_at) {
+      await markOrderFulfillmentAsDeliveredWorkflow(container).run({ input: { order_id: orderId, fulfillment_id: ful.id } });
+      logger.info(`Delivered fulfillment ${ful.id}`);
+    }
+  }
+  logger.info(`Done. Order ${orderId} fulfilled${deliver ? " + delivered" : " + shipped"}.`);
 }
