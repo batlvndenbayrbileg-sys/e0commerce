@@ -1,5 +1,5 @@
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils";
-import { createProductsWorkflow } from "@medusajs/medusa/core-flows";
+import { createProductsWorkflow, updateInventoryLevelsWorkflow } from "@medusajs/medusa/core-flows";
 import { MN_TO_HANDLE } from "../scripts/seed-categories";
 
 // Shared catalog logic used by both the CLI importer and the admin UI, so bulk
@@ -151,4 +151,78 @@ export async function exportProductsCsv(container: any): Promise<string> {
     if (page.length < 500) break;
   }
   return lines.join("\n");
+}
+
+export type LowStockRow = { sku: string; variant: string; product: string; handle: string; stock: number };
+
+// Variants (inventory-managed) at or below a stock threshold, lowest first.
+export async function lowStockVariants(container: any, threshold = 5): Promise<LowStockRow[]> {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const out: LowStockRow[] = [];
+  for (let skip = 0; ; skip += 500) {
+    const { data } = await query.graph({
+      entity: "variant",
+      fields: [
+        "id", "sku", "title", "manage_inventory",
+        "product.title", "product.handle",
+        "inventory_items.inventory.location_levels.available_quantity",
+      ],
+      pagination: { skip, take: 500 },
+    });
+    for (const v of data as any[]) {
+      if (!v.manage_inventory) continue;
+      const levels = (v.inventory_items || []).flatMap((ii: any) => ii.inventory?.location_levels || []);
+      const stock = levels.reduce((a: number, l: any) => a + (l.available_quantity ?? 0), 0);
+      if (stock <= threshold) {
+        out.push({ sku: v.sku, variant: v.title, product: v.product?.title || "", handle: v.product?.handle || "", stock });
+      }
+    }
+    if (data.length < 500) break;
+  }
+  return out.sort((a, b) => a.stock - b.stock);
+}
+
+export type StockResult = { updated: number; notManaged: number; notFound: number };
+
+// Bulk-set stock from rows of { handle|sku, stock }. `sku` targets one variant;
+// `handle` sets every variant of that product. Only inventory-managed variants.
+export async function setStockFromRows(container: any, rows: Record<string, string>[]): Promise<StockResult> {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const stockLocationModule = container.resolve(Modules.STOCK_LOCATION);
+  const [location] = await stockLocationModule.listStockLocations({});
+  if (!location) throw new Error("No stock location found");
+
+  const byHandle = new Map<string, number>();
+  const bySku = new Map<string, number>();
+  for (const r of rows) {
+    const stock = Math.max(0, Math.round(Number(r.stock) || 0));
+    if (r.sku) bySku.set(r.sku.trim(), stock);
+    else if (r.handle) byHandle.set(r.handle.trim(), stock);
+  }
+
+  const updates: { inventory_item_id: string; location_id: string; stocked_quantity: number }[] = [];
+  let notManaged = 0, notFound = 0;
+  for (let skip = 0; ; skip += 500) {
+    const { data } = await query.graph({
+      entity: "variant",
+      fields: ["id", "sku", "manage_inventory", "product.handle", "inventory_items.inventory_item_id"],
+      pagination: { skip, take: 500 },
+    });
+    for (const v of data as any[]) {
+      let stock: number | undefined;
+      if (v.sku && bySku.has(v.sku)) stock = bySku.get(v.sku);
+      else if (v.product?.handle && byHandle.has(v.product.handle)) stock = byHandle.get(v.product.handle);
+      if (stock === undefined) continue;
+      if (!v.manage_inventory) { notManaged++; continue; }
+      const iid = (v.inventory_items || [])[0]?.inventory_item_id;
+      if (!iid) { notFound++; continue; }
+      updates.push({ inventory_item_id: iid, location_id: location.id, stocked_quantity: stock });
+    }
+    if (data.length < 500) break;
+  }
+
+  if (updates.length) {
+    await updateInventoryLevelsWorkflow(container).run({ input: { updates } });
+  }
+  return { updated: updates.length, notManaged, notFound };
 }

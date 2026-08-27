@@ -10,6 +10,8 @@ type Stats = {
   categories: { id: string; name: string; handle: string; count: number }[];
 };
 
+type LowStock = { sku: string; variant: string; product: string; handle: string; stock: number };
+
 async function adminFetch(path: string, init?: RequestInit) {
   const res = await fetch(`/admin${path}`, {
     credentials: "include",
@@ -27,9 +29,12 @@ const nf = (n: number) => new Intl.NumberFormat("mn-MN").format(n || 0);
 
 const CatalogPage = () => {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [lowStock, setLowStock] = useState<LowStock[]>([]);
   const [csv, setCsv] = useState("");
+  const [stockCsv, setStockCsv] = useState("");
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [savingStock, setSavingStock] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const loadStats = async () => {
@@ -40,7 +45,30 @@ const CatalogPage = () => {
       toast.error(e.message || "Статистик ачаалж чадсангүй");
     }
   };
-  useEffect(() => { loadStats(); }, []);
+  const loadLowStock = async () => {
+    try {
+      const res = await adminFetch("/catalog/low-stock?threshold=5");
+      setLowStock((await res.json()).variants || []);
+    } catch { /* inventory may be off */ }
+  };
+  useEffect(() => { loadStats(); loadLowStock(); }, []);
+
+  const runStock = async () => {
+    if (!stockCsv.trim()) { toast.error("CSV хоосон байна"); return; }
+    setSavingStock(true);
+    try {
+      const res = await adminFetch("/catalog/stock", { method: "POST", body: JSON.stringify({ csv: stockCsv }) });
+      const r = await res.json();
+      toast.success(`Нөөц шинэчлэгдлээ: ${nf(r.updated)} хувилбар`);
+      if (r.notManaged) toast.warning(`${nf(r.notManaged)} хувилбар нөөц хянадаггүй (алгассан)`);
+      setStockCsv("");
+      await loadLowStock();
+    } catch (e: any) {
+      toast.error(e.message || "Нөөц шинэчлэх амжилтгүй");
+    } finally {
+      setSavingStock(false);
+    }
+  };
 
   const onFile = async (f?: File) => {
     if (!f) return;
@@ -150,6 +178,58 @@ const CatalogPage = () => {
         <div className="mt-3">
           <Button variant="primary" onClick={runImport} isLoading={importing} disabled={!csv.trim()}>
             Импортлох
+          </Button>
+        </div>
+      </div>
+
+      {/* Low stock */}
+      <div className="px-6 py-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Text weight="plus" size="small">Бага нөөц (≤5)</Text>
+          <Badge color={lowStock.length ? "red" : "green"} size="2xsmall">{nf(lowStock.length)}</Badge>
+        </div>
+        {lowStock.length === 0 ? (
+          <Text className="text-ui-fg-subtle" size="small">Бага нөөцтэй бараа алга.</Text>
+        ) : (
+          <Table>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>Бараа</Table.HeaderCell>
+                <Table.HeaderCell>SKU</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">Нөөц</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {lowStock.map(v => (
+                <Table.Row key={v.sku}>
+                  <Table.Cell>{v.product} <span className="text-ui-fg-subtle">· {v.variant}</span></Table.Cell>
+                  <Table.Cell className="font-mono text-xs text-ui-fg-subtle">{v.sku}</Table.Cell>
+                  <Table.Cell className="text-right">
+                    <Badge color={v.stock === 0 ? "red" : "orange"} size="2xsmall">{v.stock}</Badge>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        )}
+      </div>
+
+      {/* Bulk stock update */}
+      <div className="px-6 py-4">
+        <Text weight="plus" size="small" className="mb-1">Нөөц шинэчлэх (CSV)</Text>
+        <Text className="text-ui-fg-subtle mb-3" size="xsmall">
+          Багана: <span className="font-mono">handle,stock</span> (бүх хувилбар) эсвэл <span className="font-mono">sku,stock</span> (нэг хувилбар).
+        </Text>
+        <Textarea
+          placeholder={"handle,stock\nglow-serum,50"}
+          value={stockCsv}
+          onChange={e => setStockCsv(e.target.value)}
+          rows={4}
+          className="font-mono text-xs"
+        />
+        <div className="mt-3">
+          <Button variant="secondary" onClick={runStock} isLoading={savingStock} disabled={!stockCsv.trim()}>
+            Нөөц шинэчлэх
           </Button>
         </div>
       </div>
