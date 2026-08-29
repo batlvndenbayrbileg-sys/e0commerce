@@ -48,13 +48,16 @@ export default function CheckoutPage() {
   }, [mounted, items]);
 
   const selectedShip = shipOptions.find(o => o.id === shipOptionId);
-  const shipping = selectedShip ? selectedShip.amount : 0;
+  // Automatic free shipping over the threshold (mirrors the backend promo so the
+  // summary matches the charge). Keep in sync with seed-free-shipping.ts.
+  const FREE_SHIP_THRESHOLD = 150000;
+  const freeByThreshold = subtotal >= FREE_SHIP_THRESHOLD;
+  const shipping = freeByThreshold ? 0 : (selectedShip ? selectedShip.amount : 0);
   const tax = 0;
   // Effective totals — Medusa's numbers when a coupon is applied, else local.
-  // Shipping is shown at its base rate; the coupon's effect (incl. free shipping)
-  // is reflected in the discount line, so subtotal + shipping − discount = total.
   const discount = promo ? promo.discountTotal : 0;
   const total = promo ? promo.total : subtotal + shipping + tax;
+  const freeShipRemaining = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
 
   async function applyPromo(code: string) {
     const c = code.trim();
@@ -247,6 +250,10 @@ export default function CheckoutPage() {
             <Row k={t("cart.subtotal")} v={money(subtotal)}/>
             {discount > 0 && <Row k={t("co.discount")} v={`− ${money(discount)}`}/>}
             <Row k={t("cart.shipping")} v={shipping === 0 ? t("common.free") : money(shipping)}/>
+            {mounted && !promo && (freeByThreshold
+              ? <div className="text-[12px] text-green-600 -mt-1 mb-1">✓ {t("co.freeShipEarned")}</div>
+              : freeShipRemaining > 0 && <div className="text-[12px] text-muted -mt-1 mb-1">{t("co.freeShipHintPre")} {money(freeShipRemaining)} {t("co.freeShipHintPost")}</div>
+            )}
             <Row k={t("cart.tax")} v={money(tax)}/>
             <div className="flex justify-between border-t border-border pt-4.5 mt-3 text-[18px] font-semibold">
               <span>{t("cart.total")}</span><span>{money(total)}</span>

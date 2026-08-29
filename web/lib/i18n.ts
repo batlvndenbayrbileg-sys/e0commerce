@@ -58,6 +58,7 @@ const en: Dict = {
   "co.terms": "By placing this order you agree to our Terms & Privacy.",
   "co.termsPre": "By placing this order you agree to our", "co.termsPost": ".",
   "co.order": "Order", "co.secure": "256-bit SSL · PCI compliant",
+  "co.freeShipEarned": "Free shipping unlocked", "co.freeShipHintPre": "Add", "co.freeShipHintPost": "more for free shipping",
   "co.promoTitle": "Discount code", "co.promoPlaceholder": "Promo code", "co.promoApply": "Apply",
   "co.promoApplied": "applied", "co.promoRemove": "Remove", "co.promoInvalid": "Invalid or expired code", "co.discount": "Discount",
   // processing / success
@@ -202,6 +203,7 @@ const mn: Dict = {
   "co.terms": "Захиалга өгснөөр та Үйлчилгээний нөхцөл, Нууцлалыг зөвшөөрнө.",
   "co.termsPre": "Захиалга өгснөөр та", "co.termsPost": "-ыг зөвшөөрнө.",
   "co.order": "Захиалга", "co.secure": "256-bit SSL · PCI стандарт",
+  "co.freeShipEarned": "Үнэгүй хүргэлт нээгдлээ", "co.freeShipHintPre": "Дахин", "co.freeShipHintPost": "-ийн бараа нэмбэл үнэгүй хүргэлт",
   "co.promoTitle": "Хямдралын код", "co.promoPlaceholder": "Промо код", "co.promoApply": "Идэвхжүүлэх",
   "co.promoApplied": "идэвхжлээ", "co.promoRemove": "Хасах", "co.promoInvalid": "Код буруу эсвэл хүчингүй", "co.discount": "Хямдрал",
   "proc.title": "Төлбөр баталгаажуулж байна", "proc.desc": "QPay эсвэл банкны аппаасаа хүсэлтийг зөвшөөрнө үү. Энэ хуудас автоматаар шинэчлэгдэнэ.",
