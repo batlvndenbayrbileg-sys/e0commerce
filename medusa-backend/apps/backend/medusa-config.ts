@@ -78,10 +78,13 @@ if (R2_ENDPOINT && R2_BUCKET) {
 const REDIS_URL = process.env.REDIS_URL
 const useRedis = process.env.NODE_ENV === 'production' && !!REDIS_URL
 if (useRedis) {
+  // Infrastructure modules MUST carry their module `key` so Medusa knows which
+  // built-in (in-memory) slot they replace — without it boot fails with
+  // "Module … doesn't have a serviceName. Please provide a 'key' …".
   modules.push(
-    { resolve: '@medusajs/event-bus-redis', options: { redisUrl: REDIS_URL } },
-    { resolve: '@medusajs/workflow-engine-redis', options: { redis: { url: REDIS_URL } } },
-    { resolve: '@medusajs/cache-redis', options: { redisUrl: REDIS_URL, ttl: 30 } },
+    { key: Modules.EVENT_BUS, resolve: '@medusajs/event-bus-redis', options: { redisUrl: REDIS_URL } },
+    { key: Modules.WORKFLOW_ENGINE, resolve: '@medusajs/workflow-engine-redis', options: { redis: { url: REDIS_URL } } },
+    { key: Modules.CACHE, resolve: '@medusajs/cache-redis', options: { redisUrl: REDIS_URL, ttl: 30 } },
   )
 }
 
