@@ -22,7 +22,7 @@ export type Permission =
   | "orders.read" | "orders.write"
   | "returns.read" | "returns.write"
   | "inventory.write"
-  | "customers.read"
+  | "customers.read" | "customers.write"
   | "promotions.write"
   | "content.write"
   | "analytics.read" | "reports.read"
@@ -33,7 +33,7 @@ export const ROLES: { value: Role; label: string; permissions: Permission[] | ["
   { value: "order_processor", label: "Захиалга боловсруулагч", permissions: ["orders.read", "orders.write", "returns.read", "returns.write", "catalog.read"] },
   { value: "catalog_manager", label: "Каталог менежер", permissions: ["catalog.read", "catalog.write", "inventory.write", "orders.read", "analytics.read"] },
   { value: "marketer", label: "Маркетер", permissions: ["promotions.write", "content.write", "analytics.read", "reports.read", "catalog.read"] },
-  { value: "support", label: "Дэмжлэг", permissions: ["orders.read", "customers.read", "returns.read", "returns.write"] },
+  { value: "support", label: "Дэмжлэг", permissions: ["orders.read", "customers.read", "customers.write", "returns.read", "returns.write"] },
   { value: "report_viewer", label: "Тайлан харагч", permissions: ["analytics.read", "reports.read"] },
 ];
 
