@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import { isRole } from "../../../../../lib/rbac";
+import { audit } from "../../../../../lib/audit";
 
 // POST /admin/users/:id/role  { role }
 // Assign an RBAC role to an admin user (stored on user.metadata.role).
@@ -18,5 +19,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     id,
     metadata: { ...(existing?.metadata || {}), role },
   } as any);
+  await audit(req.scope, {
+    actor_id: (req as any).auth_context?.actor_id || null,
+    action: "role.assign",
+    target: id,
+    meta: { role },
+  }, Date.now());
   res.json({ id, role, user: updated });
 }

@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { fulfillOrder } from "../../../../lib/fulfillment";
+import { audit } from "../../../../lib/audit";
 
 // POST /admin/fulfillment/batch  { order_ids: string[] }
 // Batch-fulfill orders (create a fulfillment for every line item). Reports per
@@ -20,5 +21,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     }
   }
   const fulfilled = results.filter((r) => r.ok).length;
+  await audit(req.scope, {
+    actor_id: (req as any).auth_context?.actor_id || null,
+    action: "fulfillment.batch",
+    target: `${orderIds.length} orders`,
+    meta: { fulfilled, failed: results.length - fulfilled },
+  }, Date.now());
   res.json({ fulfilled, failed: results.length - fulfilled, results });
 }

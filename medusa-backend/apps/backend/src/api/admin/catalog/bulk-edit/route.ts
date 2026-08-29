@@ -4,6 +4,7 @@ import {
   updateProductVariantsWorkflow,
   batchLinkProductsToCategoryWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { audit } from "../../../../lib/audit";
 
 // POST /admin/catalog/bulk-edit
 //   { product_ids: string[], set: { status?, price?, category_add?, category_remove? } }
@@ -79,6 +80,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       errors.category_remove = e?.message || "category remove failed";
     }
   }
+
+  await audit(req.scope, {
+    actor_id: (req as any).auth_context?.actor_id || null,
+    action: "catalog.bulk_edit",
+    target: `${ids.length} products`,
+    meta: { applied },
+  }, Date.now());
 
   res.json({ count: ids.length, applied, errors: Object.keys(errors).length ? errors : undefined });
 }

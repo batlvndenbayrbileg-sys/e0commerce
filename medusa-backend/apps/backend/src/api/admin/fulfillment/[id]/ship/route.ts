@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { shipOrder } from "../../../../../lib/fulfillment";
+import { audit } from "../../../../../lib/audit";
 
 // POST /admin/fulfillment/:id/ship  { tracking_number?, tracking_url? }
 // Ship the order's fulfillments (emits shipment.created → "shipped" email).
@@ -15,6 +16,12 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       res.status(400).json({ message: r.reason === "not_fulfilled" ? "Эхлээд биелүүлнэ үү" : "Илгээх зүйл алга" });
       return;
     }
+    await audit(req.scope, {
+      actor_id: (req as any).auth_context?.actor_id || null,
+      action: "fulfillment.ship",
+      target: id,
+      meta: { tracking_number: body.tracking_number || null },
+    }, Date.now());
     res.json({ shipped: r.shipped });
   } catch (e: any) {
     res.status(500).json({ message: e?.message || "Илгээх үед алдаа гарлаа" });
