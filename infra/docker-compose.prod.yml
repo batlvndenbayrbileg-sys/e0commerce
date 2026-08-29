@@ -143,6 +143,8 @@ services:
         NEXT_PUBLIC_USE_MEDUSA: "1"
         NEXT_PUBLIC_MEILISEARCH: ${NEXT_PUBLIC_MEILISEARCH:-1}
         NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_META_PIXEL_ID: ${NEXT_PUBLIC_META_PIXEL_ID:-}
     <<: *restart
     depends_on:
       - medusa

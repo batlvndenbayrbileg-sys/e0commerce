@@ -8,6 +8,7 @@ import { QuickViewModal } from "@/components/QuickViewModal";
 import { FlyLayer } from "@/components/FlyLayer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LangProvider } from "@/components/LangProvider";
+import { Consent } from "@/components/Consent";
 import { getServerLang, getServerT } from "@/lib/lang";
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <QuickViewModal />
           <FlyLayer />
           <MobileTabBar />
+          <Consent />
         </LangProvider>
       </body>
     </html>
