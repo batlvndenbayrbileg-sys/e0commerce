@@ -56,7 +56,7 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
               {CATS.map(c => (
                 <Link key={c.key} href={c.href}
                   className="flex items-center gap-2.5 bg-white border border-line rounded-pill pl-1.5 pr-4 py-1.5 shadow-soft hover:border-ink/30 transition whitespace-nowrap shrink-0">
-                  <span className="w-9 h-9 rounded-full overflow-hidden bg-surface-3 grid place-items-center shrink-0">
+                  <span className="relative w-9 h-9 rounded-full overflow-hidden bg-surface-3 grid place-items-center shrink-0">
                     <Photo src={c.img} alt="" fallback={<span className="w-full h-full bg-surface-3"/>}
                       imgClassName="w-full h-full object-cover"/>
                   </span>

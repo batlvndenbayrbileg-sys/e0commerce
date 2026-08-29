@@ -66,7 +66,7 @@ export default function CartPage() {
               ) : (
                 items.map(it => (
                   <div key={it.variantId || it.id} className="flex gap-3 sm:gap-4 items-center p-3 sm:p-4 border-b border-line last:border-none">
-                    <div className="w-[78px] h-[78px] sm:w-[92px] sm:h-[92px] shrink-0 rounded-xl overflow-hidden bg-graphite">
+                    <div className="relative w-[78px] h-[78px] sm:w-[92px] sm:h-[92px] shrink-0 rounded-xl overflow-hidden bg-graphite">
                       <Photo src={it.image ?? productImg(it.id)} alt={it.name}
                         fallback={<div className="w-full h-full grid place-items-center card-dark"><ProductVisual product={{ shape: it.shape, accent: it.accent }} size="sm"/></div>}
                         imgClassName="w-full h-full object-cover"/>

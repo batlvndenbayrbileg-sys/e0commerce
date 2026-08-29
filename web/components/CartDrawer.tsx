@@ -78,7 +78,7 @@ export function CartDrawer() {
                 <div data-lenis-prevent className="flex-1 overflow-y-auto px-3 py-2">
                   {items.map(it => (
                     <div key={it.variantId || it.id} className="flex gap-3 items-center p-2.5 border-b border-line last:border-none">
-                      <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-graphite">
+                      <div className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-graphite">
                         <Photo src={it.image ?? productImg(it.id)} alt={it.name}
                           fallback={<div className="w-full h-full grid place-items-center card-dark"><ProductVisual product={{ shape: it.shape, accent: it.accent }} size="sm"/></div>}
                           imgClassName="w-full h-full object-cover"/>
