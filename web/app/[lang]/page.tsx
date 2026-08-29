@@ -6,6 +6,7 @@ import { Photo } from "@/components/Photo";
 import { HeroCarousel, type Slide } from "@/components/HeroCarousel";
 import { ArrowUpRight, ArrowRight } from "@/components/Icons";
 import { api } from "@/lib/api";
+import { medusa } from "@/lib/medusa";
 import { PRODUCT_IMG, HERO_IMG, FILM_IMG, productImg } from "@/lib/images";
 import { NewsletterForm } from "./_components/NewsletterForm";
 import { Reveal } from "./_components/Reveal";
@@ -26,14 +27,44 @@ const CATS = [
 
 export default async function HomePage({ params }: { params: { lang: Lang } }) {
   const t = tFor(params.lang);
-  const { data: products } = await api.products.list({});
+  const L = params.lang;
+  const [{ data: products }, cms] = await Promise.all([
+    api.products.list({}),
+    medusa.homepageContent(),
+  ]);
   const hot = products.find(p => p.badge === "Sale") || products[0];
 
-  const slides: Slide[] = [
+  const defaultSlides: Slide[] = [
     { kicker: t("home.s1Kicker"), top: t("home.s1Top"), accent: t("home.s1Accent"), desc: t("home.s1Desc"), img: FILM_IMG, href: "/shop" },
     { kicker: t("home.s2Kicker"), top: t("home.s2Top"), accent: t("home.s2Accent"), desc: t("home.s2Desc"), img: PRODUCT_IMG.p4, href: "/shop?category=Skincare" },
     { kicker: t("home.s3Kicker"), top: t("home.s3Top"), accent: t("home.s3Accent"), desc: t("home.s3Desc"), img: PRODUCT_IMG.p6, href: "/shop?category=Makeup" },
   ];
+  // Admin CMS overrides the defaults when hero slides have been configured.
+  const slides: Slide[] = cms?.hero?.length
+    ? cms.hero.map(s => ({
+        kicker: s.kicker[L] || s.kicker.mn,
+        top: s.top[L] || s.top.mn,
+        accent: s.accent[L] || s.accent.mn,
+        desc: s.desc[L] || s.desc.mn,
+        img: s.img || FILM_IMG,
+        href: s.href || "/shop",
+      }))
+    : defaultSlides;
+
+  // Promo banner: CMS when enabled, else the built-in copy.
+  const promo = cms?.promo?.enabled
+    ? {
+        kicker: cms.promo.kicker[L] || cms.promo.kicker.mn,
+        title: cms.promo.title[L] || cms.promo.title.mn,
+        desc: cms.promo.desc[L] || cms.promo.desc.mn,
+        cta: cms.promo.cta[L] || cms.promo.cta.mn,
+        href: cms.promo.href || "/shop?filter=sale",
+        img: cms.promo.img || (hot.image ?? productImg(hot.id)),
+      }
+    : {
+        kicker: t("home.promoKicker"), title: t("home.promoTitle"), desc: t("home.promoDesc"),
+        cta: t("home.promoCta"), href: "/shop?filter=sale", img: hot.image ?? productImg(hot.id),
+      };
 
   return (
     <>
@@ -94,16 +125,16 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
             <div className="relative overflow-hidden rounded-[2rem] bg-accent text-white grid grid-cols-1 lg:grid-cols-2 items-center min-h-[280px]">
               <div className="absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-white/15 blur-2xl"/>
               <div className="relative z-10 p-8 sm:p-12">
-                <span className="eyebrow text-ink/75">{t("home.promoKicker")}</span>
-                <h2 className="hd-2 mt-3 text-ink">{t("home.promoTitle")}</h2>
-                <p className="text-ink/80 mt-3 max-w-[360px]">{t("home.promoDesc")}</p>
-                <Link href="/shop?filter=sale" className="btn btn-light mt-6">
-                  {t("home.promoCta")}
+                <span className="eyebrow text-ink/75">{promo.kicker}</span>
+                <h2 className="hd-2 mt-3 text-ink">{promo.title}</h2>
+                <p className="text-ink/80 mt-3 max-w-[360px]">{promo.desc}</p>
+                <Link href={promo.href} className="btn btn-light mt-6">
+                  {promo.cta}
                   <span className="arrow-cap"><ArrowUpRight width={14} height={14}/></span>
                 </Link>
               </div>
               <div className="relative h-[220px] lg:h-full min-h-[240px]">
-                <Photo src={hot.image ?? productImg(hot.id)} alt={hot.name}
+                <Photo src={promo.img} alt={promo.title}
                   fallback={<div className="absolute inset-0"/>}
                   imgClassName="absolute inset-0 w-full h-full object-cover"/>
                 <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent/40 to-transparent lg:from-accent/80"/>

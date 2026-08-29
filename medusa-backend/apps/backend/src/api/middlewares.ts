@@ -41,6 +41,7 @@ export default defineMiddlewares({
     { matcher: "/admin/fulfillment/*", methods: ["POST"], middlewares: [requirePermission("orders.write")] },
     { matcher: "/admin/crm/*", methods: ["GET"], middlewares: [requirePermission("customers.read")] },
     { matcher: "/admin/crm/*", methods: ["POST"], middlewares: [requirePermission("customers.write")] },
+    { matcher: "/admin/cms/*", methods: ["GET", "POST"], middlewares: [requirePermission("content.write")] },
     { matcher: "/admin/returns/:id/approve", methods: ["POST"], middlewares: [requirePermission("returns.write")] },
     { matcher: "/admin/users/:id/role", methods: ["POST"], middlewares: [requirePermission("team.manage")] },
   ],

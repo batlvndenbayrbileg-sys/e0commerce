@@ -458,4 +458,20 @@ export const medusa = {
       estimatedDelivery: new Date(Date.now() + (wantExpress ? 2 : 4) * 86400000).toISOString().slice(0, 10),
     };
   },
+
+  // Admin-editable homepage content (CMS, spec A4). Returns null on any failure
+  // so the homepage always falls back to its built-in defaults.
+  homepageContent: async (): Promise<HomepageCms | null> => {
+    try {
+      const { content } = await mfetch("cms/homepage", 1, BROWSE_REVALIDATE);
+      return content as HomepageCms;
+    } catch {
+      return null;
+    }
+  },
 };
+
+export type CmsBi = { mn: string; en: string };
+export type CmsSlide = { kicker: CmsBi; top: CmsBi; accent: CmsBi; desc: CmsBi; img: string; href: string };
+export type CmsPromo = { enabled: boolean; kicker: CmsBi; title: CmsBi; desc: CmsBi; cta: CmsBi; href: string; img: string };
+export type HomepageCms = { hero: CmsSlide[]; promo: CmsPromo };
