@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, useToast, useUI, flyToCart } from "@/lib/store";
-import { useT } from "@/components/LangProvider";
+import { useT, useLang } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { ArrowUpRight, ArrowRight } from "@/components/Icons";
 import type { Product } from "@/lib/types";
@@ -10,6 +10,7 @@ import type { Product } from "@/lib/types";
 export function AddToCart({ product }: { product: Product }) {
   const router = useRouter();
   const t = useT();
+  const lang = useLang();
   const add = useCart(s => s.add);
   const showToast = useToast(s => s.show);
   const openCart = useUI(s => s.openCart);
@@ -73,7 +74,7 @@ export function AddToCart({ product }: { product: Product }) {
             <span className="arrow-cap"><ArrowRight width={14} height={14}/></span>
           </button>
           <button
-            onClick={(e) => handleAdd(e.currentTarget, () => router.push("/checkout"))}
+            onClick={(e) => handleAdd(e.currentTarget, () => router.push(`/${lang}/checkout`))}
             className="btn flex-1 justify-center bg-white text-ink border border-ink/15 hover:border-ink hover:-translate-y-0.5 transition-all"
           >
             {t("common.buyNow")}

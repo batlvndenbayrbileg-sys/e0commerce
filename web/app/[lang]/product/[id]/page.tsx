@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
@@ -8,18 +8,32 @@ import { productImg } from "@/lib/images";
 import { AddToCart } from "./_AddToCart";
 import { Tabs } from "./_Tabs";
 import { Gallery } from "./_Gallery";
-import { Reveal } from "@/app/_components/Reveal";
-import { getServerT } from "@/lib/lang";
+import { Reveal } from "@/app/[lang]/_components/Reveal";
+import { tFor, type Lang, LOCALES } from "@/lib/i18n";
 
-export const dynamic = "force-dynamic";
+// ISR: cacheable data fetches + no cookies() → product pages render statically
+// and revalidate in the background (fast LCP).
+export const revalidate = 300;
+export const dynamicParams = true; // products not prerendered below render on-demand
+
+// Prerender existing products (both locales) as static HTML. For a very large
+// catalog, cap this to top-N and let the rest render on-demand (dynamicParams).
+export async function generateStaticParams() {
+  try {
+    const { data } = await api.products.list({});
+    return LOCALES.flatMap(lang => data.map(p => ({ lang, id: p.slug })));
+  } catch {
+    return [];
+  }
+}
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://naran.mn").replace(/\/$/, "");
 
 // Per-product SEO: title, description, canonical, and Open Graph image.
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { lang: string; id: string } }): Promise<Metadata> {
   try {
     const { data: p } = await api.products.get(params.id);
-    const url = `${SITE_URL}/product/${p.slug}`;
+    const url = `${SITE_URL}/${params.lang}/product/${p.slug}`;
     const desc = (p.shortDesc || p.description || `${p.name} — NARAN`).slice(0, 160);
     const img = p.image ?? productImg(p.id);
     return {
@@ -33,8 +47,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 }
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const t = getServerT();
+export default async function ProductPage({ params }: { params: { lang: Lang; id: string } }) {
+  const t = tFor(params.lang);
   const { data: product, related } = await api.products.get(params.id);
   const img = product.image ?? productImg(product.id);
 
@@ -51,7 +65,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
       priceCurrency: "MNT",
       price: product.price,
       availability: (product.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-      url: `${SITE_URL}/product/${product.slug}`,
+      url: `${SITE_URL}/${params.lang}/product/${product.slug}`,
     },
     ...(product.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating, reviewCount: product.reviews || 1 } } : {}),
   };

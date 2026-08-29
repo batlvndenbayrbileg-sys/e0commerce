@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { usePathname } from "next/navigation";
 import { HomeIcon, SearchIcon, BagIcon, UserIcon } from "./Icons";
 import { useT } from "./LangProvider";

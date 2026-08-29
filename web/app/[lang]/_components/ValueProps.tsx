@@ -1,4 +1,4 @@
-import { getServerT } from "@/lib/lang";
+import { tFor, type Lang } from "@/lib/i18n";
 
 const ico = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
@@ -14,8 +14,8 @@ const ITEMS = [
   { Icon: Secure, k: "home.vpSecure", s: "home.vpSecureSub" },
 ];
 
-export function ValueProps() {
-  const t = getServerT();
+export function ValueProps({ lang }: { lang: Lang }) {
+  const t = tFor(lang);
   return (
     <section className="mt-9">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Photo } from "./Photo";
 import { ArrowUpRight } from "./Icons";
 import { useT } from "./LangProvider";

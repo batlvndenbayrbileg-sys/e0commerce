@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
@@ -11,9 +11,9 @@ import { NewsletterForm } from "./_components/NewsletterForm";
 import { Reveal } from "./_components/Reveal";
 import { ValueProps } from "./_components/ValueProps";
 import { Marquee } from "./_components/Marquee";
-import { getServerT } from "@/lib/lang";
+import { tFor, type Lang } from "@/lib/i18n";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const CATS = [
   { key: "cat.all",        href: "/shop",                     img: HERO_IMG },
@@ -24,8 +24,8 @@ const CATS = [
   { key: "cat.Gift",       href: "/shop?category=Gift",       img: PRODUCT_IMG.p5 },
 ];
 
-export default async function HomePage() {
-  const t = getServerT();
+export default async function HomePage({ params }: { params: { lang: Lang } }) {
+  const t = tFor(params.lang);
   const { data: products } = await api.products.list({});
   const hot = products.find(p => p.badge === "Sale") || products[0];
 
@@ -67,7 +67,7 @@ export default async function HomePage() {
           </section>
 
           {/* ===================== VALUE PROPS ===================== */}
-          <ValueProps />
+          <ValueProps lang={params.lang} />
 
           {/* ===================== RECOMMEND ===================== */}
           <section className="mt-9">

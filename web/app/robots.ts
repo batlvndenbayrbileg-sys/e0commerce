@@ -7,8 +7,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Private / non-indexable areas.
-      disallow: ["/account", "/checkout", "/cart", "/auth", "/api/"],
+      // Private / non-indexable areas (any locale prefix).
+      disallow: ["/*/account", "/*/checkout", "/*/cart", "/*/auth", "/api/"],
     },
     sitemap: `${BASE}/sitemap.xml`,
     host: BASE,

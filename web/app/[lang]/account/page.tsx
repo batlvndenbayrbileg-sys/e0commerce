@@ -1,12 +1,12 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { useAuth, useWish, useToast } from "@/lib/store";
-import { useT } from "@/components/LangProvider";
+import { useT, useLang } from "@/components/LangProvider";
 import { Skeleton } from "@/components/Skeleton";
 import { CountUp } from "@/components/CountUp";
 import { api, money } from "@/lib/api";
@@ -29,6 +29,7 @@ const statusStyle: Record<string, string> = {
 export default function AccountPage() {
   const router = useRouter();
   const t = useT();
+  const lang = useLang();
   const user = useAuth(s => s.user);
   const token = useAuth(s => s.token);
   const setSession = useAuth(s => s.setSession);
@@ -54,7 +55,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!user || !token) { router.push("/auth"); return; }
+    if (!user || !token) { router.push(`/${lang}/auth`); return; }
     api.customers.orders(token).then(r => setOrders(r.data)).catch(() => {});
     api.customers.addresses(token).then(r => setAddresses(r.data)).catch(() => {});
     api.products.list({}).then(r => setAllProducts(r.data)).catch(() => {}).finally(() => setLoadingProducts(false));
@@ -105,7 +106,7 @@ export default function AccountPage() {
                   {t("acc.goldMember")} · 1,240 {t("acc.pts")}
                 </span>
               </div>
-              <button onClick={() => { signOut(); router.push("/"); }}
+              <button onClick={() => { signOut(); router.push(`/${lang}`); }}
                 className="ml-auto hidden sm:inline-flex btn btn-outline btn-sm">{t("acc.signOut")}</button>
             </div>
 
@@ -211,7 +212,7 @@ export default function AccountPage() {
                   </label>
                   <div className="sm:col-span-2 flex gap-3 mt-2">
                     <button type="submit" disabled={saving} className="btn btn-primary disabled:opacity-60">{saving ? t("common.pleaseWait") : t("acc.saveChanges")}</button>
-                    <button type="button" onClick={() => { signOut(); router.push("/"); }} className="btn btn-outline sm:hidden">{t("acc.signOut")}</button>
+                    <button type="button" onClick={() => { signOut(); router.push(`/${lang}`); }} className="btn btn-outline sm:hidden">{t("acc.signOut")}</button>
                   </div>
                 </form>
               </Card>

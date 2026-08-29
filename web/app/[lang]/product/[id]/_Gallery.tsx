@@ -67,7 +67,7 @@ export function Gallery({ product, img }: { product: Product; img: string }) {
             transition: "transform 0.25s ease-out",
           }}
         >
-          <Photo src={current} alt={product.name}
+          <Photo src={current} alt={product.name} priority
             fallback={<div className="absolute inset-0 grid place-items-center card-dark"><ProductVisual product={product} size="lg"/></div>}
             imgClassName="absolute inset-0 w-full h-full object-cover"/>
         </div>

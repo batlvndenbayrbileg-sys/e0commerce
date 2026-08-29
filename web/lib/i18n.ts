@@ -1,6 +1,8 @@
 export type Lang = "mn" | "en";
 export const LANGS: Lang[] = ["mn", "en"];
+export const LOCALES = LANGS;
 export const DEFAULT_LANG: Lang = "mn";
+export const isLang = (v: unknown): v is Lang => v === "mn" || v === "en";
 
 type Dict = Record<string, string>;
 

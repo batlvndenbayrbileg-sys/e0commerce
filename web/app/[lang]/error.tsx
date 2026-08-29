@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect } from "react";
 
 // Branded error boundary — replaces the raw "Application error" white screen if a

@@ -1,6 +1,6 @@
 "use client";
 import Script from "next/script";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
 import { useT } from "./LangProvider";
 

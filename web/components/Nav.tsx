@@ -1,11 +1,11 @@
 "use client";
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { LocaleLink as Link } from "@/components/LocaleLink";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SearchIcon, BagIcon, UserIcon } from "./Icons";
 import { useAuth, useCart, useUI } from "@/lib/store";
-import { useT } from "./LangProvider";
+import { useT, useLang } from "./LangProvider";
 import { LangToggle } from "./LangToggle";
 
 function Bell({ size = 18 }: { size?: number }) {
@@ -26,7 +26,6 @@ function Sliders({ size = 18 }: { size?: number }) {
 export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const items = useCart(s => s.items);
   const user = useAuth(s => s.user);
   const openCart = useUI(s => s.openCart);
@@ -34,10 +33,12 @@ export function Nav() {
   useEffect(() => setMounted(true), []);
   const count = mounted ? items.reduce((a, b) => a + b.qty, 0) : 0;
   const t = useT();
+  const lang = useLang();
 
   const [q, setQ] = useState("");
-  // Keep the field in sync with the active query when browsing the shop.
-  useEffect(() => { setQ(searchParams.get("q") ?? ""); }, [searchParams]);
+  // Keep the field in sync with the active query (client-only read → no CSR
+  // bailout, so pages using <Nav> can still be statically rendered).
+  useEffect(() => { setQ(new URLSearchParams(window.location.search).get("q") ?? ""); }, [pathname]);
 
   // Keyboard: Cmd/Ctrl+K or "/" focuses the visible search input.
   useEffect(() => {
@@ -58,7 +59,7 @@ export function Nav() {
   function search(e: React.FormEvent) {
     e.preventDefault();
     const term = q.trim();
-    router.push(term ? `/shop?q=${encodeURIComponent(term)}` : "/shop");
+    router.push(term ? `/${lang}/shop?q=${encodeURIComponent(term)}` : `/${lang}/shop`);
   }
 
   const Bag = (

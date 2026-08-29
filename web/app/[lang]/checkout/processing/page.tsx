@@ -2,11 +2,12 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart, useOrders } from "@/lib/store";
-import { useT } from "@/components/LangProvider";
+import { useT, useLang } from "@/components/LangProvider";
 import { wire } from "@/lib/wire";
 
 function Processing() {
   const t = useT();
+  const lang = useLang();
   const router = useRouter();
   const params = useSearchParams();
   const pi = params.get("pi");
@@ -37,7 +38,7 @@ function Processing() {
             estimatedDelivery: order.estimatedDelivery,
           });
           clear();
-          router.replace(`/checkout/success?id=${encodeURIComponent(order.id)}&total=${order.total}`);
+          router.replace(`/${lang}/checkout/success?id=${encodeURIComponent(order.id)}&total=${order.total}`);
           return;
         }
       } catch (e: any) {
@@ -67,7 +68,7 @@ function Processing() {
             <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-surface-2 grid place-items-center text-2xl">!</div>
             <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.pendingTitle")}</h1>
             <p className="text-muted mt-3">{error}</p>
-            <button onClick={() => router.push("/cart")} className="btn btn-primary mt-6">{t("proc.backToCart")}</button>
+            <button onClick={() => router.push(`/${lang}/cart`)} className="btn btn-primary mt-6">{t("proc.backToCart")}</button>
           </>
         )}
       </div>

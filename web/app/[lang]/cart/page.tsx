@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";

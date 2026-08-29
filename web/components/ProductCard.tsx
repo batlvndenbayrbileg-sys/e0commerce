@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { motion } from "framer-motion";
 import { ProductVisual } from "./ProductVisual";
 import { Photo } from "./Photo";

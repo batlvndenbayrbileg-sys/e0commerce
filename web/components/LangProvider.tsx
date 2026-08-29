@@ -21,6 +21,9 @@ export function useT() {
   return tFor(useContext(LangCtx));
 }
 export function setLang(l: Lang) {
+  // Remember the choice (middleware uses it for locale-less URLs) and navigate to
+  // the same page under the new locale prefix.
   document.cookie = `lang=${l};path=/;max-age=31536000;samesite=lax`;
-  location.reload();
+  const stripped = window.location.pathname.replace(/^\/(mn|en)(?=\/|$)/, "");
+  window.location.href = `/${l}${stripped}${window.location.search}`;
 }

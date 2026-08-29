@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Archivo, Archivo_Black, Rubik, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { Toast } from "@/components/Toast";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -9,7 +10,7 @@ import { FlyLayer } from "@/components/FlyLayer";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LangProvider } from "@/components/LangProvider";
 import { Consent } from "@/components/Consent";
-import { getServerLang, getServerT } from "@/lib/lang";
+import { LOCALES, isLang, tFor } from "@/lib/i18n";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://naran.mn"),
@@ -23,21 +24,23 @@ export const metadata: Metadata = {
   },
 };
 
+// Pre-render both locales → static/ISR pages, no cookies() (fast LCP).
+export function generateStaticParams() {
+  return LOCALES.map(lang => ({ lang }));
+}
+
 // Self-hosted via next/font: no render-blocking external CSS, no FOUT (swap + fallback).
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-archivo", display: "swap" });
 const archivoBlack = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo-black", display: "swap" });
 const rubik = Rubik({ subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-rubik", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jetbrains", display: "swap" });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const lang = getServerLang();
-  const t = getServerT();
+export default function LangLayout({ children, params }: { children: React.ReactNode; params: { lang: string } }) {
+  if (!isLang(params.lang)) notFound();
+  const lang = params.lang;
+  const t = tFor(lang);
   return (
     <html lang={lang} className={`${archivo.variable} ${archivoBlack.variable} ${rubik.variable} ${mono.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
-      </head>
       <body className="font-sans pb-24 lg:pb-0">
         <a href="#main" className="skip-link">{t("a11y.skip")}</a>
         <LangProvider lang={lang}>

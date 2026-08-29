@@ -1,11 +1,11 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { CheckIcon, LockIcon } from "@/components/Icons";
 import { useCart, useToast, useAuth } from "@/lib/store";
-import { useT } from "@/components/LangProvider";
+import { useT, useLang } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { medusa } from "@/lib/medusa";
 import { wire } from "@/lib/wire";
@@ -13,6 +13,7 @@ import { wire } from "@/lib/wire";
 export default function CheckoutPage() {
   const router = useRouter();
   const t = useT();
+  const lang = useLang();
   const items = useCart(s => s.items);
   const clear = useCart(s => s.clear);
   const showToast = useToast(s => s.show);
@@ -115,7 +116,7 @@ export default function CheckoutPage() {
         window.location.href = intent.checkoutUrl;
         return;
       }
-      router.push(`/checkout/processing?pi=${encodeURIComponent(intent.intentId)}`);
+      router.push(`/${lang}/checkout/processing?pi=${encodeURIComponent(intent.intentId)}`);
     } catch (err: any) {
       showToast(err.message || t("toast.payFailed"));
       setBusy(false);

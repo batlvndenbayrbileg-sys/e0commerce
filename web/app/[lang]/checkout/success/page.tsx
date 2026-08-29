@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckIcon } from "@/components/Icons";

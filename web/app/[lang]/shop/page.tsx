@@ -1,21 +1,23 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
 import { ArrowRight } from "@/components/Icons";
 import { api } from "@/lib/api";
-import { getServerT } from "@/lib/lang";
+import { tFor, type Lang } from "@/lib/i18n";
 import { SortSelect, ShopFilters } from "./_ShopControls";
-import { Reveal } from "@/app/_components/Reveal";
+import { Reveal } from "@/app/[lang]/_components/Reveal";
 
+// Reads searchParams (filters) → dynamic; product data is still fetch-cached.
 export const dynamic = "force-dynamic";
 
 const cats = ["all", "Fragrance", "Skincare", "Makeup", "Body", "Gift"];
 
 export default async function ShopPage({
+  params,
   searchParams,
-}: { searchParams: { category?: string; sort?: string; q?: string; gender?: string; filter?: string; color?: string; tech?: string; minPrice?: string; maxPrice?: string } }) {
-  const t = getServerT();
+}: { params: { lang: Lang }; searchParams: { category?: string; sort?: string; q?: string; gender?: string; filter?: string; color?: string; tech?: string; minPrice?: string; maxPrice?: string } }) {
+  const t = tFor(params.lang);
   const [{ data: products, total }, allForColors] = await Promise.all([
     api.products.list({
       category: searchParams.category,

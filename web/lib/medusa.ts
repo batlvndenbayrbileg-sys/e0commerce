@@ -17,18 +17,24 @@ const MEILI_ENABLED = (process.env.NEXT_PUBLIC_MEILISEARCH ?? "") === "1";
 const FIELDS = "id,title,handle,description,thumbnail,*categories,*images,*options,*options.values,*variants,*variants.calculated_price,*variants.manage_inventory,*variants.inventory_items.inventory.location_levels.available_quantity";
 const H = { "content-type": "application/json", "x-publishable-api-key": PK };
 
-async function mfetch(path: string, retries = 1): Promise<any> {
+// `revalidate` (seconds) makes the fetch cacheable → the calling page can render
+// statically / ISR (fast LCP). Omit → no-store (fresh; carts, auth, orders).
+async function mfetch(path: string, retries = 1, revalidate?: number): Promise<any> {
+  const cacheOpt = typeof revalidate === "number" ? { next: { revalidate } } : { cache: "no-store" as const };
   try {
-    const res = await fetch(`${URL}/store/${path}`, { headers: H, cache: "no-store" });
+    const res = await fetch(`${URL}/store/${path}`, { headers: H, ...cacheOpt });
     if (!res.ok) throw new Error(`Medusa ${res.status}`);
     return res.json();
   } catch (e) {
     // Retry once — smooths over transient backend hiccups / cold starts so a
     // single slow request doesn't 500 the whole page.
-    if (retries > 0) { await new Promise(r => setTimeout(r, 350)); return mfetch(path, retries - 1); }
+    if (retries > 0) { await new Promise(r => setTimeout(r, 350)); return mfetch(path, retries - 1, revalidate); }
     throw e;
   }
 }
+// ISR windows (seconds): browse/category lists vs single product page.
+const BROWSE_REVALIDATE = 120;
+const PRODUCT_REVALIDATE = 300;
 const mpost = async (path: string, body: any) => {
   const res = await fetch(`${URL}/store/${path}`, { method: "POST", headers: H, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
@@ -159,11 +165,11 @@ function map(m: any): Product {
 
 // Server-side product fetch. Passing `q` runs Medusa's full-text search, which
 // scales to large catalogs (10,000+) — the storefront never loads everything.
-async function fetchProducts(opts: { q?: string; limit?: number; offset?: number; categoryId?: string } = {}): Promise<{ products: Product[]; total: number }> {
+async function fetchProducts(opts: { q?: string; limit?: number; offset?: number; categoryId?: string; revalidate?: number } = {}): Promise<{ products: Product[]; total: number }> {
   const p = new URLSearchParams({ limit: String(opts.limit ?? 100), offset: String(opts.offset ?? 0), region_id: REGION, fields: FIELDS });
   if (opts.q) p.set("q", opts.q);
   if (opts.categoryId) p.append("category_id[]", opts.categoryId);
-  const res = await mfetch(`products?${p.toString()}`);
+  const res = await mfetch(`products?${p.toString()}`, 1, opts.revalidate);
   return { products: (res.products || []).map(map), total: res.count ?? (res.products?.length ?? 0) };
 }
 const fetchAll = async (): Promise<Product[]> => (await fetchProducts()).products;
@@ -188,7 +194,7 @@ let _catIds: Promise<Record<string, string>> | null = null;
 function categoryIds(): Promise<Record<string, string>> {
   if (!_catIds) _catIds = (async () => {
     try {
-      const res = await mfetch(`product-categories?limit=100&fields=id,handle`);
+      const res = await mfetch(`product-categories?limit=100&fields=id,handle`, 1, 3600);
       const out: Record<string, string> = {};
       for (const c of (res.product_categories || [])) {
         const key = HANDLE_TO_CATEGORY[c.handle];
@@ -213,7 +219,7 @@ export const medusa = {
       } else {
         // Browse: category resolves to a Medusa id → filtered server-side (scales to 10k+).
         const categoryId = wantCat ? (await categoryIds())[wantCat] : undefined;
-        list = (await fetchProducts({ categoryId })).products;
+        list = (await fetchProducts({ categoryId, revalidate: BROWSE_REVALIDATE })).products;
         if (wantCat && !categoryId) list = list.filter(p => p.category === wantCat);
       }
       // A gender page also shows Unisex pieces.
@@ -240,14 +246,14 @@ export const medusa = {
     },
     get: async (idOrSlug: string) => {
       const q = new URLSearchParams({ handle: idOrSlug, region_id: REGION, fields: FIELDS });
-      const { products } = await mfetch(`products?${q.toString()}`);
+      const { products } = await mfetch(`products?${q.toString()}`, 1, PRODUCT_REVALIDATE);
       const product = products?.[0] ? map(products[0]) : null;
       if (!product) throw new Error("Product not found");
       // Related = same category, fetched server-side by category id (scales to 10k+).
       const relCatId = (await categoryIds())[product.category];
       const pool = relCatId
-        ? (await fetchProducts({ categoryId: relCatId, limit: 8 })).products
-        : await fetchAll();
+        ? (await fetchProducts({ categoryId: relCatId, limit: 8, revalidate: PRODUCT_REVALIDATE })).products
+        : (await fetchProducts({ revalidate: PRODUCT_REVALIDATE })).products;
       const related = pool.filter(p => p.id !== product.id && p.category === product.category).slice(0, 4);
       return { data: product, related };
     },

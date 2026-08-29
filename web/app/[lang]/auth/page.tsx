@@ -1,9 +1,9 @@
 "use client";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth, useToast } from "@/lib/store";
-import { useT } from "@/components/LangProvider";
+import { useT, useLang } from "@/components/LangProvider";
 import { api } from "@/lib/api";
 import { ArrowRight, EyeIcon, EyeOffIcon, ChevronLeft } from "@/components/Icons";
 
@@ -31,6 +31,7 @@ const FacebookLogo = () => (
 export default function AuthPage() {
   const router = useRouter();
   const t = useT();
+  const lang = useLang();
   const setSession = useAuth(s => s.setSession);
   const showToast = useToast(s => s.show);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -70,7 +71,7 @@ export default function AuthPage() {
       }
       setSession(result.user, result.token);
       showToast(`${t("auth.welcomeName")}, ${result.user.firstName}!`);
-      router.push("/account");
+      router.push(`/${lang}/account`);
     } catch (err: any) {
       showToast(err.message || t("toast.authFailed"));
       setBusy(false);
