@@ -6,7 +6,8 @@ on:
   pull_request:
 
 jobs:
-  build:
+  storefront-api:
+    name: Storefront + API (typecheck, lint, build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,6 +17,12 @@ jobs:
           cache: npm
       - name: Install (root workspaces)
         run: npm install
+      - name: Typecheck (api)
+        run: npm --workspace api run typecheck
+      - name: Typecheck (storefront)
+        run: npm --workspace web run typecheck
+      - name: Lint (storefront)
+        run: npm --workspace web run lint
       - name: Build API (Express)
         run: npm --workspace api run build
       - name: Build storefront (Next.js)
@@ -25,3 +32,20 @@ jobs:
           NEXT_PUBLIC_MEDUSA_URL: https://example.invalid
           NEXT_PUBLIC_MEDUSA_PK: pk_ci_placeholder
           NEXT_PUBLIC_MEDUSA_REGION: reg_ci_placeholder
+          NEXT_PUBLIC_SITE_URL: https://naran.mn
+
+  medusa:
+    name: Medusa backend (build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: medusa-backend/apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install (medusa)
+        run: npm install --legacy-peer-deps
+      - name: Build (medusa)
+        run: npm run build
