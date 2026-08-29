@@ -84,6 +84,10 @@ services:
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
       S3_REGION: ${S3_REGION:-auto}
+      # e-Barimt (НӨАТ) — blank = mock; real needs ҮТЕГ posapi + VAT reg (Q-03).
+      EBARIMT_URL: ${EBARIMT_URL:-}
+      EBARIMT_MERCHANT_TIN: ${EBARIMT_MERCHANT_TIN:-}
+      EBARIMT_DISTRICT_CODE: ${EBARIMT_DISTRICT_CODE:-}
     expose:
       - "9000"
     networks: [naran]
