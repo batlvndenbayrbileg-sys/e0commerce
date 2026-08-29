@@ -30,4 +30,18 @@ const nextConfig = {
     ];
   },
 };
-module.exports = nextConfig;
+
+// Wrap with Sentry only when a DSN is configured, so builds without Sentry are
+// completely unaffected (no source-map step, no runtime overhead).
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  const { withSentryConfig } = require("@sentry/nextjs");
+  module.exports = withSentryConfig(nextConfig, {
+    silent: true,
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    // Source maps upload only when an auth token is present (CI/prod).
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+  });
+} else {
+  module.exports = nextConfig;
+}

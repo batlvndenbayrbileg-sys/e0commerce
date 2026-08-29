@@ -1,4 +1,6 @@
 import "dotenv/config";
+import "./instrument.js"; // Sentry.init — must run before other imports
+import * as Sentry from "@sentry/node";
 import express from "express";
 import cors from "cors";
 import productsRouter from "./routes/products.js";
@@ -21,6 +23,9 @@ app.use("/api/products", productsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/orders", ordersRouter);
 app.use("/api/payments", paymentsRouter);
+
+// Report errors to Sentry (no-op if SENTRY_DSN unset) before our JSON handler.
+if (process.env.SENTRY_DSN) Sentry.setupExpressErrorHandler(app);
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);

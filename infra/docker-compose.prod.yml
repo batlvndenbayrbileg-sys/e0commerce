@@ -127,6 +127,8 @@ services:
       # Email (Resend).
       RESEND_API_KEY: ${RESEND_API_KEY:-}
       EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
+      # Error monitoring (Sentry, optional).
+      SENTRY_DSN: ${SENTRY_DSN:-}
     expose:
       - "4000"
     networks: [naran]
@@ -145,6 +147,7 @@ services:
         NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
         NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
         NEXT_PUBLIC_META_PIXEL_ID: ${NEXT_PUBLIC_META_PIXEL_ID:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     <<: *restart
     depends_on:
       - medusa
