@@ -2,6 +2,8 @@ import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
 import { Container, Heading, Text, Button, Table, Badge, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
+import { usePermissions } from "../../lib/perms";
+import { AccessDenied } from "../../lib/AccessDenied";
 
 type Overview = {
   orders: number;
@@ -24,6 +26,7 @@ const tug = (n: number) => `₮${new Intl.NumberFormat("en-US").format(Math.roun
 const nf = (n: number) => new Intl.NumberFormat("mn-MN").format(n || 0);
 
 const AnalyticsPage = () => {
+  const { loading: permLoading, can } = usePermissions();
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,6 +41,10 @@ const AnalyticsPage = () => {
     }
   };
   useEffect(() => { load(); }, []);
+
+  if (!permLoading && !can("analytics.read")) {
+    return <AccessDenied title="Аналитик" perm="analytics.read" />;
+  }
 
   return (
     <Container className="divide-y p-0">

@@ -55,7 +55,7 @@ export default async function fulfillOrder({ container }: ExecArgs) {
       logger.info(`Shipped fulfillment ${ful.id} → shipment.created emitted`);
     }
     if (deliver && !ful.delivered_at) {
-      await markOrderFulfillmentAsDeliveredWorkflow(container).run({ input: { order_id: orderId, fulfillment_id: ful.id } });
+      await markOrderFulfillmentAsDeliveredWorkflow(container).run({ input: { orderId, fulfillmentId: ful.id } });
       logger.info(`Delivered fulfillment ${ful.id}`);
     }
   }

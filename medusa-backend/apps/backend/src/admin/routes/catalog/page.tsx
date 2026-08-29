@@ -2,6 +2,8 @@ import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { Tag } from "@medusajs/icons";
 import { Container, Heading, Text, Button, Table, Badge, Textarea, toast } from "@medusajs/ui";
 import { useEffect, useRef, useState } from "react";
+import { usePermissions } from "../../lib/perms";
+import { AccessDenied } from "../../lib/AccessDenied";
 
 type Stats = {
   total: number;
@@ -28,6 +30,7 @@ async function adminFetch(path: string, init?: RequestInit) {
 const nf = (n: number) => new Intl.NumberFormat("mn-MN").format(n || 0);
 
 const CatalogPage = () => {
+  const { loading: permLoading, can } = usePermissions();
   const [stats, setStats] = useState<Stats | null>(null);
   const [lowStock, setLowStock] = useState<LowStock[]>([]);
   const [csv, setCsv] = useState("");
@@ -52,6 +55,8 @@ const CatalogPage = () => {
     } catch { /* inventory may be off */ }
   };
   useEffect(() => { loadStats(); loadLowStock(); }, []);
+
+  const canWrite = can("catalog.write");
 
   const runStock = async () => {
     if (!stockCsv.trim()) { toast.error("CSV хоосон байна"); return; }
@@ -114,6 +119,10 @@ const CatalogPage = () => {
     }
   };
 
+  if (!permLoading && !can("catalog.read")) {
+    return <AccessDenied title="Каталог" perm="catalog.read" />;
+  }
+
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -155,6 +164,7 @@ const CatalogPage = () => {
       </div>
 
       {/* Import */}
+      {canWrite && (
       <div className="px-6 py-4">
         <Text weight="plus" size="small" className="mb-1">CSV импорт</Text>
         <Text className="text-ui-fg-subtle mb-3" size="xsmall">
@@ -181,6 +191,7 @@ const CatalogPage = () => {
           </Button>
         </div>
       </div>
+      )}
 
       {/* Low stock */}
       <div className="px-6 py-4">
@@ -215,6 +226,7 @@ const CatalogPage = () => {
       </div>
 
       {/* Bulk stock update */}
+      {canWrite && (
       <div className="px-6 py-4">
         <Text weight="plus" size="small" className="mb-1">Нөөц шинэчлэх (CSV)</Text>
         <Text className="text-ui-fg-subtle mb-3" size="xsmall">
@@ -233,6 +245,7 @@ const CatalogPage = () => {
           </Button>
         </div>
       </div>
+      )}
     </Container>
   );
 };

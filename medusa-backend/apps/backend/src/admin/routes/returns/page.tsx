@@ -2,6 +2,8 @@ import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ArrowUturnLeft } from "@medusajs/icons";
 import { Container, Heading, Table, Button, Badge, Text, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
+import { usePermissions } from "../../lib/perms";
+import { AccessDenied } from "../../lib/AccessDenied";
 
 type ReturnItem = { quantity: number; item_id: string };
 type ReturnRow = {
@@ -33,6 +35,7 @@ const statusColor: Record<string, "orange" | "green" | "grey"> = {
 };
 
 const ReturnsPage = () => {
+  const { loading: permLoading, can } = usePermissions();
   const [rows, setRows] = useState<ReturnRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -67,6 +70,11 @@ const ReturnsPage = () => {
   };
 
   const pending = rows.filter(r => r.status === "requested");
+  const canApprove = can("returns.write");
+
+  if (!permLoading && !can("returns.read")) {
+    return <AccessDenied title="Буцаалтын хүсэлт" perm="returns.read" />;
+  }
 
   return (
     <Container className="divide-y p-0">
@@ -101,7 +109,7 @@ const ReturnsPage = () => {
         <Table.Body>
           {rows.length === 0 && !loading && (
             <Table.Row>
-              <Table.Cell colSpan={6}>
+              <Table.Cell {...({ colSpan: 6 } as any)}>
                 <Text className="text-ui-fg-subtle py-4" size="small">Буцаалтын хүсэлт алга.</Text>
               </Table.Cell>
             </Table.Row>
@@ -118,7 +126,7 @@ const ReturnsPage = () => {
                   <Badge color={statusColor[r.status] || "grey"} size="2xsmall">{r.status}</Badge>
                 </Table.Cell>
                 <Table.Cell>
-                  {r.status === "requested" ? (
+                  {r.status === "requested" && canApprove ? (
                     <Button size="small" variant="primary" isLoading={busy === r.id} onClick={() => approve(r.id)}>
                       Зөвшөөрөх
                     </Button>
