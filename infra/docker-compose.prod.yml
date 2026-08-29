@@ -142,6 +142,7 @@ services:
         NEXT_PUBLIC_MEDUSA_REGION: ${NEXT_PUBLIC_MEDUSA_REGION:?set NEXT_PUBLIC_MEDUSA_REGION in infra/.env}
         NEXT_PUBLIC_USE_MEDUSA: "1"
         NEXT_PUBLIC_MEILISEARCH: ${NEXT_PUBLIC_MEILISEARCH:-1}
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
     <<: *restart
     depends_on:
       - medusa

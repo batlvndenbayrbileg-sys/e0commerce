@@ -33,16 +33,16 @@ export function Footer() {
             <p className="text-sm text-white/55 mt-4">support@naran.mn</p>
           </div>
           <FootCol title={t("foot.shop")} links={[["/shop?category=Fragrance",t("cat.Fragrance")],["/shop?category=Skincare",t("cat.Skincare")],["/shop?category=Makeup",t("cat.Makeup")],["/shop?category=Gift",t("cat.Gift")]]}/>
-          <FootCol title={t("foot.support")} links={[["#","Contact"],["#","Shipping"],["#","Returns"],["/product/edp-bloom","FAQ"]]}/>
+          <FootCol title={t("foot.support")} links={[["/refund-policy",t("foot.refund")],["/terms",t("foot.terms")],["/privacy",t("foot.privacy")],["/product/edp-bloom","FAQ"]]}/>
           <FootCol title={t("foot.brand")} links={[["#","About"],["#","Brands"],["#","Stores"],["#","Journal"]]}/>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between gap-4 pt-8 text-[13px] text-white/45">
           <div className="flex items-center gap-6">
             <span>{t("foot.rights")}</span>
-            <Link href="#" className="hover:text-white">Privacy</Link>
-            <Link href="#" className="hover:text-white">Terms</Link>
-            <Link href="#" className="hover:text-white">Accessibility</Link>
+            <Link href="/privacy" className="hover:text-white">{t("foot.privacy")}</Link>
+            <Link href="/terms" className="hover:text-white">{t("foot.terms")}</Link>
+            <Link href="/refund-policy" className="hover:text-white">{t("foot.refund")}</Link>
           </div>
           <span className="text-[13px] uppercase tracking-[.18em] text-white/55">{t("foot.slogan")}</span>
         </div>

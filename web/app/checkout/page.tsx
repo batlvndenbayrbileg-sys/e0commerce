@@ -198,7 +198,11 @@ export default function CheckoutPage() {
               {busy ? t("co.starting") : t("co.payWire")}
               <span className="arrow-cap"><CheckIcon width={14} height={14}/></span>
             </button>
-            <p className="tiny text-center mt-3.5">{t("co.terms")}</p>
+            <p className="tiny text-center mt-3.5">
+              {t("co.termsPre")}{" "}
+              <Link href="/terms" className="underline hover:text-ink">{t("foot.terms")}</Link>,{" "}
+              <Link href="/privacy" className="underline hover:text-ink">{t("foot.privacy")}</Link>{t("co.termsPost")}
+            </p>
           </div>
 
           <aside className="card p-7 h-fit lg:sticky lg:top-6">

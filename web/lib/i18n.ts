@@ -56,6 +56,7 @@ const en: Dict = {
   "co.wireNote": "You'll confirm payment securely on Wire, then return here.",
   "co.payWire": "Pay with Wire", "co.starting": "Starting payment…",
   "co.terms": "By placing this order you agree to our Terms & Privacy.",
+  "co.termsPre": "By placing this order you agree to our", "co.termsPost": ".",
   "co.order": "Order", "co.secure": "256-bit SSL · PCI compliant",
   "co.promoTitle": "Discount code", "co.promoPlaceholder": "Promo code", "co.promoApply": "Apply",
   "co.promoApplied": "applied", "co.promoRemove": "Remove", "co.promoInvalid": "Invalid or expired code", "co.discount": "Discount",
@@ -83,6 +84,7 @@ const en: Dict = {
   "foot.tagline": "Beauty, all in one place. Premium fragrance, skincare and makeup — 100% authentic.",
   "foot.shop": "Shop", "foot.support": "Support", "foot.brand": "Brand", "foot.flagship": "Flagship",
   "foot.rights": "© 2026 NARAN Beauty", "foot.slogan": "Гоо сайхан · Нэг дороос",
+  "foot.privacy": "Privacy", "foot.terms": "Terms", "foot.refund": "Returns",
   // breadcrumbs + extra common
   "bc.home": "Home", "bc.shop": "Shop", "bc.cart": "Cart", "bc.checkout": "Checkout",
   "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
@@ -196,6 +198,7 @@ const mn: Dict = {
   "co.wireNote": "Та Wire дээр төлбөрөө баталгаажуулаад буцаж ирнэ.",
   "co.payWire": "Wire-ээр төлөх", "co.starting": "Төлбөр эхлүүлж байна…",
   "co.terms": "Захиалга өгснөөр та Үйлчилгээний нөхцөл, Нууцлалыг зөвшөөрнө.",
+  "co.termsPre": "Захиалга өгснөөр та", "co.termsPost": "-ыг зөвшөөрнө.",
   "co.order": "Захиалга", "co.secure": "256-bit SSL · PCI стандарт",
   "co.promoTitle": "Хямдралын код", "co.promoPlaceholder": "Промо код", "co.promoApply": "Идэвхжүүлэх",
   "co.promoApplied": "идэвхжлээ", "co.promoRemove": "Хасах", "co.promoInvalid": "Код буруу эсвэл хүчингүй", "co.discount": "Хямдрал",
@@ -219,6 +222,7 @@ const mn: Dict = {
   "foot.tagline": "Гоо сайхан, нэг дороос. Дээд зэрэглэлийн үнэртэй ус, арьс арчилгаа, гоо сайхан — 100% жинхэнэ.",
   "foot.shop": "Дэлгүүр", "foot.support": "Тусламж", "foot.brand": "Брэнд", "foot.flagship": "Дэлгүүр",
   "foot.rights": "© 2026 NARAN Beauty", "foot.slogan": "Гоо сайхан · Нэг дороос",
+  "foot.privacy": "Нууцлал", "foot.terms": "Үйлчилгээний нөхцөл", "foot.refund": "Буцаалт",
   // breadcrumbs + extra common
   "bc.home": "Нүүр", "bc.shop": "Дэлгүүр", "bc.cart": "Сагс", "bc.checkout": "Төлбөр",
   "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
