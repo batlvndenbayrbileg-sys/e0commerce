@@ -11,7 +11,7 @@ import { LangProvider } from "@/components/LangProvider";
 import { getServerLang, getServerT } from "@/lib/lang";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://e0commerce-web.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://naran.mn"),
   title: "NARAN — Гоо сайхан, нэг дороос",
   description: "Дээд зэрэглэлийн үнэртэй ус, арьс арчилгаа, гоо сайхны бараа — нэг дороос. QPay-ээр төлж, хурдан хүргүүлээрэй.",
   openGraph: {

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -12,13 +13,52 @@ import { getServerT } from "@/lib/lang";
 
 export const dynamic = "force-dynamic";
 
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://naran.mn").replace(/\/$/, "");
+
+// Per-product SEO: title, description, canonical, and Open Graph image.
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  try {
+    const { data: p } = await api.products.get(params.id);
+    const url = `${SITE_URL}/product/${p.slug}`;
+    const desc = (p.shortDesc || p.description || `${p.name} — NARAN`).slice(0, 160);
+    const img = p.image ?? productImg(p.id);
+    return {
+      title: `${p.name} — NARAN`,
+      description: desc,
+      alternates: { canonical: url },
+      openGraph: { title: `${p.name} — NARAN`, description: desc, url, type: "website", images: [{ url: img }] },
+    };
+  } catch {
+    return { title: "Бараа — NARAN" };
+  }
+}
+
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const t = getServerT();
   const { data: product, related } = await api.products.get(params.id);
   const img = product.image ?? productImg(product.id);
 
+  // schema.org Product/Offer structured data (rich results).
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    image: [img],
+    description: product.shortDesc || product.description || product.name,
+    category: product.category,
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "MNT",
+      price: product.price,
+      availability: (product.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      url: `${SITE_URL}/product/${product.slug}`,
+    },
+    ...(product.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating, reviewCount: product.reviews || 1 } } : {}),
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="px-3 pt-3 sm:px-4 sm:pt-4 lg:px-5 lg:pt-5 pb-2 mesh-light min-h-screen">
         <div className="max-w-[1280px] mx-auto">
           <Nav />
