@@ -156,11 +156,16 @@ curl -s -X POST http://meilisearch:7700/indexes/products/search \
 
 ## 9. Ажиллагаа (Ops)
 
-- **Backup**: Postgres volume-ийг тогтмол dump хий:
+- **Backup / restore** (NFR-05): `infra/backup/backup.sh` — cron-оор (жишээ 15 мин
+  тутам) pg_dump→gzip→retention→(сонголтоор R2 upload). Сэргээх:
+  `infra/backup/restore.sh <файл>`. Улирал бүр сэргээлтийг staging дээр тест хий.
   ```bash
-  docker exec <postgres> pg_dump -U naran naran | gzip > naran-$(date +%F).sql.gz
+  */15 * * * * /opt/naran/infra/backup/backup.sh >> /var/log/naran-backup.log 2>&1
   ```
   Meili (`meilidata`) болон R2/зураг мөн backup-д хамруул.
+- **Ачааллын тест** (NFR-06): `k6 run infra/load/k6-storefront.js` (BASE_URL,
+  MEDUSA_URL, MEDUSA_PK, REGION env-тэй; `-e PEAK=5000` хүртэл өсгө). Нээлтийн
+  өмнө staging дээр ажиллуулж p95<800ms, алдаа<1% хангаж буйг шалга.
 - **Шинэчлэлт**: Git-д push → Dokploy → Redeploy. Medusa migration автоматаар ажиллана.
 - **Лог**: Dokploy → сервис → Logs.
 - **Хэмжээ / server-worker split**: compose нь Medusa-г **хоёр контейнер**-аар
