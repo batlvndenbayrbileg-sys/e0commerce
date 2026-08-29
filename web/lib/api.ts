@@ -91,6 +91,10 @@ export const api = {
       if (USE_MEDUSA) return medusa.customers.createReturn(input);
       throw new Error("Not supported");
     },
+    requestDeletion: async (token: string) => {
+      if (USE_MEDUSA) return medusa.customers.requestDeletion(token);
+      throw new Error("Not supported");
+    },
   },
 };
 

@@ -305,6 +305,15 @@ export const medusa = {
       }, input.token);
       return { id: data.return?.id, status: data.return?.status ?? "requested" };
     },
+    // GDPR "right to erasure" — flag the account for deletion (admin processes it).
+    requestDeletion: async (token: string) => {
+      const res = await fetch(`${URL}/store/customers/me/deletion-request`, {
+        method: "POST", headers: { ...H, authorization: `Bearer ${token}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || "Хүсэлт илгээж чадсангүй");
+      return data;
+    },
     // Update the customer's profile (name / phone).
     update: async (token: string, patch: { firstName?: string; lastName?: string; phone?: string }) => {
       const res = await fetch(`${URL}/store/customers/me`, {

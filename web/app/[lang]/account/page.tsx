@@ -82,6 +82,19 @@ export default function AccountPage() {
     } finally { setSaving(false); }
   }
 
+  async function requestDeletion() {
+    if (!token) return;
+    if (!window.confirm(t("acc.deleteConfirm"))) return;
+    try {
+      await api.customers.requestDeletion(token);
+      showToast(t("acc.deleteRequested"));
+      signOut();
+      router.push(`/${lang}`);
+    } catch (e: any) {
+      showToast(e?.message || t("acc.saveError"));
+    }
+  }
+
   const totalSpent = orders.reduce((a, b) => a + b.total, 0);
   const primaryAddress = addresses[0];
   const wished = allProducts.filter(p => wishIds.includes(p.id));
@@ -216,6 +229,15 @@ export default function AccountPage() {
                   </div>
                 </form>
               </Card>
+            )}
+            {tab === "Settings" && (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50/50 p-5">
+                <h3 className="font-semibold text-red-700 text-sm">{t("acc.dangerZone")}</h3>
+                <p className="text-[13px] text-muted mt-1 mb-3">{t("acc.deleteDesc")}</p>
+                <button type="button" onClick={requestDeletion} className="btn btn-outline border-red-300 text-red-700 hover:bg-red-100 text-sm">
+                  {t("acc.deleteRequest")}
+                </button>
+              </div>
             )}
           </div>
         </div>
