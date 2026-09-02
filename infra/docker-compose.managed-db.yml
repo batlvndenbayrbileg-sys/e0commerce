@@ -1,0 +1,139 @@
+# NARAN — production stack with a MANAGED Postgres (e.g. Neon) instead of an
+# on-box postgres container. Use this compose (not docker-compose.prod.yml) when
+# the database lives with a managed provider that handles backups + PITR.
+#
+# Difference vs docker-compose.prod.yml: no `postgres` service / `pgdata` volume.
+# DATABASE_URL is the provider's FULL connection string (with ?sslmode=require),
+# set in infra/.env. Redis + MeiliSearch stay on-box (recoverable state).
+#
+# Dokploy: point the Compose app at this file; assign domains to web / medusa / api.
+name: naran
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  redis:
+    image: redis:7-alpine
+    <<: *restart
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [naran]
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.53
+    <<: *restart
+    environment:
+      MEILI_MASTER_KEY: ${MEILISEARCH_API_KEY:?set MEILISEARCH_API_KEY in infra/.env}
+      MEILI_ENV: production
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - meilidata:/meili_data
+    networks: [naran]
+
+  # HTTP server (admin + store/API). Runs DB migrations on start (Dockerfile CMD).
+  medusa:
+    build:
+      context: ../medusa-backend/apps/backend
+    <<: *restart
+    depends_on:
+      redis: { condition: service_healthy }
+      meilisearch: { condition: service_started }
+    environment: &medusa-env
+      NODE_ENV: production
+      MEDUSA_WORKER_MODE: server
+      # Managed Postgres — FULL connection string incl. ?sslmode=require.
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL (managed Postgres URL) in infra/.env}
+      REDIS_URL: redis://redis:6379
+      MEILISEARCH_HOST: http://meilisearch:7700
+      MEILISEARCH_API_KEY: ${MEILISEARCH_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in infra/.env}
+      COOKIE_SECRET: ${COOKIE_SECRET:?set COOKIE_SECRET in infra/.env}
+      STORE_CORS: ${STORE_CORS}
+      ADMIN_CORS: ${ADMIN_CORS}
+      AUTH_CORS: ${AUTH_CORS}
+      S3_FILE_URL: ${S3_FILE_URL:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+      S3_REGION: ${S3_REGION:-auto}
+      EBARIMT_URL: ${EBARIMT_URL:-}
+      EBARIMT_MERCHANT_TIN: ${EBARIMT_MERCHANT_TIN:-}
+      EBARIMT_DISTRICT_CODE: ${EBARIMT_DISTRICT_CODE:-}
+    expose:
+      - "9000"
+    networks: [naran]
+
+  medusa-worker:
+    build:
+      context: ../medusa-backend/apps/backend
+    <<: *restart
+    depends_on:
+      redis: { condition: service_healthy }
+      medusa: { condition: service_started }
+    environment:
+      <<: *medusa-env
+      MEDUSA_WORKER_MODE: worker
+    command: ["sh", "-c", "sleep 25 && cd .medusa/server && npm run start"]
+    networks: [naran]
+
+  api:
+    build:
+      context: ../api
+    <<: *restart
+    depends_on:
+      - medusa
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      JWT_SECRET: ${JWT_SECRET}
+      WEB_ORIGIN: ${STORE_CORS}
+      MEDUSA_URL: http://medusa:9000
+      MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK}
+      NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
+      WIRE_SECRET_KEY: ${WIRE_SECRET_KEY:-}
+      WIRE_WEBHOOK_SECRET: ${WIRE_WEBHOOK_SECRET:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+    expose:
+      - "4000"
+    networks: [naran]
+
+  web:
+    build:
+      context: ../web
+      args:
+        NEXT_PUBLIC_MEDUSA_URL: ${NEXT_PUBLIC_MEDUSA_URL:?set NEXT_PUBLIC_MEDUSA_URL in infra/.env}
+        NEXT_PUBLIC_MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK:?set NEXT_PUBLIC_MEDUSA_PK in infra/.env}
+        NEXT_PUBLIC_MEDUSA_REGION: ${NEXT_PUBLIC_MEDUSA_REGION:?set NEXT_PUBLIC_MEDUSA_REGION in infra/.env}
+        NEXT_PUBLIC_USE_MEDUSA: "1"
+        NEXT_PUBLIC_MEILISEARCH: ${NEXT_PUBLIC_MEILISEARCH:-1}
+        NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
+        NEXT_PUBLIC_GA_ID: ${NEXT_PUBLIC_GA_ID:-}
+        NEXT_PUBLIC_META_PIXEL_ID: ${NEXT_PUBLIC_META_PIXEL_ID:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
+    <<: *restart
+    depends_on:
+      - medusa
+      - api
+    environment:
+      API_URL: http://api:4000
+    expose:
+      - "3000"
+    networks: [naran]
+
+volumes:
+  redisdata:
+  meilidata:
+
+networks:
+  naran:
+    driver: bridge

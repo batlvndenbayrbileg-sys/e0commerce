@@ -79,6 +79,32 @@ openssl rand -base64 32   # MEILISEARCH_API_KEY
 
 ---
 
+## 4b. Managed Postgres (Neon) — САНАЛ БОЛГОСОН (жинхэнэ бизнест)
+
+Өгөгдлийн санг тусдаа managed үйлчилгээнд (автомат backup + PITR) байршуулбал
+"мэдээлэл алдах" эрсдэл бүрэн арилна. Ингэхдээ **`infra/docker-compose.managed-db.yml`**
+compose-ыг ашиглана (on-box postgres-гүй).
+
+1. **Neon** (https://neon.tech) → бүртгэл → **Create Project**
+   - Region: app сервертэйгээ **ойрхон** (Hetzner Герман → `Frankfurt`; Ази VPS → `Singapore`).
+   - Postgres хувилбар: 16+.
+2. **Connection string** хуулж ав (Dashboard → Connection Details → "Connection string").
+   `postgresql://user:pass@ep-xxx.region.aws.neon.tech/neondb?sslmode=require`
+   формтой — **`?sslmode=require` заавал** байх ёстой.
+3. `infra/.env`-д тавь:
+   ```
+   DATABASE_URL=postgresql://…?sslmode=require
+   ```
+   (`POSTGRES_*` гурвыг хоосон орхи — managed compose тэдгээрийг ашиглахгүй.)
+4. Dokploy-ийн Compose app-ийн **Compose path**-ыг `infra/docker-compose.managed-db.yml`
+   болго. Migration яг л адилхан medusa эхлэхэд автоматаар ажиллана.
+5. Backup: Neon өөрөө автомат хийнэ — VPS дээрх `backup.sh` **Meili-д** л хэрэгтэй.
+
+> On-box postgres (хямд, ₮18k) ашиглах бол энэ хэсгийг алгасаад `docker-compose.prod.yml`-ыг
+> хэрэглэ. Дараа managed руу шилжихэд зөвхөн `DATABASE_URL` + compose path солино.
+
+---
+
 ## 5. Эхний deploy
 
 Dokploy → **Deploy**. Build дуусаад:
