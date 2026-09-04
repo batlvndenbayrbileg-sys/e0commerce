@@ -47,5 +47,7 @@ jobs:
           node-version: 22
       - name: Install (medusa)
         run: npm install --legacy-peer-deps
+      - name: Unit tests (medusa)
+        run: npm run test:unit
       - name: Build (medusa)
         run: npm run build
