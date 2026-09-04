@@ -43,6 +43,7 @@ export default defineMiddlewares({
     { matcher: "/admin/crm/*", methods: ["POST"], middlewares: [requirePermission("customers.write")] },
     { matcher: "/admin/cms/*", methods: ["GET", "POST"], middlewares: [requirePermission("content.write")] },
     { matcher: "/admin/reports/*", methods: ["GET"], middlewares: [requirePermission("reports.read")] },
+    { matcher: "/admin/marketing/*", methods: ["GET"], middlewares: [requirePermission("promotions.write")] },
     { matcher: "/admin/audit", methods: ["GET"], middlewares: [requirePermission("team.manage")] },
     { matcher: "/admin/notifications", methods: ["GET"], middlewares: [requirePermission("orders.read")] },
     { matcher: "/admin/returns/:id/approve", methods: ["POST"], middlewares: [requirePermission("returns.write")] },
