@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { Tag } from "@medusajs/icons";
-import { Container, Heading, Text, Button, Table, Badge, Textarea, toast } from "@medusajs/ui";
+import { Container, Heading, Text, Button, Table, Badge, Textarea, Input, toast } from "@medusajs/ui";
 import { useEffect, useRef, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
@@ -13,6 +13,8 @@ type Stats = {
 };
 
 type LowStock = { sku: string; variant: string; product: string; handle: string; stock: number };
+
+type StockHistory = { at: number; sku: string; product: string; from: number; to: number; delta: number; reason: string; actor: string };
 
 async function adminFetch(path: string, init?: RequestInit) {
   const res = await fetch(`/admin${path}`, {
@@ -35,6 +37,8 @@ const CatalogPage = () => {
   const [lowStock, setLowStock] = useState<LowStock[]>([]);
   const [csv, setCsv] = useState("");
   const [stockCsv, setStockCsv] = useState("");
+  const [stockReason, setStockReason] = useState("");
+  const [history, setHistory] = useState<StockHistory[]>([]);
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [savingStock, setSavingStock] = useState(false);
@@ -54,7 +58,13 @@ const CatalogPage = () => {
       setLowStock((await res.json()).variants || []);
     } catch { /* inventory may be off */ }
   };
-  useEffect(() => { loadStats(); loadLowStock(); }, []);
+  const loadHistory = async () => {
+    try {
+      const res = await adminFetch("/catalog/stock-history");
+      setHistory((await res.json()).moves || []);
+    } catch { /* optional */ }
+  };
+  useEffect(() => { loadStats(); loadLowStock(); loadHistory(); }, []);
 
   const canWrite = can("catalog.write");
 
@@ -62,12 +72,14 @@ const CatalogPage = () => {
     if (!stockCsv.trim()) { toast.error("CSV хоосон байна"); return; }
     setSavingStock(true);
     try {
-      const res = await adminFetch("/catalog/stock", { method: "POST", body: JSON.stringify({ csv: stockCsv }) });
+      const res = await adminFetch("/catalog/stock", { method: "POST", body: JSON.stringify({ csv: stockCsv, reason: stockReason }) });
       const r = await res.json();
       toast.success(`Нөөц шинэчлэгдлээ: ${nf(r.updated)} хувилбар`);
       if (r.notManaged) toast.warning(`${nf(r.notManaged)} хувилбар нөөц хянадаггүй (алгассан)`);
       setStockCsv("");
+      setStockReason("");
       await loadLowStock();
+      await loadHistory();
     } catch (e: any) {
       toast.error(e.message || "Нөөц шинэчлэх амжилтгүй");
     } finally {
@@ -239,13 +251,58 @@ const CatalogPage = () => {
           rows={4}
           className="font-mono text-xs"
         />
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-3">
+          <Input
+            placeholder="Тохируулгын шалтгаан (ж: татан авалт, тооллого)"
+            value={stockReason}
+            onChange={e => setStockReason(e.target.value)}
+            className="max-w-[360px]"
+          />
           <Button variant="secondary" onClick={runStock} isLoading={savingStock} disabled={!stockCsv.trim()}>
             Нөөц шинэчлэх
           </Button>
         </div>
       </div>
       )}
+
+      {/* Stock movement history (A-15) */}
+      <div className="px-6 py-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Text weight="plus" size="small">Нөөцийн хөдөлгөөний түүх</Text>
+          <Badge size="2xsmall" color="grey">{nf(history.length)}</Badge>
+        </div>
+        {history.length === 0 ? (
+          <Text className="text-ui-fg-subtle" size="small">Хөдөлгөөн бүртгэгдээгүй байна.</Text>
+        ) : (
+          <Table>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>Хэзээ</Table.HeaderCell>
+                <Table.HeaderCell>SKU</Table.HeaderCell>
+                <Table.HeaderCell>Бараа</Table.HeaderCell>
+                <Table.HeaderCell className="text-right">Өөрчлөлт</Table.HeaderCell>
+                <Table.HeaderCell>Шалтгаан</Table.HeaderCell>
+                <Table.HeaderCell>Хэн</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {history.slice(0, 100).map((h, i) => (
+                <Table.Row key={i}>
+                  <Table.Cell className="text-ui-fg-subtle text-xs whitespace-nowrap">{new Date(h.at).toLocaleString("mn-MN")}</Table.Cell>
+                  <Table.Cell className="font-mono text-xs">{h.sku}</Table.Cell>
+                  <Table.Cell className="text-xs">{h.product}</Table.Cell>
+                  <Table.Cell className="text-right">
+                    <span className="text-ui-fg-subtle">{h.from}→{h.to}</span>{" "}
+                    <Badge size="2xsmall" color={h.delta >= 0 ? "green" : "red"}>{h.delta >= 0 ? "+" : ""}{h.delta}</Badge>
+                  </Table.Cell>
+                  <Table.Cell className="text-xs text-ui-fg-subtle">{h.reason || "—"}</Table.Cell>
+                  <Table.Cell className="text-xs text-ui-fg-subtle">{h.actor}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        )}
+      </div>
     </Container>
   );
 };

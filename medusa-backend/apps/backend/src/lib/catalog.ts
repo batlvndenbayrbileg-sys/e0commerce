@@ -182,7 +182,8 @@ export async function lowStockVariants(container: any, threshold = 5): Promise<L
   return out.sort((a, b) => a.stock - b.stock);
 }
 
-export type StockResult = { updated: number; notManaged: number; notFound: number };
+export type StockMove = { sku: string; product: string; from: number; to: number };
+export type StockResult = { updated: number; notManaged: number; notFound: number; moves: StockMove[] };
 
 // Bulk-set stock from rows of { handle|sku, stock }. `sku` targets one variant;
 // `handle` sets every variant of that product. Only inventory-managed variants.
@@ -201,11 +202,17 @@ export async function setStockFromRows(container: any, rows: Record<string, stri
   }
 
   const updates: { inventory_item_id: string; location_id: string; stocked_quantity: number }[] = [];
+  const moves: StockMove[] = [];
   let notManaged = 0, notFound = 0;
   for (let skip = 0; ; skip += 500) {
     const { data } = await query.graph({
       entity: "variant",
-      fields: ["id", "sku", "manage_inventory", "product.handle", "inventory_items.inventory_item_id"],
+      fields: [
+        "id", "sku", "manage_inventory", "product.handle", "product.title",
+        "inventory_items.inventory_item_id",
+        "inventory_items.inventory.location_levels.location_id",
+        "inventory_items.inventory.location_levels.stocked_quantity",
+      ],
       pagination: { skip, take: 500 },
     });
     for (const v of data as any[]) {
@@ -214,9 +221,14 @@ export async function setStockFromRows(container: any, rows: Record<string, stri
       else if (v.product?.handle && byHandle.has(v.product.handle)) stock = byHandle.get(v.product.handle);
       if (stock === undefined) continue;
       if (!v.manage_inventory) { notManaged++; continue; }
-      const iid = (v.inventory_items || [])[0]?.inventory_item_id;
+      const item = (v.inventory_items || [])[0];
+      const iid = item?.inventory_item_id;
       if (!iid) { notFound++; continue; }
+      // Current quantity at this location (for the movement's "from").
+      const level = (item?.inventory?.location_levels || []).find((l: any) => l.location_id === location.id);
+      const from = Number(level?.stocked_quantity ?? 0);
       updates.push({ inventory_item_id: iid, location_id: location.id, stocked_quantity: stock });
+      if (from !== stock) moves.push({ sku: v.sku || iid, product: v.product?.title || "—", from, to: stock });
     }
     if (data.length < 500) break;
   }
@@ -224,5 +236,5 @@ export async function setStockFromRows(container: any, rows: Record<string, stri
   if (updates.length) {
     await updateInventoryLevelsWorkflow(container).run({ input: { updates } });
   }
-  return { updated: updates.length, notManaged, notFound };
+  return { updated: updates.length, notManaged, notFound, moves };
 }
