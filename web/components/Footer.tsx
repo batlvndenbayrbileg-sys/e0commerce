@@ -33,32 +33,28 @@ const PhoneIcon = (p: any) => (
 export function Footer() {
   const t = useT();
   return (
-    <footer
-      className="relative z-10 mx-3 mb-3 overflow-hidden rounded-[1.75rem] px-6 pt-12 pb-7 text-white sm:mx-4 sm:rounded-[2.25rem] sm:px-10 lg:mx-5"
-      style={{ background: "linear-gradient(150deg, #FF8A3D 0%, #FF6A1A 52%, #E8550A 100%)" }}
-    >
-      {/* soft light bloom */}
-      <div className="pointer-events-none absolute -top-24 right-[8%] h-64 w-64 rounded-full bg-white/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 left-[10%] h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+    <footer className="relative z-10 mx-3 mb-3 overflow-hidden rounded-[1.75rem] border border-line bg-white px-6 pt-12 pb-7 text-ink shadow-[0_24px_60px_-40px_rgba(232,85,10,.35)] sm:mx-4 sm:rounded-[2.25rem] sm:px-10 lg:mx-5">
+      {/* faint warm corner bloom */}
+      <div className="pointer-events-none absolute -top-24 right-[8%] h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-[1180px]">
         <div className="flex flex-col gap-10 md:flex-row md:justify-between md:gap-12">
           {/* Brand */}
           <div className="flex flex-col items-center text-center md:items-start md:max-w-xs md:text-left">
             <div className="flex items-center gap-2.5">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-white text-accent shadow-[0_8px_20px_-6px_rgba(0,0,0,.3)]">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-deep text-white shadow-[0_8px_20px_-6px_rgba(255,106,26,.5)]">
                 <SunMark />
               </span>
               <span className="font-display text-2xl font-black tracking-tight">NARAN</span>
             </div>
-            <p className="mt-5 text-sm leading-relaxed text-white/80">{t("foot.tagline")}</p>
+            <p className="mt-5 text-sm leading-relaxed text-muted">{t("foot.tagline")}</p>
 
             <div className="mt-5 flex flex-col items-center gap-2 md:items-start">
-              <a href="tel:+97677000329" className="inline-flex items-center gap-2 text-sm text-white/85 hover:text-white transition-colors">
-                <PhoneIcon /> {t("foot.phone")}
+              <a href="tel:+97677000329" className="inline-flex items-center gap-2 text-sm text-ink/70 hover:text-accent transition-colors">
+                <PhoneIcon className="text-accent" /> {t("foot.phone")}
               </a>
-              <a href="mailto:support@naran.mn" className="inline-flex items-center gap-2 text-sm text-white/85 hover:text-white transition-colors">
-                <MailIcon /> support@naran.mn
+              <a href="mailto:support@naran.mn" className="inline-flex items-center gap-2 text-sm text-ink/70 hover:text-accent transition-colors">
+                <MailIcon className="text-accent" /> support@naran.mn
               </a>
             </div>
 
@@ -77,22 +73,22 @@ export function Footer() {
         </div>
 
         {/* Payment */}
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-2 border-t border-white/15 pt-6 md:justify-start">
-          <span className="mr-1 text-[11px] uppercase tracking-[.2em] text-white/60">{t("foot.payments")}</span>
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-2 border-t border-line pt-6 md:justify-start">
+          <span className="mr-1 text-[11px] uppercase tracking-[.2em] text-subtle">{t("foot.payments")}</span>
           {["QPay", "Хаан банк", "TDB", "Голомт", "Most Money"].map((m) => (
-            <span key={m} className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[12px] text-white/90">{m}</span>
+            <span key={m} className="rounded-full border border-line bg-surface-2 px-3 py-1 text-[12px] text-ink/70">{m}</span>
           ))}
         </div>
 
         {/* Bottom */}
-        <div className="mt-6 flex flex-col-reverse items-center gap-3 text-[13px] text-white/70 sm:flex-row sm:justify-between">
+        <div className="mt-6 flex flex-col-reverse items-center gap-3 text-[13px] text-muted sm:flex-row sm:justify-between">
           <span>{t("foot.rights")}</span>
           <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1">
-            <Link href="/privacy" className="hover:text-white transition-colors">{t("foot.privacy")}</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">{t("foot.terms")}</Link>
-            <Link href="/refund-policy" className="hover:text-white transition-colors">{t("foot.refund")}</Link>
-            <span className="hidden sm:inline text-white/40">·</span>
-            <span className="text-[11px] uppercase tracking-[.15em] text-white/80">{t("foot.slogan")}</span>
+            <Link href="/privacy" className="hover:text-accent transition-colors">{t("foot.privacy")}</Link>
+            <Link href="/terms" className="hover:text-accent transition-colors">{t("foot.terms")}</Link>
+            <Link href="/refund-policy" className="hover:text-accent transition-colors">{t("foot.refund")}</Link>
+            <span className="hidden sm:inline text-line">·</span>
+            <span className="text-[11px] uppercase tracking-[.15em] text-accent">{t("foot.slogan")}</span>
           </div>
         </div>
       </div>
@@ -104,7 +100,7 @@ function Social({ href, label, children }: { href: string; label: string; childr
   return (
     <a
       href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
-      className="grid h-9 w-9 place-items-center rounded-full border border-white/25 bg-white/10 text-white hover:bg-white hover:text-accent transition-colors"
+      className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-ink/70 hover:bg-accent hover:text-white hover:border-accent transition-colors"
     >
       {children}
     </a>
@@ -114,11 +110,11 @@ function Social({ href, label, children }: { href: string; label: string; childr
 function FootCol({ title, links }: { title: string; links: [string, string][] }) {
   return (
     <div>
-      <h5 className="mb-4 text-[11px] font-semibold uppercase tracking-[.2em] text-white/70">{title}</h5>
+      <h5 className="mb-4 text-[11px] font-semibold uppercase tracking-[.2em] text-accent">{title}</h5>
       <ul className="space-y-2.5">
         {links.map(([h, l]) => (
           <li key={l}>
-            <Link href={h} className="text-sm text-white/80 hover:text-white transition-colors">{l}</Link>
+            <Link href={h} className="text-sm text-ink/70 hover:text-accent transition-colors">{l}</Link>
           </li>
         ))}
       </ul>
