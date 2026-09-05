@@ -20,6 +20,18 @@ type Record = {
 };
 const intents = new Map<string, Record>();
 
+// Authoritative amount: the cart's server-side total (never trust a client-sent
+// amount — otherwise a buyer could pay less than the order is worth).
+async function cartTotal(cartId: string): Promise<number> {
+  const res = await fetch(`${MEDUSA_URL}/store/carts/${cartId}?fields=id,total,currency_code`, {
+    headers: { "content-type": "application/json", "x-publishable-api-key": MEDUSA_PK },
+  });
+  const data: any = await res.json().catch(() => ({}));
+  const total = data?.cart?.total;
+  if (typeof total !== "number" || !Number.isFinite(total)) throw new Error("Cart not found");
+  return Math.round(total);
+}
+
 // Complete the Medusa cart (already has address + shipping + payment session) → real order
 async function completeMedusaCart(cartId: string, shippingMethod: "standard" | "express") {
   const res = await fetch(`${MEDUSA_URL}/store/carts/${cartId}/complete`, {
@@ -62,7 +74,9 @@ const router = Router();
 
 const intentSchema = z.object({
   cartId: z.string().min(1),
-  amount: z.number().int().nonnegative(),
+  // `amount` is accepted for backwards-compat but IGNORED — the charge amount is
+  // always the cart's server-side total (see cartTotal), so it can't be tampered.
+  amount: z.number().int().nonnegative().optional(),
   email: z.string().email(),
   shippingMethod: z.enum(["standard", "express"]).default("standard"),
   origin: z.string().url().optional(),
@@ -72,8 +86,10 @@ const intentSchema = z.object({
 router.post("/intent", async (req, res) => {
   const parsed = intentSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
-  const { cartId, amount, email, shippingMethod, origin } = parsed.data;
+  const { cartId, email, shippingMethod, origin } = parsed.data;
   try {
+    // Authoritative amount from the cart, not the client.
+    const amount = await cartTotal(cartId);
     const intent = await createPaymentIntent({
       amount, idempotencyKey: `cart_${cartId}`,
       metadata: { cartId, email },
@@ -116,6 +132,13 @@ function clientIp(req: Request): string {
 export async function wireWebhook(req: Request, res: Response) {
   const rawBody = (req.body as Buffer)?.toString("utf8") || "";
   const secret = process.env.WIRE_WEBHOOK_SECRET;
+  // In live mode the webhook MUST be authenticated. Refuse if misconfigured
+  // rather than trusting an unsigned request. (settle() re-verifies with Wire
+  // regardless, but this closes the gap for good.)
+  if (WIRE_LIVE && !secret) {
+    console.error("wire webhook: WIRE_WEBHOOK_SECRET not set in live mode — refusing");
+    return res.status(500).json({ error: "Webhook not configured" });
+  }
   if (secret) {
     if (clientIp(req) !== WIRE_WEBHOOK_IP) return res.status(403).json({ error: "Forbidden" });
     if (!verifyWireSignature(rawBody, (req.headers["wirepayment-signature"] as string) || null, secret))

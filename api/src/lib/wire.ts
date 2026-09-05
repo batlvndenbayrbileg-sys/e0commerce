@@ -61,11 +61,21 @@ export async function createCheckoutSession(opts: { paymentIntentId: string; suc
   });
 }
 
-export function verifyWireSignature(rawBody: string, sigHeader: string | null, secret?: string): boolean {
+// Verify a Wire webhook signature (Stripe-style `t=<unix>,v1=<hmac>`).
+// `toleranceSec` rejects stale/replayed events (default 5 min).
+export function verifyWireSignature(
+  rawBody: string,
+  sigHeader: string | null,
+  secret?: string,
+  toleranceSec = 300,
+): boolean {
   if (!sigHeader || !secret) return false;
   const parts = Object.fromEntries(sigHeader.split(",").map(kv => kv.split("=").map(s => s.trim())));
   const { t, v1 } = parts as any;
   if (!t || !v1) return false;
+  // Replay protection: the signed timestamp must be recent.
+  const ts = Number(t);
+  if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > toleranceSec) return false;
   const expected = createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex");
   const a = Buffer.from(v1), b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b);
