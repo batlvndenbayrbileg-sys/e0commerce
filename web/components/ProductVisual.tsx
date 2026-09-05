@@ -15,7 +15,9 @@ type V = { product: Pick<Product, "shape" | "accent">; size?: "sm" | "md" | "lg"
 
 export function ProductVisual({ product, size = "md" }: V) {
   const dim = { sm: 150, md: 250, lg: 380, xl: 520 }[size];
-  const c = product.accent;
+  // Guard against a missing accent (e.g. a stale/partial cart item) so the
+  // fallback visual never crashes the page.
+  const c = product.accent || "#C7B8A8";
   const u = c.replace("#", "") + "-" + size + "-" + product.shape;
   const id = (k: string) => `${k}-${u}`;
   const seam = isPale(c) ? "rgba(14,15,16,.16)" : "rgba(255,255,255,.22)";

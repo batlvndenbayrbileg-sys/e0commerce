@@ -42,7 +42,22 @@ Live шалгасан: happy-path checkout → захиалга NT-15 ₮89,000 
 **Хойшлуулсан:**
 - **H5** (lockfile + `npm ci`) — web/api нь npm workspace гишүүд тул standalone lockfile үүсгэх + `npm ci` руу шилжих нь бодит Docker build-ээр шалгах шаардлагатай. Шалгалгүй shipping хийвэл prod build бүрийг эвдэх эрсдэлтэй тул хойшлуулав.
 
-Үлдсэн: B3 бүрэн reservation, B4 e-Barimt, H5, MEDIUM/LOW.
+**MEDIUM/LOW цэвэрлэгээ:**
+- **M5 (storefront)** — хуурамч loyalty өгөгдөл ("Gold member · 1,240 pts", "760 points") устгасан; ашиглагдаагүй i18n key-үүд цэвэрлэсэн.
+- **M6** — ажиллахгүй сагсны промо input + social login (Google/Facebook) товч устгасан (промо checkout-д ажилладаг).
+- **M4** — footer placeholder холбоос (FAQ→санамсаргүй бараа, About/Stores/Journal→/shop) устгасан.
+- **M3 (storefront)** — shop-ийн хуурамч pagination (1 2 3 ←→, handler-гүй) устгасан.
+- **M4 (payments)** — ашиглагдаагүй `medusa.checkout()` dead code устгасан.
+- **ops M3** — Express api-д graceful shutdown (SIGTERM/SIGINT) нэмсэн.
+- **ProductVisual** — accent байхгүй үед унадаг байсныг хамгаалсан (fallback өнгө).
+- **LOW** — success page валют формат (`en-US` тогтмол); барааны хуудаст hreflang alternates (mn/en); PLAN.md/README.md-ээс dev creds цэвэрлэсэн; JSON-LD escape (batch 3).
+
+Live шалгасан: auth (social алга), cart (промо input алга), footer (placeholder алга), shop (pagination алга) — бүгд алдаагүй. web ESLint: warning-ууд л (error алга) → CI ногоон. web+api typecheck цэвэр.
+
+**Зориудаар үлдээсэн (архитектур / шийдвэр шаардана):**
+- M1 sec (JWT localStorage → httpOnly cookie) — auth-ийн том rework.
+- M2 sec (RBAC privilege-by-default) — зориудын дизайн (эхний админыг түгжихгүй).
+- M5 ops (Redis SPOF), logging (console.*), M2 storefront (persisted cart reconcile), pagination (бодит), B4 e-Barimt, H5 lockfile.
 
 ---
 

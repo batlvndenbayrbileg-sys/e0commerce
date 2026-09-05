@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth, useToast } from "@/lib/store";
 import { useT, useLang } from "@/components/LangProvider";
 import { api } from "@/lib/api";
-import { ArrowRight, EyeIcon, EyeOffIcon, ChevronLeft } from "@/components/Icons";
+import { EyeIcon, EyeOffIcon, ChevronLeft } from "@/components/Icons";
 
 function pwScore(pw: string): 0 | 1 | 2 | 3 {
   if (!pw) return 0;
@@ -16,17 +16,6 @@ function pwScore(pw: string): 0 | 1 | 2 | 3 {
   return Math.min(3, s) as 0 | 1 | 2 | 3;
 }
 
-const GoogleLogo = () => (
-  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-    <path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.4 6.5v5.4h7.1c4.1-3.8 6.6-9.4 6.6-15.9z"/>
-    <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.4c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.6C8.1 41.1 15.5 46 24 46z"/>
-    <path fill="#FBBC05" d="M11.8 28.4c-.4-1.3-.7-2.7-.7-4.4s.3-3.1.7-4.4v-5.6H4.5C3 17.1 2 20.4 2 24s1 6.9 2.5 9.6l7.3-5.2z"/>
-    <path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.1 29.9 2 24 2 15.5 2 8.1 6.9 4.5 14.4l7.3 5.6c1.7-5.1 6.5-9 12.2-9z"/>
-  </svg>
-);
-const FacebookLogo = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.6 4.5-4.6 1.3 0 2.6.2 2.6.2v2.9h-1.5c-1.4 0-1.9.9-1.9 1.8V12h3.3l-.5 3.5h-2.8v8.4A12 12 0 0 0 24 12z"/></svg>
-);
 const MailCheckIcon = ({ width = 24, height = 24 }: { width?: number; height?: number }) => (
   <svg width={width} height={height} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
     <path d="M21 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8" />
@@ -198,40 +187,19 @@ export default function AuthPage() {
               {busy ? t("common.pleaseWait") : isForgot ? t("auth.sendResetLink") : isReg ? t("auth.signUp") : t("auth.signIn")}
             </button>
 
-            {isForgot ? (
+            {isForgot && (
               <div className="pt-2 text-center">
                 <button type="button" onClick={backToLogin}
                   className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-accent transition-colors">
                   <ChevronLeft width={16} height={16} /> {t("auth.backToSignIn")}
                 </button>
               </div>
-            ) : (
-              <>
-                {/* Social */}
-                <div className="pt-3 text-center">
-                  <p className="text-[13px] text-muted">{t("auth.socialPlatforms")}</p>
-                  <div className="mt-3.5 flex items-center justify-center gap-3">
-                    <SocialCircle label={t("auth.google")}><GoogleLogo/></SocialCircle>
-                    <SocialCircle label={t("auth.facebook")}><FacebookLogo/></SocialCircle>
-                  </div>
-                </div>
-
-              </>
             )}
           </form>
           )}
         </div>
       </div>
     </div>
-  );
-}
-
-function SocialCircle({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <button type="button" aria-label={label}
-      className="grid h-12 w-12 place-items-center rounded-full border border-line bg-white shadow-soft hover:-translate-y-0.5 hover:shadow-lift transition">
-      {children}
-    </button>
   );
 }
 

@@ -27,7 +27,7 @@ End-to-end engineering plan to evolve the current Next.js + Express prototype in
 
 ### P1 — what shipped
 - `infra/docker-compose.yml` — Postgres 16 (host port **5433**, avoids native 5432) + Redis 7, both healthchecked
-- `medusa-backend/` — Medusa v2 (Turborepo), migrated against Postgres, admin user `admin@vexo.gear / supersecret123`, admin at http://localhost:9000/app
+- `medusa-backend/` — Medusa v2 (Turborepo), migrated against Postgres, admin created locally with `npx medusa user -e <email> -p <password>` (dev only — never reuse a dev password in production), admin at http://localhost:9000/app
 - USD region + store currency, **12 VEXO products seeded** (`src/scripts/seed-vexo.ts`), demo products removed
 - Storefront product reads (home / shop / product) now come from **Medusa store API** via `web/lib/medusa.ts` (publishable key + region), merged with `web/lib/enrich.ts` for presentation metadata (fabric, specs, rating, visual shape)
 - Toggle: `NEXT_PUBLIC_USE_MEDUSA` (1 = Medusa, 0 = legacy Express). Cart + auth + order creation remain on Express until **P3**.
@@ -39,7 +39,7 @@ End-to-end engineering plan to evolve the current Next.js + Express prototype in
 - `web/lib/medusa.ts` `checkout()` runs the full Medusa store flow: create cart → set address → shipping method → payment collection → **system payment session** → complete → real order
 - Checkout page submits through Medusa (Express order endpoint retired); cart line items carry Medusa `variantId` (size-aware)
 - Order history persisted client-side (`useOrders`) and shown in the account "Orders" tab; success page shows order number + total
-- **Medusa customer auth** (`web/lib/medusa.ts` `auth.login/signup/me`): register → create customer → login → `/store/customers/me`. Storefront `api.auth.*` routes to Medusa via `NEXT_PUBLIC_USE_MEDUSA`. Demo customer `alex@vexo.gear / password123` seeded.
+- **Medusa customer auth** (`web/lib/medusa.ts` `auth.login/signup/me`): register → create customer → login → `/store/customers/me`. Storefront `api.auth.*` routes to Medusa via `NEXT_PUBLIC_USE_MEDUSA`. Register a local test customer as needed (no shared demo password committed).
 - **Express API (:4000) is now fully off the storefront critical path** — products, cart, orders, and auth all run through Medusa. Express remains only as a legacy fallback (`NEXT_PUBLIC_USE_MEDUSA=0`).
 ### P3 — Wire Payment (QPay) integration
 - **No Stripe** — uses **Wire Payment** (https://wire.mn): QPay + all Mongolian bank apps.

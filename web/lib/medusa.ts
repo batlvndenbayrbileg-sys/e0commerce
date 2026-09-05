@@ -441,44 +441,9 @@ export const medusa = {
     };
   },
 
-  // Full Medusa cart → order flow (system payment provider, no Stripe yet — P3)
-  checkout: async (input: {
-    email: string;
-    items: { variantId: string; quantity: number }[];
-    shippingMethod?: "standard" | "express";
-    address: { first_name: string; last_name: string; address_1: string; city: string; postal_code: string; country_code: string; phone?: string };
-  }) => {
-    const { cart } = await mpost("carts", {
-      region_id: REGION,
-      email: input.email,
-      items: input.items.map(i => ({ variant_id: i.variantId, quantity: i.quantity })),
-    });
-    await mpost(`carts/${cart.id}`, {
-      email: input.email,
-      shipping_address: input.address,
-      billing_address: input.address,
-    });
-
-    const { shipping_options } = await mfetch(`shipping-options?cart_id=${cart.id}`);
-    const wantExpress = input.shippingMethod === "express";
-    const opt = shipping_options.find((o: any) => (wantExpress ? /express/i : /standard/i).test(o.name)) || shipping_options[0];
-    if (!opt) throw new Error("No shipping option available");
-    await mpost(`carts/${cart.id}/shipping-methods`, { option_id: opt.id });
-
-    const { payment_collection } = await mpost("payment-collections", { cart_id: cart.id });
-    await mpost(`payment-collections/${payment_collection.id}/payment-sessions`, { provider_id: "pp_system_default" });
-
-    const result = await mpost(`carts/${cart.id}/complete`, {});
-    if (result.type !== "order") throw new Error(result?.error?.message || "Order could not be completed");
-    const o = result.order;
-    return {
-      id: o.display_id ? `NT-${o.display_id}` : o.id,
-      orderId: o.id,
-      total: Math.round(o.total),
-      email: o.email,
-      estimatedDelivery: new Date(Date.now() + (wantExpress ? 2 : 4) * 86400000).toISOString().slice(0, 10),
-    };
-  },
+  // (Removed dead `checkout()` — direct system-provider completion. The live flow
+  // is prepareCart + Wire settlement in the Express gateway; this was unused and
+  // sent no order confirmation.)
 
   // Admin-editable homepage content (CMS, spec A4). Returns null on any failure
   // so the homepage always falls back to its built-in defaults.

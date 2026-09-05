@@ -101,11 +101,7 @@ export default function CartPage() {
                 <Row k={t("cart.shipping")} v={freeShip ? t("common.free") : t("cart.shipAtCheckout")}/>
                 <Row k={t("cart.tax")} v={money(tax)}/>
               </div>
-              <div className="flex gap-2 my-4">
-                <input placeholder={t("cart.promo")} className="flex-1 h-11 px-4 rounded-pill border border-line bg-surface-2 outline-none text-sm"/>
-                <button className="btn btn-ghost btn-sm">{t("common.apply")}</button>
-              </div>
-              <div className="flex justify-between border-t border-line pt-4 font-display text-[20px]">
+              <div className="flex justify-between border-t border-line mt-4 pt-4 font-display text-[20px]">
                 <span>{t("cart.total")}</span><span className="num-tabular">{money(total)}</span>
               </div>
               <Link href="/checkout" className={`btn btn-primary w-full justify-center mt-4 ${items.length === 0 ? "pointer-events-none opacity-50" : ""}`}>

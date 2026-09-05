@@ -64,11 +64,10 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Nav */}
-          <nav className="grid w-full grid-cols-2 gap-8 text-center sm:grid-cols-3 md:w-auto md:text-left">
+          {/* Nav — only real destinations (placeholder About/Stores/Journal/FAQ removed). */}
+          <nav className="grid w-full grid-cols-2 gap-8 text-center md:w-auto md:text-left">
             <FootCol title={t("foot.shop")} links={[["/shop?category=Fragrance",t("cat.Fragrance")],["/shop?category=Skincare",t("cat.Skincare")],["/shop?category=Makeup",t("cat.Makeup")],["/shop?category=Gift",t("cat.Gift")]]}/>
-            <FootCol title={t("foot.support")} links={[["/refund-policy",t("foot.refund")],["/terms",t("foot.terms")],["/privacy",t("foot.privacy")],["/product/edp-bloom",t("foot.faq")]]}/>
-            <FootCol title={t("foot.brand")} links={[["/shop",t("foot.about")],["/shop",t("foot.stores")],["/shop",t("foot.journal")]]}/>
+            <FootCol title={t("foot.support")} links={[["/shop",t("bc.shop")],["/refund-policy",t("foot.refund")],["/terms",t("foot.terms")],["/privacy",t("foot.privacy")]]}/>
           </nav>
         </div>
 

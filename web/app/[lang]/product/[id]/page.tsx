@@ -40,7 +40,13 @@ export async function generateMetadata({ params }: { params: { lang: string; id:
     return {
       title: `${p.name} — NARAN`,
       description: desc,
-      alternates: { canonical: url },
+      alternates: {
+        canonical: url,
+        languages: {
+          mn: `${SITE_URL}/mn/product/${p.slug}`,
+          en: `${SITE_URL}/en/product/${p.slug}`,
+        },
+      },
       openGraph: { title: `${p.name} — NARAN`, description: desc, url, type: "website", images: [{ url: img }] },
     };
   } catch {

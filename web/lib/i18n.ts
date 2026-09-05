@@ -165,8 +165,6 @@ const en: Dict = {
   "auth.enterDetails": "Enter your details below", "auth.getStartedFree": "Get started free.",
   "auth.freeForever": "Free forever. No card needed.", "auth.yourName": "Your name", "auth.getStarted": "Get Started", "auth.facebook": "Facebook",
   // account
-  "acc.goldMember": "Gold member", "acc.pts": "pts", "acc.loyalty": "Loyalty",
-  "acc.loyaltyA": "You're", "acc.loyaltyPoints": "760 points", "acc.loyaltyB": "from Platinum. Every purchase earns points.",
   "acc.defaultHome": "Default · Home", "acc.expires": "Expires", "acc.addAddress": "Add address",
   "acc.wishEmpty": "Your wishlist is empty", "acc.ordersWord": "orders", "acc.emailOptin": "Email me about drops & restocks",
   "acc.status_processing": "Processing", "acc.status_shipped": "Shipped", "acc.status_delivered": "Delivered",
@@ -330,8 +328,6 @@ const mn: Dict = {
   "auth.enterDetails": "Доорх мэдээллээ оруулна уу", "auth.getStartedFree": "Үнэгүй эхэл.",
   "auth.freeForever": "Үргэлж үнэгүй. Карт хэрэггүй.", "auth.yourName": "Таны нэр", "auth.getStarted": "Эхлэх", "auth.facebook": "Facebook",
   // account
-  "acc.goldMember": "Алтан гишүүн", "acc.pts": "оноо", "acc.loyalty": "Урамшуулал",
-  "acc.loyaltyA": "Та", "acc.loyaltyPoints": "760 оноо", "acc.loyaltyB": "Платинумаас хоцорч байна. Худалдан авалт бүр оноо нэмнэ.",
   "acc.defaultHome": "Үндсэн · Гэр", "acc.expires": "Дуусах", "acc.addAddress": "Хаяг нэмэх",
   "acc.wishEmpty": "Таны хадгалсан жагсаалт хоосон байна", "acc.ordersWord": "захиалга", "acc.emailOptin": "Шинэ бараа, нөөцийн талаар имэйл авах",
   "acc.status_processing": "Боловсруулж байна", "acc.status_shipped": "Илгээсэн", "acc.status_delivered": "Хүргэгдсэн",

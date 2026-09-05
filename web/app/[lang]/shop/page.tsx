@@ -91,13 +91,6 @@ export default async function ShopPage({
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-6">
                 {products.map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
               </div>
-              <div className="flex items-center justify-center gap-1.5 mt-10">
-                <button className="w-10 h-10 rounded-full border border-line bg-white grid place-items-center text-muted">←</button>
-                {["1","2","3"].map((l, i) => (
-                  <button key={i} className={`min-w-[40px] h-10 px-3 rounded-full text-sm font-medium ${l === "1" ? "bg-ink text-white" : "bg-white border border-line text-ink"}`}>{l}</button>
-                ))}
-                <button className="w-10 h-10 rounded-full border border-line bg-white grid place-items-center text-ink">→</button>
-              </div>
             </>
           )}
         </div>

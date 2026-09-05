@@ -53,7 +53,7 @@ npm run dev
 
 Open <http://localhost:3000>.
 
-Demo login on `/auth`: **`ryman@nitec.dev`** / **`password123`**.
+Create an account on `/auth` (register), or use a Medusa customer you seeded locally. No shared demo credentials are committed.
 
 ## API endpoints
 

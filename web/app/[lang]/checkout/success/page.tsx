@@ -36,7 +36,7 @@ function Success() {
         <div className="bg-surface-2 rounded-xl p-5 my-7 text-left">
           <div className="flex justify-between mb-1.5"><span className="tiny">{t("ok.orderNo")}</span><span className="font-mono font-semibold">{id ?? "—"}</span></div>
           <div className="flex justify-between mb-1.5"><span className="tiny">{t("ok.eta")}</span><span className="font-medium">{eta}</span></div>
-          <div className="flex justify-between"><span className="tiny">{t("ok.total")}</span><span className="font-medium">{total ? <CountUp value={Number(total)} format={(n) => `₮${n.toLocaleString()}`}/> : "—"}</span></div>
+          <div className="flex justify-between"><span className="tiny">{t("ok.total")}</span><span className="font-medium">{total ? <CountUp value={Number(total)} format={(n) => `₮${Math.round(n).toLocaleString("en-US")}`}/> : "—"}</span></div>
         </div>
 
         <div className="flex justify-center gap-2.5">

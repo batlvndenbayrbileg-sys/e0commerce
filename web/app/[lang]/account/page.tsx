@@ -115,9 +115,6 @@ export default function AccountPage() {
               <div className="min-w-0">
                 <h1 className="font-display text-[24px] tracking-tight truncate">{user.firstName} {user.lastName}</h1>
                 <p className="text-muted text-[13px] truncate">{user.email}</p>
-                <span className="inline-flex items-center gap-1.5 mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-accent bg-accent-soft px-2.5 py-1 rounded-pill">
-                  {t("acc.goldMember")} · 1,240 {t("acc.pts")}
-                </span>
               </div>
               <button onClick={() => { signOut(); router.push(`/${lang}`); }}
                 className="ml-auto hidden sm:inline-flex btn btn-outline btn-sm">{t("acc.signOut")}</button>

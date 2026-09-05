@@ -52,6 +52,16 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ error: err.message || "Server error" });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`> Nitec API ready on http://localhost:${PORT}`);
 });
+
+// Graceful shutdown: stop accepting connections and let in-flight requests finish
+// before exit (clean redeploys — no dropped requests). Force-exit after 10s.
+for (const sig of ["SIGTERM", "SIGINT"] as const) {
+  process.on(sig, () => {
+    console.log(`${sig} received — shutting down`);
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 10_000).unref();
+  });
+}
