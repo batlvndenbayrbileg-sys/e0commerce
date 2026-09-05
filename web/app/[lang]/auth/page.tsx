@@ -27,6 +27,13 @@ const GoogleLogo = () => (
 const FacebookLogo = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4H7.1V12h3V9.4c0-3 1.8-4.6 4.5-4.6 1.3 0 2.6.2 2.6.2v2.9h-1.5c-1.4 0-1.9.9-1.9 1.8V12h3.3l-.5 3.5h-2.8v8.4A12 12 0 0 0 24 12z"/></svg>
 );
+const MailCheckIcon = ({ width = 24, height = 24 }: { width?: number; height?: number }) => (
+  <svg width={width} height={height} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <path d="M21 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8" />
+    <path d="m3.5 7.5 8.5 6 8.5-6" />
+    <path d="m16 17 2 2 4-4" />
+  </svg>
+);
 
 export default function AuthPage() {
   const router = useRouter();
@@ -34,12 +41,14 @@ export default function AuthPage() {
   const lang = useLang();
   const setSession = useAuth(s => s.setSession);
   const showToast = useToast(s => s.show);
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: "Nicholas Ergemla", email: "alex@vexo.gear", password: "password123" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isReg = mode === "register";
+  const isForgot = mode === "forgot";
 
   const update = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(f => ({ ...f, [k]: e.target.value }));
@@ -50,7 +59,7 @@ export default function AuthPage() {
     const er: Record<string, string> = {};
     if (isReg && !form.name.trim()) er.name = t("common.required");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) er.email = t("auth.invalidEmail");
-    if (form.password.length < (isReg ? 8 : 1)) er.password = isReg ? t("auth.min8") : t("common.required");
+    if (!isForgot && form.password.length < (isReg ? 8 : 1)) er.password = isReg ? t("auth.min8") : t("common.required");
     setErrors(er);
     return Object.keys(er).length === 0;
   }
@@ -60,6 +69,13 @@ export default function AuthPage() {
     if (!validate()) return;
     setBusy(true);
     try {
+      if (isForgot) {
+        // Always resolves (no info leak); show the confirmation regardless.
+        await api.auth.resetRequest(form.email);
+        setSent(true);
+        setBusy(false);
+        return;
+      }
       let result;
       if (isReg) {
         const parts = form.name.trim().split(/\s+/);
@@ -77,6 +93,9 @@ export default function AuthPage() {
       setBusy(false);
     }
   }
+
+  const goForgot = () => { setMode("forgot"); setSent(false); setErrors({}); };
+  const backToLogin = () => { setMode("login"); setSent(false); setErrors({}); };
 
   const score = pwScore(form.password);
   const strengthLabel = [t("auth.pwWeak"), t("auth.pwWeak"), t("auth.pwFair"), t("auth.pwStrong")][score];
@@ -118,9 +137,23 @@ export default function AuthPage() {
             </button>
           </div>
 
-          <h1 className="font-display text-[28px] tracking-tight text-center lg:text-left">{isReg ? t("auth.signUp") : t("auth.signIn")}</h1>
-          <p className="mt-1.5 text-[14px] text-muted text-center lg:text-left">{isReg ? t("auth.freeForever") : t("auth.enterDetails")}</p>
+          <h1 className="font-display text-[28px] tracking-tight text-center lg:text-left">{isForgot ? t("auth.forgotTitle") : isReg ? t("auth.signUp") : t("auth.signIn")}</h1>
+          <p className="mt-1.5 text-[14px] text-muted text-center lg:text-left">{isForgot ? t("auth.forgotDesc") : isReg ? t("auth.freeForever") : t("auth.enterDetails")}</p>
 
+          {isForgot && sent ? (
+            <div className="mt-8 flex flex-col items-center text-center lg:items-start lg:text-left">
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-accent-soft text-accent">
+                <MailCheckIcon width={24} height={24} />
+              </span>
+              <h2 className="mt-4 font-display text-[20px] tracking-tight">{t("auth.resetSentTitle")}</h2>
+              <p className="mt-2 text-[14px] leading-relaxed text-muted max-w-[340px]">{t("auth.resetSentDesc")}</p>
+              <p className="mt-3 text-[13px] font-medium text-ink break-all">{form.email}</p>
+              <button type="button" onClick={backToLogin}
+                className="mt-7 inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline">
+                <ChevronLeft width={16} height={16} /> {t("auth.backToSignIn")}
+              </button>
+            </div>
+          ) : (
           <form onSubmit={submit} noValidate className="mt-7 space-y-3.5">
             <FloatingField label={t("co.email")} name="email" type="email" inputMode="email" autoComplete="email"
               value={form.email} onChange={update("email")} error={errors.email}/>
@@ -130,6 +163,7 @@ export default function AuthPage() {
                 value={form.name} onChange={update("name")} error={errors.name}/>
             )}
 
+            {!isForgot && (
             <FloatingField
               label={t("auth.password")} name="password" type={showPw ? "text" : "password"}
               autoComplete={isReg ? "new-password" : "current-password"}
@@ -149,31 +183,44 @@ export default function AuthPage() {
                 </button>
               }
             />
+            )}
 
-            {!isReg && (
+            {!isReg && !isForgot && (
               <div className="text-right -mt-1">
-                <button type="button" onClick={() => showToast(t("auth.forgotSoon"))}
-                  className="text-[12px] text-muted hover:text-ink transition-colors">{t("auth.forgot")}</button>
+                <button type="button" onClick={goForgot}
+                  className="text-[12px] text-muted hover:text-accent transition-colors">{t("auth.forgot")}</button>
               </div>
             )}
 
             <button disabled={busy} type="submit"
               className="w-full h-[52px] rounded-full text-white font-semibold uppercase tracking-[.12em] text-[13px] grid place-items-center disabled:opacity-60 transition active:scale-[.99] shadow-[0_12px_28px_-8px_rgba(110,84,236,.6)]"
               style={{ background: "linear-gradient(95deg, #FF7A2E 0%, #E8550A 100%)" }}>
-              {busy ? t("common.pleaseWait") : isReg ? t("auth.signUp") : t("auth.signIn")}
+              {busy ? t("common.pleaseWait") : isForgot ? t("auth.sendResetLink") : isReg ? t("auth.signUp") : t("auth.signIn")}
             </button>
 
-            {/* Social */}
-            <div className="pt-3 text-center">
-              <p className="text-[13px] text-muted">{t("auth.socialPlatforms")}</p>
-              <div className="mt-3.5 flex items-center justify-center gap-3">
-                <SocialCircle label={t("auth.google")}><GoogleLogo/></SocialCircle>
-                <SocialCircle label={t("auth.facebook")}><FacebookLogo/></SocialCircle>
+            {isForgot ? (
+              <div className="pt-2 text-center">
+                <button type="button" onClick={backToLogin}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-muted hover:text-accent transition-colors">
+                  <ChevronLeft width={16} height={16} /> {t("auth.backToSignIn")}
+                </button>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Social */}
+                <div className="pt-3 text-center">
+                  <p className="text-[13px] text-muted">{t("auth.socialPlatforms")}</p>
+                  <div className="mt-3.5 flex items-center justify-center gap-3">
+                    <SocialCircle label={t("auth.google")}><GoogleLogo/></SocialCircle>
+                    <SocialCircle label={t("auth.facebook")}><FacebookLogo/></SocialCircle>
+                  </div>
+                </div>
 
-            {!isReg && <p className="tiny text-center pt-2">{t("auth.demo")} <span className="font-mono">alex@vexo.gear / password123</span></p>}
+                {!isReg && <p className="tiny text-center pt-2">{t("auth.demo")} <span className="font-mono">alex@vexo.gear / password123</span></p>}
+              </>
+            )}
           </form>
+          )}
         </div>
       </div>
     </div>

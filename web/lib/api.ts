@@ -59,6 +59,14 @@ export const api = {
       const r = await fetch(`${BASE}/api/auth/me`, { headers: { authorization: `Bearer ${token}` }});
       return json<{ user: User }>(r);
     },
+    resetRequest: async (email: string) => {
+      if (USE_MEDUSA) return medusa.auth.resetRequest(email);
+      throw new Error("Not supported");
+    },
+    resetConfirm: async (token: string, password: string) => {
+      if (USE_MEDUSA) return medusa.auth.resetConfirm(token, password);
+      throw new Error("Not supported");
+    },
   },
   orders: {
     create: async (data: { email: string; items: { id: string; qty: number }[]; shippingMethod?: "standard" | "express" }) => {

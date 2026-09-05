@@ -278,6 +278,27 @@ export const medusa = {
       return { token, user: await fetchMe(token) };
     },
     me: async (token: string) => ({ user: await fetchMe(token) }),
+    // Request a password-reset link. Medusa emits `auth.password_reset`; our
+    // subscriber emails the storefront link. Always resolves (201, no body) so
+    // we never leak whether the email exists.
+    resetRequest: async (email: string) => {
+      await authPost("/auth/customer/emailpass/reset-password", { identifier: email });
+      return { ok: true };
+    },
+    // Set a new password using the token from the reset email. The token is a
+    // short-lived JWT sent as a Bearer credential; the body carries the new password.
+    resetConfirm: async (token: string, password: string) => {
+      const res = await fetch(`${URL}/auth/customer/emailpass/update`, {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.success === false) {
+        throw new Error(data?.message || "Холбоос хүчингүй эсвэл хугацаа дууссан байна.");
+      }
+      return { ok: true };
+    },
   },
 
   // Authenticated customer data.
