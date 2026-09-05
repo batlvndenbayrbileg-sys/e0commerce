@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -49,7 +50,15 @@ export async function generateMetadata({ params }: { params: { lang: string; id:
 
 export default async function ProductPage({ params }: { params: { lang: Lang; id: string } }) {
   const t = tFor(params.lang);
-  const { data: product, related } = await api.products.get(params.id);
+  // A missing/invalid slug (or a deleted product) must render a proper 404, not a
+  // 500 error boundary — otherwise Google treats removed pages as broken (H1).
+  let product: Awaited<ReturnType<typeof api.products.get>>["data"];
+  let related: Awaited<ReturnType<typeof api.products.get>>["related"];
+  try {
+    ({ data: product, related } = await api.products.get(params.id));
+  } catch {
+    notFound();
+  }
   const img = product.image ?? productImg(product.id);
 
   // schema.org Product/Offer structured data (rich results).
@@ -72,7 +81,7 @@ export default async function ProductPage({ params }: { params: { lang: Lang; id
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <div className="px-3 pt-3 sm:px-4 sm:pt-4 lg:px-5 lg:pt-5 pb-2 mesh-light min-h-screen">
         <div className="max-w-[1280px] mx-auto">
           <Nav />

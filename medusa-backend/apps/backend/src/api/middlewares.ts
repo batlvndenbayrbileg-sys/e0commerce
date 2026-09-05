@@ -1,6 +1,13 @@
 import { defineMiddlewares, MedusaNextFunction, MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import { can, Permission } from "../lib/rbac";
+import { rateLimit } from "../lib/rate-limit";
+
+// Auth throttles (H9): brute-force / credential-stuffing on login, and spam on
+// signup + password-reset. Separate buckets so one endpoint can't exhaust another.
+const loginLimit = rateLimit({ name: "auth-login", windowMs: 15 * 60_000, max: 10 });
+const registerLimit = rateLimit({ name: "auth-register", windowMs: 60 * 60_000, max: 10 });
+const resetLimit = rateLimit({ name: "auth-reset", windowMs: 15 * 60_000, max: 5 });
 
 // RBAC guard (spec A0): enforce a permission on our custom /admin routes based on
 // the acting user's role (user.metadata.role). Role-less users are treated as
@@ -34,6 +41,11 @@ function requirePermission(perm: Permission) {
 
 export default defineMiddlewares({
   routes: [
+    // --- Auth rate limiting (login / register / password reset), both actor types ---
+    { matcher: "/auth/:actor/emailpass", methods: ["POST"], middlewares: [loginLimit] },
+    { matcher: "/auth/:actor/emailpass/register", methods: ["POST"], middlewares: [registerLimit] },
+    { matcher: "/auth/:actor/emailpass/reset-password", methods: ["POST"], middlewares: [resetLimit] },
+
     { matcher: "/admin/catalog/*", methods: ["GET"], middlewares: [requirePermission("catalog.read")] },
     { matcher: "/admin/catalog/*", methods: ["POST"], middlewares: [requirePermission("catalog.write")] },
     { matcher: "/admin/analytics/*", methods: ["GET"], middlewares: [requirePermission("analytics.read")] },

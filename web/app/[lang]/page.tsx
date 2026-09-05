@@ -32,7 +32,10 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
     api.products.list({}),
     medusa.homepageContent(),
   ]);
+  // `hot` can be undefined if the catalog is empty (new/misconfigured store or a
+  // transient Medusa error) — never dereference it directly (H2).
   const hot = products.find(p => p.badge === "Sale") || products[0];
+  const hotImg = hot ? (hot.image ?? productImg(hot.id)) : HERO_IMG;
 
   const defaultSlides: Slide[] = [
     { kicker: t("home.s1Kicker"), top: t("home.s1Top"), accent: t("home.s1Accent"), desc: t("home.s1Desc"), img: FILM_IMG, href: "/shop" },
@@ -59,11 +62,11 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
         desc: cms.promo.desc[L] || cms.promo.desc.mn,
         cta: cms.promo.cta[L] || cms.promo.cta.mn,
         href: cms.promo.href || "/shop?filter=sale",
-        img: cms.promo.img || (hot.image ?? productImg(hot.id)),
+        img: cms.promo.img || hotImg,
       }
     : {
         kicker: t("home.promoKicker"), title: t("home.promoTitle"), desc: t("home.promoDesc"),
-        cta: t("home.promoCta"), href: "/shop?filter=sale", img: hot.image ?? productImg(hot.id),
+        cta: t("home.promoCta"), href: "/shop?filter=sale", img: hotImg,
       };
 
   return (

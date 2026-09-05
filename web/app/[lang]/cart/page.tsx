@@ -21,9 +21,14 @@ export default function CartPage() {
   useEffect(() => setMounted(true), []);
 
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
-  const shipping = 0; // standard shipping is free; final total confirmed at checkout
   const tax = 0;
-  const total = subtotal + shipping + tax;
+  // Free shipping only kicks in over the threshold (mirrors the backend promo and
+  // the checkout summary). Below it, the exact fee is priced by Medusa at
+  // checkout — so we say "calculated at checkout" here rather than a false "Free"
+  // that then jumps up on the next page (H3). Keep in sync with checkout page.
+  const FREE_SHIP_THRESHOLD = 150000;
+  const freeShip = subtotal >= FREE_SHIP_THRESHOLD;
+  const total = subtotal + tax; // merchandise total; shipping added at checkout when not free
 
   return (
     <>
@@ -93,7 +98,7 @@ export default function CartPage() {
               <h3 className="font-display text-[20px] tracking-tight">{t("cart.summary")}</h3>
               <div className="mt-4">
                 <Row k={t("cart.subtotal")} v={money(subtotal)}/>
-                <Row k={t("cart.shipping")} v={shipping === 0 ? t("common.free") : money(shipping)}/>
+                <Row k={t("cart.shipping")} v={freeShip ? t("common.free") : t("cart.shipAtCheckout")}/>
                 <Row k={t("cart.tax")} v={money(tax)}/>
               </div>
               <div className="flex gap-2 my-4">
@@ -107,7 +112,7 @@ export default function CartPage() {
                 {t("cart.checkout")} <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
               </Link>
               <div className="mt-4 p-3 rounded-xl bg-accent-soft text-[12px] text-accent-deep text-center font-medium">
-                {t("cart.freeNote")}
+                {freeShip ? t("cart.freeUnlocked") : t("cart.freeNote")}
               </div>
             </aside>
           </div>

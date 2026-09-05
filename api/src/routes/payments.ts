@@ -6,6 +6,7 @@ import {
   verifyWireSignature, WIRE_LIVE, WIRE_WEBHOOK_IP,
 } from "../lib/wire.js";
 import { sendOrderConfirmation } from "../lib/email.js";
+import { rateLimit } from "../lib/rate-limit.js";
 
 const MEDUSA_URL = process.env.MEDUSA_URL || "http://localhost:9000";
 // No baked-in fallback: a wrong/absent key must fail loudly, not silently use a
@@ -165,8 +166,10 @@ const intentSchema = z.object({
   origin: z.string().url().optional(),
 });
 
-// Create Wire intent + hosted checkout session
-router.post("/intent", async (req, res) => {
+// Create Wire intent + hosted checkout session. Rate-limited (H9): intent
+// creation is expensive/abusable; the status poll below is not limited.
+const intentCreateLimit = rateLimit({ name: "pay-intent", windowMs: 60_000, max: 12 });
+router.post("/intent", intentCreateLimit, async (req, res) => {
   const parsed = intentSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   const { cartId, email, shippingMethod, origin } = parsed.data;

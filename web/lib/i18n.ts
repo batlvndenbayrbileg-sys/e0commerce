@@ -46,7 +46,8 @@ const en: Dict = {
   // cart
   "cart.title": "Your bag", "cart.emptyTitle": "Your bag is empty", "cart.emptyDesc": "Looks quiet in here — let's find you something.",
   "cart.summary": "Order summary", "cart.subtotal": "Subtotal", "cart.shipping": "Shipping", "cart.tax": "Tax (est.)",
-  "cart.total": "Total", "cart.promo": "Promo code", "cart.checkout": "Checkout", "cart.freeNote": "Free standard shipping nationwide",
+  "cart.total": "Total", "cart.promo": "Promo code", "cart.checkout": "Checkout", "cart.freeNote": "Free shipping on orders over ₮150,000",
+  "cart.shipAtCheckout": "Calculated at checkout", "cart.freeUnlocked": "You've unlocked free shipping 🎉",
   // checkout
   "co.title": "Checkout", "co.cart": "Cart", "co.information": "Information", "co.payment": "Payment", "co.confirm": "Confirm",
   "co.contact": "Contact", "co.email": "Email", "co.emailOffers": "Email me with news and offers",
@@ -101,6 +102,7 @@ const en: Dict = {
   "foot.backToTop": "Back to top",
   // breadcrumbs + extra common
   "bc.home": "Home", "bc.shop": "Shop", "bc.cart": "Cart", "bc.checkout": "Checkout",
+  "nf.title": "Page not found", "nf.desc": "The page you're looking for doesn't exist or has moved.", "nf.home": "Back home", "nf.shop": "Browse shop",
   "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
   "common.required": "Required", "common.pleaseWait": "Please wait…", "common.close": "Close", "common.cancel": "Cancel",
   "cookie.text": "We use essential cookies to run the store and, with your consent, analytics to improve it.",
@@ -214,7 +216,8 @@ const mn: Dict = {
   "news.policy": "Бүртгүүлснээр та нууцлалын бодлогыг зөвшөөрнө. Хүссэн үедээ цуцлах боломжтой.",
   "cart.title": "Таны сагс", "cart.emptyTitle": "Сагс хоосон байна", "cart.emptyDesc": "Энд чимээгүй байна — танд тохирох зүйл олъё.",
   "cart.summary": "Захиалгын дүн", "cart.subtotal": "Дэд дүн", "cart.shipping": "Хүргэлт", "cart.tax": "Татвар (ойролцоо)",
-  "cart.total": "Нийт", "cart.promo": "Урамшууллын код", "cart.checkout": "Төлбөр төлөх", "cart.freeNote": "Улсын хэмжээнд үнэгүй энгийн хүргэлт",
+  "cart.total": "Нийт", "cart.promo": "Урамшууллын код", "cart.checkout": "Төлбөр төлөх", "cart.freeNote": "₮150,000-аас дээш захиалгад үнэгүй хүргэлт",
+  "cart.shipAtCheckout": "Төлбөрийн хэсэгт тооцно", "cart.freeUnlocked": "Үнэгүй хүргэлт нээгдлээ 🎉",
   "co.title": "Төлбөр", "co.cart": "Сагс", "co.information": "Мэдээлэл", "co.payment": "Төлбөр", "co.confirm": "Баталгаажуулах",
   "co.contact": "Холбоо барих", "co.email": "Имэйл", "co.emailOffers": "Мэдээ, урамшуулал имэйлээр авах",
   "co.shippingAddress": "Хүргэлтийн хаяг", "co.firstName": "Нэр", "co.lastName": "Овог",
@@ -264,6 +267,7 @@ const mn: Dict = {
   "foot.backToTop": "Дээш буцах",
   // breadcrumbs + extra common
   "bc.home": "Нүүр", "bc.shop": "Дэлгүүр", "bc.cart": "Сагс", "bc.checkout": "Төлбөр",
+  "nf.title": "Хуудас олдсонгүй", "nf.desc": "Таны хайж буй хуудас байхгүй эсвэл өөр байршилд шилжсэн байна.", "nf.home": "Нүүр рүү буцах", "nf.shop": "Дэлгүүр үзэх",
   "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
   "common.required": "Шаардлагатай", "common.pleaseWait": "Түр хүлээнэ үү…", "common.close": "Хаах", "common.cancel": "Болих",
   "cookie.text": "Дэлгүүрийг ажиллуулахад зайлшгүй cookie, таны зөвшөөрлөөр сайжруулах аналитик ашиглана.",

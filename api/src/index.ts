@@ -6,6 +6,7 @@ import cors from "cors";
 import productsRouter from "./routes/products.js";
 import authRouter from "./routes/auth.js";
 import paymentsRouter, { wireWebhook } from "./routes/payments.js";
+import { rateLimit } from "./lib/rate-limit.js";
 
 const IS_PROD = process.env.NODE_ENV === "production";
 
@@ -34,9 +35,13 @@ app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => res.json({ ok: true, service: "nitec-api" }));
 app.use("/api/products", productsRouter);
-app.use("/api/auth", authRouter);
+// Rate limit (H9): throttle auth abuse per IP.
+app.use("/api/auth", rateLimit({ name: "api-auth", windowMs: 15 * 60_000, max: 20 }), authRouter);
 // Legacy in-memory /api/orders removed (H10): it was unauthenticated (leaked all
 // orders / any order by email) and unused — real orders live in Medusa.
+// NOTE: payment-intent CREATION is rate-limited inside the router (POST /intent);
+// the status poll (GET /intent) is intentionally not, since the processing page
+// polls it frequently while waiting for payment.
 app.use("/api/payments", paymentsRouter);
 
 // Report errors to Sentry (no-op if SENTRY_DSN unset) before our JSON handler.

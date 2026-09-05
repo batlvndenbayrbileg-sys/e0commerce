@@ -31,7 +31,18 @@
 
 Live шалгасан: happy-path checkout → захиалга NT-15 ₮89,000 амжилттай (regression цэвэр). `needs_review` замыг логикоор шалгасан (live trigger хийхэд staged out-of-stock шаардана).
 
-Үлдсэн доорх зүйлс хийгдээгүй хэвээр (B3 бүрэн reservation, B4 e-Barimt, HIGH UX, MEDIUM/LOW).
+**3-р ээлж (HIGH UX / найдвартай байдал):**
+- **H1** — буруу барааны URL одоо 404 (`notFound()` + брэндтэй `not-found.tsx`); JSON-LD `</script>` escape. Live: `/mn/product/does-not-exist` → "Хуудас олдсонгүй".
+- **H2** — хоосон каталог crash засагдсан (`hot` undefined-ыг хамгаалж, `hotImg` fallback).
+- **H3** — сагс худал "Үнэгүй" гэхээ болив: ₮150,000-аас доош "Төлбөрийн хэсэгт тооцно" + босгын урамшуулал; дээш "Үнэгүй нээгдлээ". Live шалгасан.
+- **H7** — бүх app сервист healthcheck (medusa/api/web wget) + `mem_limit` (compose 2 файл). `docker compose config` VALID.
+- **H8** — migration нь `medusa-migrate` one-shot болов; server/worker хүлээгээд эхэлнэ (replica-д аюулгүй). DEPLOY.md шинэчлэгдсэн.
+- **H9** — rate limiting: Medusa auth (login 10/15м, register 10/1ц, reset 5/15м) + api (auth 20/15м, pay-intent 12/1м), dependency-гүй in-memory limiter. Live: reset 6 дахь → 429, intent 13 дахь → 429.
+
+**Хойшлуулсан:**
+- **H5** (lockfile + `npm ci`) — web/api нь npm workspace гишүүд тул standalone lockfile үүсгэх + `npm ci` руу шилжих нь бодит Docker build-ээр шалгах шаардлагатай. Шалгалгүй shipping хийвэл prod build бүрийг эвдэх эрсдэлтэй тул хойшлуулав.
+
+Үлдсэн: B3 бүрэн reservation, B4 e-Barimt, H5, MEDIUM/LOW.
 
 ---
 

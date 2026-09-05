@@ -114,9 +114,10 @@ compose-ыг ашиглана (on-box postgres-гүй).
 ## 5. Эхний deploy
 
 Dokploy → **Deploy**. Build дуусаад:
-- `postgres`, `redis`, `meilisearch` — эрүүл болно.
-- `medusa` — эхэлж, **migration автоматаар** ажиллана (Dockerfile-д `db:migrate`).
-- `web`, `api` — асна.
+- `postgres`, `redis`, `meilisearch` — эрүүл болно (healthcheck-тэй).
+- `medusa-migrate` — **migration-ийг нэг удаа** ажиллуулаад гарна (one-shot, H8).
+- `medusa`, `medusa-worker` — migration дуусмагц эхэлнэ (`db:migrate` server start-д ажиллахгүй тул replica-д аюулгүй).
+- `web`, `api` — асна (healthcheck-тэй; Traefik бэлэн болсон хойно routing хийнэ).
 
 ---
 
@@ -198,7 +199,8 @@ curl -s -X POST http://meilisearch:7700/indexes/products/search \
 - **Ачааллын тест** (NFR-06): `k6 run infra/load/k6-storefront.js` (BASE_URL,
   MEDUSA_URL, MEDUSA_PK, REGION env-тэй; `-e PEAK=5000` хүртэл өсгө). Нээлтийн
   өмнө staging дээр ажиллуулж p95<800ms, алдаа<1% хангаж буйг шалга.
-- **Шинэчлэлт**: Git-д push → Dokploy → Redeploy. Medusa migration автоматаар ажиллана.
+- **Шинэчлэлт**: Git-д push → Dokploy → Redeploy. Migration нь `medusa-migrate`
+  one-shot контейнерт нэг удаа ажиллана (server/worker хүлээгээд эхэлнэ).
 - **Лог**: Dokploy → сервис → Logs.
 - **Хэмжээ / server-worker split**: compose нь Medusa-г **хоёр контейнер**-аар
   ажиллуулна — `medusa` (HTTP, `MEDUSA_WORKER_MODE=server`) + `medusa-worker`
@@ -206,7 +208,8 @@ curl -s -X POST http://meilisearch:7700/indexes/products/search \
   Production-д (`NODE_ENV=production` + `REDIS_URL`) event bus, workflow engine,
   cache нь **Redis**-ээр ажиллаж, хоёр контейнер event/job хуваалцана. Локал
   dev-д (development) in-memory хэвээр — Redis шаардахгүй. Ачаалал ихсвэл `medusa`
-  контейнерийг олшруулж (replica) Traefik-ээр балансал, эсвэл VPS-ээ өсгө.
+  контейнерийг олшруулж (replica) Traefik-ээр балансал, эсвэл VPS-ээ өсгө —
+  migration нь тусдаа one-shot тул replica-ууд зэрэг migrate хийхгүй (H8).
 
 ---
 

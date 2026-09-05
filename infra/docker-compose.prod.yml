@@ -12,6 +12,42 @@ name: naran
 x-restart: &restart
   restart: unless-stopped
 
+# Shared Medusa environment — used by the migrate job, the server and the worker
+# so all three see identical config (defined once, before first use so the YAML
+# anchor resolves).
+x-medusa-env: &medusa-env
+  NODE_ENV: production
+  # Redis-backed event bus + workflow engine are enabled in production so the
+  # server and worker share events/jobs.
+  MEDUSA_WORKER_MODE: server
+  DATABASE_URL: postgres://${POSTGRES_USER:-naran}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-naran}
+  REDIS_URL: redis://redis:6379
+  MEILISEARCH_HOST: http://meilisearch:7700
+  MEILISEARCH_API_KEY: ${MEILISEARCH_API_KEY}
+  JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in infra/.env}
+  COOKIE_SECRET: ${COOKIE_SECRET:?set COOKIE_SECRET in infra/.env}
+  # Public origins allowed to call Medusa (your real domains).
+  STORE_CORS: ${STORE_CORS}
+  ADMIN_CORS: ${ADMIN_CORS}
+  AUTH_CORS: ${AUTH_CORS}
+  # Optional Cloudflare R2 / S3 image storage (leave blank → local files).
+  S3_FILE_URL: ${S3_FILE_URL:-}
+  S3_ENDPOINT: ${S3_ENDPOINT:-}
+  S3_BUCKET: ${S3_BUCKET:-}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+  S3_REGION: ${S3_REGION:-auto}
+  # e-Barimt (НӨАТ) — blank = mock; real needs ҮТЕГ posapi + VAT reg (Q-03).
+  EBARIMT_URL: ${EBARIMT_URL:-}
+  EBARIMT_MERCHANT_TIN: ${EBARIMT_MERCHANT_TIN:-}
+  EBARIMT_DISTRICT_CODE: ${EBARIMT_DISTRICT_CODE:-}
+  # Storefront base for password-reset links + transactional email (Resend).
+  # Blank RESEND_API_KEY → emails log-only (mock). The worker sends these, so
+  # they belong in the shared env (B7).
+  STOREFRONT_URL: ${STOREFRONT_URL:-http://localhost:3000}
+  RESEND_API_KEY: ${RESEND_API_KEY:-}
+  EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -27,6 +63,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    # Memory caps tuned for a ~4–6GB VPS; raise if you scale up (H7).
+    mem_limit: 768m
     networks: [naran]
 
   redis:
@@ -40,6 +78,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    mem_limit: 256m
     networks: [naran]
 
   meilisearch:
@@ -51,68 +90,62 @@ services:
       MEILI_NO_ANALYTICS: "true"
     volumes:
       - meilidata:/meili_data
+    mem_limit: 512m
     networks: [naran]
 
-  # HTTP server (admin + store/API). Runs DB migrations on start (Dockerfile CMD).
-  medusa:
+  # One-shot: run DB migrations exactly once, then exit. The server and worker
+  # wait for this to complete, so migrations never race across replicas (H8).
+  medusa-migrate:
     build:
       context: ../medusa-backend/apps/backend
+    image: naran-medusa:latest
+    restart: "no"
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      <<: *medusa-env
+    command: ["sh", "-c", "cd .medusa/server && npx medusa db:migrate"]
+    mem_limit: 768m
+    networks: [naran]
+
+  # HTTP server (admin + store/API). Migrations already ran in medusa-migrate, so
+  # this only starts the server (no db:migrate here → safe to scale to replicas).
+  medusa:
+    image: naran-medusa:latest
     <<: *restart
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
       meilisearch: { condition: service_started }
-    environment: &medusa-env
-      NODE_ENV: production
-      # Redis-backed event bus + workflow engine are enabled in production so the
-      # server and worker share events/jobs.
-      MEDUSA_WORKER_MODE: server
-      DATABASE_URL: postgres://${POSTGRES_USER:-naran}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-naran}
-      REDIS_URL: redis://redis:6379
-      MEILISEARCH_HOST: http://meilisearch:7700
-      MEILISEARCH_API_KEY: ${MEILISEARCH_API_KEY}
-      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in infra/.env}
-      COOKIE_SECRET: ${COOKIE_SECRET:?set COOKIE_SECRET in infra/.env}
-      # Public origins allowed to call Medusa (your real domains).
-      STORE_CORS: ${STORE_CORS}
-      ADMIN_CORS: ${ADMIN_CORS}
-      AUTH_CORS: ${AUTH_CORS}
-      # Optional Cloudflare R2 / S3 image storage (leave blank → local files).
-      S3_FILE_URL: ${S3_FILE_URL:-}
-      S3_ENDPOINT: ${S3_ENDPOINT:-}
-      S3_BUCKET: ${S3_BUCKET:-}
-      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
-      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
-      S3_REGION: ${S3_REGION:-auto}
-      # e-Barimt (НӨАТ) — blank = mock; real needs ҮТЕГ posapi + VAT reg (Q-03).
-      EBARIMT_URL: ${EBARIMT_URL:-}
-      EBARIMT_MERCHANT_TIN: ${EBARIMT_MERCHANT_TIN:-}
-      EBARIMT_DISTRICT_CODE: ${EBARIMT_DISTRICT_CODE:-}
-      # Storefront base for password-reset links + transactional email (Resend).
-      # Blank RESEND_API_KEY → emails log-only (mock). The worker sends these, so
-      # they belong in the shared env (B7).
-      STOREFRONT_URL: ${STOREFRONT_URL:-http://localhost:3000}
-      RESEND_API_KEY: ${RESEND_API_KEY:-}
-      EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
+      medusa-migrate: { condition: service_completed_successfully }
+    environment:
+      <<: *medusa-env
+    command: ["sh", "-c", "cd .medusa/server && npm run start"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    mem_limit: 1024m
     expose:
       - "9000"
     networks: [naran]
 
   # Background worker (subscribers, scheduled jobs — MeiliSearch indexing, emails).
-  # Same image; reuses the server's env but MEDUSA_WORKER_MODE=worker. Skips
-  # migrations (the server runs them) and waits briefly for them to finish.
+  # Same image; MEDUSA_WORKER_MODE=worker. Waits for migrations, then starts.
   medusa-worker:
-    build:
-      context: ../medusa-backend/apps/backend
+    image: naran-medusa:latest
     <<: *restart
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
-      medusa: { condition: service_started }
+      medusa-migrate: { condition: service_completed_successfully }
     environment:
       <<: *medusa-env
       MEDUSA_WORKER_MODE: worker
-    command: ["sh", "-c", "sleep 25 && cd .medusa/server && npm run start"]
+    command: ["sh", "-c", "cd .medusa/server && npm run start"]
+    mem_limit: 640m
     networks: [naran]
 
   api:
@@ -120,7 +153,7 @@ services:
       context: ../api
     <<: *restart
     depends_on:
-      - medusa
+      medusa: { condition: service_started }
     environment:
       NODE_ENV: production
       PORT: "4000"
@@ -130,8 +163,8 @@ services:
       MEDUSA_URL: http://medusa:9000
       MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK}
       NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
-      # Wire (wire.mn → QPay & bank apps). Blank WIRE_SECRET_KEY → MOCK mode.
-      # Real production key is sensitive — set only here, never in git.
+      # Wire (wire.mn → QPay & bank apps). REQUIRED in prod — the api refuses to
+      # boot without WIRE_SECRET_KEY (would otherwise auto-succeed payments).
       WIRE_SECRET_KEY: ${WIRE_SECRET_KEY:-}
       WIRE_WEBHOOK_SECRET: ${WIRE_WEBHOOK_SECRET:-}
       # Email (Resend).
@@ -139,6 +172,13 @@ services:
       EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
       # Error monitoring (Sentry, optional).
       SENTRY_DSN: ${SENTRY_DSN:-}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    mem_limit: 256m
     expose:
       - "4000"
     networks: [naran]
@@ -160,11 +200,18 @@ services:
         NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
     <<: *restart
     depends_on:
-      - medusa
-      - api
+      medusa: { condition: service_started }
+      api: { condition: service_started }
     environment:
       # Runtime: the storefront proxies /api/* to the Express gateway.
       API_URL: http://api:4000
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    mem_limit: 512m
     expose:
       - "3000"
     networks: [naran]
