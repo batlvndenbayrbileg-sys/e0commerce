@@ -35,11 +35,28 @@ jobs:
           NEXT_PUBLIC_SITE_URL: https://naran.mn
 
   medusa:
-    name: Medusa backend (build)
+    name: Medusa backend (test + build)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: medusa-backend/apps/backend
+    services:
+      # Matches medusa-backend/apps/backend/.env.test (localhost:5433, vexo/vexo).
+      # Port mapped to 5433 so the same test env works locally and in CI. The
+      # POSTGRES_USER is a superuser, so pg-god can create per-run test DBs.
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: vexo
+          POSTGRES_PASSWORD: vexo
+          POSTGRES_DB: vexo_store
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -49,5 +66,7 @@ jobs:
         run: npm install --legacy-peer-deps
       - name: Unit tests (medusa)
         run: npm run test:unit
+      - name: Integration tests (medusa, real DB)
+        run: npm run test:integration:http
       - name: Build (medusa)
         run: npm run build

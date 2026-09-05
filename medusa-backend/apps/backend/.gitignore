@@ -26,3 +26,6 @@ build
 .medusa
 # Local Meilisearch (dev only — never commit the binary/data)
 .meili/
+
+# Build artifact (medusa build copies public assets here)
+static/
