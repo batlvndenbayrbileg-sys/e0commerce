@@ -85,8 +85,8 @@ export default function AuthPage() {
   const toggle = () => { setMode(isReg ? "login" : "register"); setErrors({}); };
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 py-8 sm:py-12" style={{ background: "linear-gradient(150deg, #FF8A3D 0%, #FF6A1A 55%, #D14A08 100%)" }}>
-      <div className="relative w-full max-w-[960px] overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] bg-white shadow-[0_40px_100px_-25px_rgba(30,12,70,.55)] lg:grid lg:grid-cols-2 lg:min-h-[580px]">
+    <div className="min-h-screen grid place-items-center px-4 py-8 sm:py-12" style={{ background: "linear-gradient(160deg, #FFFFFF 0%, #FDF3EC 100%)" }}>
+      <div className="relative w-full max-w-[960px] overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] bg-white shadow-[0_40px_90px_-30px_rgba(232,85,10,.30)] ring-1 ring-black/5 lg:grid lg:grid-cols-2 lg:min-h-[580px]">
 
         {/* ============ PROMO (desktop) ============ */}
         <div className="relative hidden lg:flex flex-col items-center justify-center px-12 py-14 text-center text-white"
