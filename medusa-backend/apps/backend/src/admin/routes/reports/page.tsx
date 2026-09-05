@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Button, Input, Label, Badge, toast } from "@medusajs/ui";
+import { Container, Heading, Text, Table, Button, Input, Label, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
@@ -166,12 +166,11 @@ const ReportsPage = () => {
         </Table>
       </div>
 
-      {/* VAT / e-Barimt */}
+      {/* VAT report (10% VAT-inclusive breakdown for accounting) */}
       <div className="px-6 py-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Text weight="plus" size="small">НӨАТ тайлан</Text>
-            <Badge size="2xsmall" color="blue">e-Barimt</Badge>
           </div>
           <Button variant="secondary" size="small" onClick={() => exportCsv("vat")}>CSV</Button>
         </div>

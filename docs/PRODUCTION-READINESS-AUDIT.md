@@ -8,7 +8,7 @@
 
 Архитектур сайн бодогдсон (server/worker салгасан, CORS зөв, төлбөрийн дүн server-талд authoritative, consent-gated analytics, RBAC жинхэнэ). Асуудлууд нь **дизайнд биш — wiring, safety-default, go-live hardening**-д байна. Ихэнхийг ~1-2 өдөрт засах боломжтой.
 
-Хамгийн эрсдэлтэй 3 зүйл: (1) production дээр mock төлбөр хамгаалалтгүй → мөнгө авалгүй захиалга үүснэ; (2) Wire мөнгө авчихаад Medusa захиалга үүсэхгүй бол буцаах/тулгах механизмгүй; (3) e-Barimt НӨАТ баримт mock хэвээр (Монголд хууль ёсоор заавал).
+Хамгийн эрсдэлтэй 3 зүйл (анхны audit-ийн үед): (1) production дээр mock төлбөр хамгаалалтгүй → мөнгө авалгүй захиалга үүснэ; (2) Wire мөнгө авчихаад Medusa захиалга үүсэхгүй бол буцаах/тулгах механизмгүй; (3) e-Barimt НӨАТ баримт mock хэвээр. (1) ба (2) засагдсан; (3)-ыг эзэмшигч **огт хийхгүй** гэж шийдсэн (доор B4 үзнэ үү).
 
 ---
 
@@ -57,7 +57,8 @@ Live шалгасан: auth (social алга), cart (промо input алга),
 **Зориудаар үлдээсэн (архитектур / шийдвэр шаардана):**
 - M1 sec (JWT localStorage → httpOnly cookie) — auth-ийн том rework.
 - M2 sec (RBAC privilege-by-default) — зориудын дизайн (эхний админыг түгжихгүй).
-- M5 ops (Redis SPOF), logging (console.*), M2 storefront (persisted cart reconcile), pagination (бодит), B4 e-Barimt, H5 lockfile.
+- M5 ops (Redis SPOF), logging (console.*), M2 storefront (persisted cart reconcile), pagination (бодит), H5 lockfile.
+- **B4 e-Barimt** — эзэмшигчийн шийдвэрээр ХАСАГДСАН (блокер биш; дээр B4 үзнэ үү).
 
 ---
 
@@ -76,9 +77,18 @@ Live шалгасан: auth (social алга), cart (промо input алга),
 `web/lib/medusa.ts:370-404` (`prepareCart`) cart + payment session үүсгэнэ, гэхдээ **reservation барихгүй**. Хоёр хүн сүүлийн ширхгийг зэрэг `prepareCart` → хоёулаа Wire-д төлнө → эхнийх дуусна, хоёр дахь нь `completeMedusaCart` "insufficient inventory" гаргана → 2 дахь хүн төлсөн атлаа захиалгагүй (B2). Concurrency-д oversell нээлттэй.
 **Засвар:** `prepareCart`-д нөөц reserve хийх, эсвэл intent үүсгэхээс өмнө stock шалгах.
 
-### B4. e-Barimt НӨАТ баримт MOCK хэвээр (хууль зүйн)
-`medusa-backend/apps/backend/src/lib/ebarimt.ts:9,35-39` — `EBARIMT_URL` тохируулаагүй тул `MOCK-<id>` буцаана. Монголд бүх борлуулалтад ҮТЕГ e-Barimt баримт хууль ёсоор заавал. Бодит баримтгүйгээр захиалга илгээх нь татварын зөрчил. Мөн НӨАТ-ыг `unit_price × quantity`-гээр тооцдог (`order-ebarimt.ts:18-22`) — **хямдрал, хүргэлтийг тооцохгүй** тул mock задаргаа ч буруу.
-**Засвар:** бодит e-Barimt холбох (эсвэл хууль ёсоор гаргаж болохгүй); НӨАТ-ыг бодит төлсөн дүнгээс тооцох.
+### B4. e-Barimt НӨАТ баримт — ЭЗЭМШИГЧИЙН ШИЙДВЭРЭЭР ХАСАГДСАН (2026-09-05)
+Эзэмшигч e-Barimt-ыг **огт хийхгүй** гэж шийдсэн тул mock e-Barimt код (subscriber
+`order-ebarimt.ts` + `lib/ebarimt.ts` + `EBARIMT_*` env) бүрэн **устгасан**. Захиалгад
+хуурамч "MOCK" баримт бичихээ больсон.
+
+⚠️ **Хуулийн анхааруулга (нэг удаа):** НӨАТ төлөгчөөр бүртгэлтэй бизнес Монголд
+борлуулалт бүрт ҮТЕГ e-Barimt олгох нь хуулийн шаардлага. Хэрэв компани НӨАТ-д
+бүртгэлгүй, эсвэл баримтаа **өөр аргаар** (POS/касс, гараар) олгодог бол энэ асуудалгүй
+— энэ нь эзэмшигчийн хариуцлага/шийдвэр. Дараа хэрэгжүүлэх бол git-ээс сэргээж болно.
+
+Тэмдэглэл: админы **НӨАТ тайлан** (борлуулалтын 10% НӨАТ задаргаа, CSV) хэвээр ажиллана —
+энэ нь захиалгын дүнгээс тооцдог, e-Barimt-аас хамааралгүй.
 
 ### B5. Checkout хуурамч урьдчилан бөглөсөн хаяг руу илгээнэ
 `web/app/[lang]/checkout/page.tsx:160-168` — хаягийн бүх талбар hardcoded `defaultValue`: `first_name="Bat"`, `last_name="Erdene"`, `address_1="Sukhbaatar District, 1-r khoroo"`, `city="Ulaanbaatar"`, `postal_code="14200"`, `phone="+976 9911 2233"`. Дараад бичээгүй үйлчлүүлэгч **бодит төлбөртэй захиалгыг хуурамч хаяг руу** илгээнэ.
