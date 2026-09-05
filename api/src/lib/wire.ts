@@ -28,8 +28,12 @@ async function wireFetch<T>(path: string, init: any = {}): Promise<T> {
 }
 
 /* ---------- MOCK helpers ---------- */
+// Dev-only store so the mock getPaymentIntent can echo metadata, mirroring real
+// Wire (which persists it). In production Wire is the durable source of truth.
+const mockMeta = new Map<string, Json>();
 function mockIntent(amount: number, metadata: Json) {
   const id = `pi_mock_${Date.now()}_${randomUUID().slice(0, 8)}`;
+  mockMeta.set(id, metadata);
   return { id, status: "requires_payment", amount, currency: "MNT", metadata,
     qr_text: "0002010102...mockQPay", created: Date.now() };
 }
@@ -49,7 +53,7 @@ export async function createPaymentIntent(opts: { amount: number; metadata?: Jso
 }
 
 export async function getPaymentIntent(id: string): Promise<Json> {
-  if (!WIRE_LIVE) return { id, status: mockStatusFromId(id) };
+  if (!WIRE_LIVE) return { id, status: mockStatusFromId(id), metadata: mockMeta.get(id) ?? {} };
   return wireFetch<Json>(`/payment_intents/${id}`, { method: "GET" });
 }
 

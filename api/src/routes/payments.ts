@@ -56,17 +56,28 @@ async function completeMedusaCart(cartId: string, shippingMethod: "standard" | "
 }
 
 async function settle(intentId: string): Promise<Record | null> {
-  const rec = intents.get(intentId);
-  if (!rec) return null;
-  if (rec.status === "paid") return rec;
+  const cached = intents.get(intentId);
+  if (cached?.status === "paid") return cached;
+
   const intent = await getPaymentIntent(intentId);
+  // Recover the intent's details from Wire's stored metadata when the local
+  // cache is cold — i.e. the api restarted or another instance handled /intent.
+  // Wire (the payment provider) is the durable source of truth, so no local
+  // persistence is needed; completing the cart is idempotent on Medusa's side.
+  const meta = (intent?.metadata || {}) as { cartId?: string; email?: string; shippingMethod?: string };
+  const cartId = cached?.cartId ?? meta.cartId;
+  if (!cartId) return null; // unknown intent (nothing to settle)
+  const email = cached?.email ?? meta.email ?? "";
+  const shippingMethod = (cached?.shippingMethod ?? meta.shippingMethod ?? "standard") as "standard" | "express";
+
+  const rec: Record = cached ?? { cartId, amount: 0, email, shippingMethod, status: "pending" };
   if (intent.status === "succeeded") {
-    rec.order = await completeMedusaCart(rec.cartId, rec.shippingMethod);
+    rec.order = await completeMedusaCart(cartId, shippingMethod); // idempotent: same cart → same order
+    rec.amount = rec.order.total;
     rec.status = "paid";
-    intents.set(intentId, rec);
-    // fire-and-forget order confirmation email
-    sendOrderConfirmation(rec.order).catch(() => {});
+    sendOrderConfirmation(rec.order).catch(() => {}); // fire-and-forget
   }
+  intents.set(intentId, rec); // same-instance cache (best-effort)
   return rec;
 }
 
@@ -92,7 +103,8 @@ router.post("/intent", async (req, res) => {
     const amount = await cartTotal(cartId);
     const intent = await createPaymentIntent({
       amount, idempotencyKey: `cart_${cartId}`,
-      metadata: { cartId, email },
+      // Metadata is the durable record used to settle after an api restart.
+      metadata: { cartId, email, shippingMethod },
     });
     const base = origin || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const session = await createCheckoutSession({
