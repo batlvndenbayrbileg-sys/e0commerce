@@ -82,34 +82,48 @@ export default function AuthPage() {
   const strengthLabel = [t("auth.pwWeak"), t("auth.pwWeak"), t("auth.pwFair"), t("auth.pwStrong")][score];
   const strengthColor = ["#9aa0a6", "#ef4444", "#f59e0b", "#16a34a"][score];
 
-  return (
-    <div className="min-h-screen flex flex-col lg:justify-center lg:py-10" style={{ background: "linear-gradient(165deg, #6E54EC 0%, #5230CC 100%)" }}>
-      <div className="w-full max-w-[480px] mx-auto flex-1 flex flex-col lg:flex-none lg:rounded-[2.5rem] lg:overflow-hidden lg:shadow-[0_30px_80px_rgba(30,12,70,.4)]">
-        {/* Purple header */}
-        <header className="px-6 pt-10 sm:pt-12 pb-7 text-white shrink-0">
-          <div className="flex items-center justify-between mb-9">
-            <Link href="/" aria-label={t("bc.home")} className="w-9 h-9 -ml-1 grid place-items-center rounded-full hover:bg-white/10 transition">
-              <ChevronLeft width={20} height={20}/>
-            </Link>
-            <div className="flex items-center gap-2.5 text-[13px] text-white/80">
-              <span className="hidden min-[380px]:inline">{isReg ? t("auth.haveAccount") : t("auth.noAccount")}</span>
-              <button type="button" onClick={() => { setMode(isReg ? "login" : "register"); setErrors({}); }}
-                className="bg-white/20 hover:bg-white/30 px-3.5 h-8 rounded-full text-white text-[13px] font-medium transition">
-                {isReg ? t("auth.signIn") : t("auth.getStarted")}
-              </button>
-            </div>
-          </div>
-          <div className="text-center font-display text-[30px] tracking-[.04em]">NARAN</div>
-        </header>
+  const toggle = () => { setMode(isReg ? "login" : "register"); setErrors({}); };
 
-        {/* White sheet */}
-        <div className="flex-1 lg:flex-none bg-white rounded-t-[2.25rem] lg:rounded-none px-7 pt-9 pb-10 shadow-[0_-12px_40px_rgba(40,20,90,.18)] lg:shadow-none">
-          <h1 className="text-center font-display text-[26px] tracking-tight">{isReg ? t("auth.getStartedFree") : t("auth.welcomeBack")}</h1>
-          <p className="text-center text-muted text-[14px] mt-1.5">{isReg ? t("auth.freeForever") : t("auth.enterDetails")}</p>
+  return (
+    <div className="min-h-screen grid place-items-center px-4 py-8 sm:py-12" style={{ background: "linear-gradient(150deg, #7C6CF0 0%, #5A3FD6 55%, #4A2FB8 100%)" }}>
+      <div className="relative w-full max-w-[960px] overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] bg-white shadow-[0_40px_100px_-25px_rgba(30,12,70,.55)] lg:grid lg:grid-cols-2 lg:min-h-[580px]">
+
+        {/* ============ PROMO (desktop) ============ */}
+        <div className="relative hidden lg:flex flex-col items-center justify-center px-12 py-14 text-center text-white"
+          style={{ background: "linear-gradient(150deg, #7B6BF0 0%, #5E43DE 100%)" }}>
+          <div className="relative z-10 max-w-[300px]">
+            <h2 className="font-display text-[32px] leading-tight">{isReg ? t("auth.backPromo") : t("auth.newHere")}</h2>
+            <p className="mt-4 text-[14px] leading-relaxed text-white/80">{isReg ? t("auth.backPromoDesc") : t("auth.newHereDesc")}</p>
+            <button type="button" onClick={toggle}
+              className="mt-9 h-11 rounded-full border-2 border-white/80 px-10 text-[13px] font-semibold uppercase tracking-[.12em] transition hover:bg-white hover:text-[#5E43DE]">
+              {isReg ? t("auth.signIn") : t("auth.signUp")}
+            </button>
+          </div>
+          {/* curved divider bulging into the form panel */}
+          <svg className="absolute top-0 right-0 h-full w-[70px] translate-x-[99%]" viewBox="0 0 70 100" preserveAspectRatio="none" aria-hidden style={{ fill: "#5E43DE" }}>
+            <path d="M0 0 C 48 20, 48 80, 0 100 Z" />
+          </svg>
+        </div>
+
+        {/* ============ FORM ============ */}
+        <div className="relative flex flex-col justify-center px-7 sm:px-10 lg:px-14 py-10 lg:py-12">
+          {/* Mobile top: back + brand + switch */}
+          <div className="lg:hidden mb-7 flex items-center justify-between">
+            <Link href="/" aria-label={t("bc.home")} className="grid h-9 w-9 -ml-1 place-items-center rounded-full text-ink/70 hover:bg-surface-2 transition">
+              <ChevronLeft width={20} height={20} />
+            </Link>
+            <span className="font-display text-[22px] tracking-[.04em]">NARAN</span>
+            <button type="button" onClick={toggle} className="text-[13px] font-medium text-accent hover:underline">
+              {isReg ? t("auth.signIn") : t("auth.signUp")}
+            </button>
+          </div>
+
+          <h1 className="font-display text-[28px] tracking-tight text-center lg:text-left">{isReg ? t("auth.signUp") : t("auth.signIn")}</h1>
+          <p className="mt-1.5 text-[14px] text-muted text-center lg:text-left">{isReg ? t("auth.freeForever") : t("auth.enterDetails")}</p>
 
           <form onSubmit={submit} noValidate className="mt-7 space-y-3.5">
             <FloatingField label={t("co.email")} name="email" type="email" inputMode="email" autoComplete="email"
-              autoFocus value={form.email} onChange={update("email")} error={errors.email}/>
+              value={form.email} onChange={update("email")} error={errors.email}/>
 
             {isReg && (
               <FloatingField label={t("auth.yourName")} name="name" autoComplete="name"
@@ -136,33 +150,26 @@ export default function AuthPage() {
               }
             />
 
-            <button disabled={busy} type="submit"
-              className="w-full h-[54px] rounded-2xl text-white font-semibold tracking-wide grid place-items-center disabled:opacity-60 transition active:scale-[.99] shadow-[0_10px_24px_rgba(110,84,236,.35)]"
-              style={{ background: "linear-gradient(95deg, #6E54F0 0%, #A95EEA 55%, #CE6FE0 100%)" }}>
-              <span className="inline-flex items-center gap-2">
-                {busy ? t("common.pleaseWait") : isReg ? t("auth.createAccount") : t("auth.signIn")}
-                <ArrowRight width={16} height={16}/>
-              </span>
-            </button>
-
             {!isReg && (
-              <div className="text-center pt-1">
+              <div className="text-right -mt-1">
                 <button type="button" onClick={() => showToast(t("auth.forgotSoon"))}
-                  className="text-[13px] text-muted hover:text-ink py-1.5 px-2 transition-colors">{t("auth.forgot")}</button>
+                  className="text-[12px] text-muted hover:text-ink transition-colors">{t("auth.forgot")}</button>
               </div>
             )}
 
-            <div className="flex items-center gap-3 py-2 text-subtle text-[12px]">
-              <span className="flex-1 h-px bg-line"/> {t("auth.or")} <span className="flex-1 h-px bg-line"/>
-            </div>
+            <button disabled={busy} type="submit"
+              className="w-full h-[52px] rounded-full text-white font-semibold uppercase tracking-[.12em] text-[13px] grid place-items-center disabled:opacity-60 transition active:scale-[.99] shadow-[0_12px_28px_-8px_rgba(110,84,236,.6)]"
+              style={{ background: "linear-gradient(95deg, #7B6BF0 0%, #5E43DE 100%)" }}>
+              {busy ? t("common.pleaseWait") : isReg ? t("auth.signUp") : t("auth.signIn")}
+            </button>
 
-            <div className="grid grid-cols-2 gap-3">
-              <button type="button" className="h-[52px] rounded-2xl border border-line bg-white hover:bg-surface-2 inline-flex items-center justify-center gap-2.5 text-[14px] font-medium transition">
-                <GoogleLogo/> {t("auth.google")}
-              </button>
-              <button type="button" className="h-[52px] rounded-2xl border border-line bg-white hover:bg-surface-2 inline-flex items-center justify-center gap-2.5 text-[14px] font-medium transition">
-                <FacebookLogo/> {t("auth.facebook")}
-              </button>
+            {/* Social */}
+            <div className="pt-3 text-center">
+              <p className="text-[13px] text-muted">{t("auth.socialPlatforms")}</p>
+              <div className="mt-3.5 flex items-center justify-center gap-3">
+                <SocialCircle label={t("auth.google")}><GoogleLogo/></SocialCircle>
+                <SocialCircle label={t("auth.facebook")}><FacebookLogo/></SocialCircle>
+              </div>
             </div>
 
             {!isReg && <p className="tiny text-center pt-2">{t("auth.demo")} <span className="font-mono">alex@vexo.gear / password123</span></p>}
@@ -170,6 +177,15 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SocialCircle({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-label={label}
+      className="grid h-12 w-12 place-items-center rounded-full border border-line bg-white shadow-soft hover:-translate-y-0.5 hover:shadow-lift transition">
+      {children}
+    </button>
   );
 }
 
