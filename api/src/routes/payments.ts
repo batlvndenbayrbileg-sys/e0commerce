@@ -1,4 +1,5 @@
 import { Router, raw, type Request, type Response } from "express";
+import * as Sentry from "@sentry/node";
 import { z } from "zod";
 import {
   createPaymentIntent, getPaymentIntent, createCheckoutSession,
@@ -20,10 +21,41 @@ type Record = {
   amount: number;
   email: string;
   shippingMethod: "standard" | "express";
-  status: "pending" | "paid";
+  // pending      → payment not yet captured (or completion still being retried)
+  // paid         → cart completed into a real order
+  // needs_review → Wire captured money but the cart could not be completed after
+  //                MAX_SETTLE_ATTEMPTS (e.g. out of stock); flagged for a human.
+  status: "pending" | "paid" | "needs_review";
+  attempts?: number;   // completion attempts made (across polls/webhook)
+  emailed?: boolean;   // guard: send the confirmation email exactly once
+  reported?: boolean;  // guard: alert on an unfulfilled paid order exactly once
   order?: { id: string; total: number; email: string; estimatedDelivery: string; items: OrderItem[] };
 };
 const intents = new Map<string, Record>();
+
+// How many times we retry completing a paid cart (across poll ticks + webhook)
+// before giving up and flagging for manual reconciliation. A transient backend
+// blip self-heals within these; a permanent failure (out of stock) ends here.
+const MAX_SETTLE_ATTEMPTS = 5;
+
+// Dedupe concurrent settle() calls for the same intent — the storefront poll and
+// the Wire webhook can both fire at once; without this they'd race to complete
+// the same cart and double-send the confirmation email (H4).
+const inFlight = new Map<string, Promise<Record | null>>();
+
+// A paid order that could not be turned into a Medusa order MUST NOT vanish: the
+// customer's money is already captured in Wire. Alert loudly (Sentry + structured
+// log) with everything an operator needs to reconcile or refund by hand. Fires
+// once per intent.
+function reportUnfulfilledPayment(intentId: string, rec: Record, err: Error) {
+  if (rec.reported) return;
+  rec.reported = true;
+  const detail = { intentId, cartId: rec.cartId, email: rec.email, amount: rec.amount, error: err.message };
+  console.error(`[settle] PAID BUT UNFULFILLED — manual reconciliation needed:`, JSON.stringify(detail));
+  try {
+    Sentry.captureException(err, { level: "fatal", tags: { kind: "paid_unfulfilled" }, extra: detail });
+  } catch { /* Sentry no-op without DSN */ }
+}
 
 // Authoritative amount: the cart's server-side total (never trust a client-sent
 // amount — otherwise a buyer could pay less than the order is worth).
@@ -60,7 +92,18 @@ async function completeMedusaCart(cartId: string, shippingMethod: "standard" | "
   };
 }
 
-async function settle(intentId: string): Promise<Record | null> {
+function settle(intentId: string): Promise<Record | null> {
+  const cached = intents.get(intentId);
+  if (cached?.status === "paid") return Promise.resolve(cached);
+  // Coalesce concurrent callers (poll + webhook) onto one in-flight settlement.
+  const running = inFlight.get(intentId);
+  if (running) return running;
+  const p = doSettle(intentId).finally(() => inFlight.delete(intentId));
+  inFlight.set(intentId, p);
+  return p;
+}
+
+async function doSettle(intentId: string): Promise<Record | null> {
   const cached = intents.get(intentId);
   if (cached?.status === "paid") return cached;
 
@@ -75,14 +118,38 @@ async function settle(intentId: string): Promise<Record | null> {
   const email = cached?.email ?? meta.email ?? "";
   const shippingMethod = (cached?.shippingMethod ?? meta.shippingMethod ?? "standard") as "standard" | "express";
 
-  const rec: Record = cached ?? { cartId, amount: 0, email, shippingMethod, status: "pending" };
-  if (intent.status === "succeeded") {
-    rec.order = await completeMedusaCart(cartId, shippingMethod); // idempotent: same cart → same order
-    rec.amount = rec.order.total;
+  const rec: Record = cached ?? { cartId, amount: 0, email, shippingMethod, status: "pending", attempts: 0 };
+
+  // Payment not captured yet → nothing to do (still "pending").
+  if (intent.status !== "succeeded") { intents.set(intentId, rec); return rec; }
+  if (rec.status === "paid") return rec;
+
+  // Wire has the money. Turn the cart into a real Medusa order. This is the
+  // money-critical step: on failure we retry (transient) and, if it persists,
+  // flag for reconciliation rather than losing a paid order (B2).
+  rec.attempts = (rec.attempts ?? 0) + 1;
+  try {
+    const order = await completeMedusaCart(cartId, shippingMethod); // idempotent: same cart → same order
+    rec.order = order;
+    rec.amount = order.total;
     rec.status = "paid";
-    sendOrderConfirmation(rec.order).catch(() => {}); // fire-and-forget
+    // M2 — the amount captured in Wire must equal the order total. A mismatch
+    // means cart pricing changed between charge and completion; alert, don't block.
+    const captured = typeof intent.amount === "number" ? Math.round(intent.amount) : null;
+    if (captured != null && captured !== order.total) {
+      console.error(`[settle] amount mismatch intent=${intentId} captured=${captured} order=${order.total}`);
+      try { Sentry.captureMessage(`Wire amount mismatch: intent ${intentId} captured ${captured} vs order ${order.total}`, "warning"); } catch { /* no DSN */ }
+    }
+    if (!rec.emailed) { rec.emailed = true; sendOrderConfirmation(order).catch(() => {}); } // once
+  } catch (e: any) {
+    // Paid but not completed. Keep it retryable across the next poll ticks; once
+    // we've exhausted attempts it's almost certainly permanent (e.g. out of
+    // stock) → alert for manual reconciliation. Never silently drop it.
+    rec.status = "needs_review";
+    if (rec.attempts >= MAX_SETTLE_ATTEMPTS) reportUnfulfilledPayment(intentId, rec, e);
+    else console.error(`[settle] completion attempt ${rec.attempts}/${MAX_SETTLE_ATTEMPTS} failed for cart ${cartId}: ${e.message}`);
   }
-  intents.set(intentId, rec); // same-instance cache (best-effort)
+  intents.set(intentId, rec);
   return rec;
 }
 
@@ -104,7 +171,13 @@ router.post("/intent", async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   const { cartId, email, shippingMethod, origin } = parsed.data;
   try {
-    // Authoritative amount from the cart, not the client.
+    // Authoritative amount from the cart, not the client. This also confirms the
+    // cart still exists/prices before we charge.
+    // NOTE (B3): Medusa reserves inventory only at cart completion, so there is a
+    // small window where two buyers can both pay for the last unit. That is not a
+    // money-loss bug here — settle() catches an un-completable paid cart, flags it
+    // (needs_review + Sentry alert) and never double-charges. True pre-payment
+    // inventory reservation is a separate backend feature (see audit B3).
     const amount = await cartTotal(cartId);
     const intent = await createPaymentIntent({
       amount, idempotencyKey: `cart_${cartId}`,
@@ -132,7 +205,12 @@ router.get("/intent", async (req, res) => {
   try {
     const rec = await settle(id);
     if (!rec) return res.status(404).json({ error: "intent not found" });
-    res.json({ data: { status: rec.status === "paid" ? "succeeded" : "pending", order: rec.order ?? null } });
+    // "review" = paid but we couldn't complete after all retries; tell the
+    // storefront to stop polling and show the "we've got your payment, confirming
+    // your order" message instead of spinning until timeout.
+    const exhausted = rec.status === "needs_review" && (rec.attempts ?? 0) >= MAX_SETTLE_ATTEMPTS;
+    const status = rec.status === "paid" ? "succeeded" : exhausted ? "review" : "pending";
+    res.json({ data: { status, order: rec.order ?? null } });
   } catch (e: any) {
     console.error("wire settle error:", e.message);
     res.status(502).json({ error: "Could not verify payment" });

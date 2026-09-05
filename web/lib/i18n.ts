@@ -140,6 +140,7 @@ const en: Dict = {
   // processing
   "proc.missingRef": "Missing payment reference", "proc.verifyFailed": "Payment verification failed",
   "proc.timeout": "Payment is taking longer than expected.", "proc.pendingTitle": "Payment pending",
+  "proc.reviewTitle": "Payment received", "proc.reviewDesc": "We've received your payment and are confirming your order. Our team will email you shortly — you have not been charged twice.", "proc.reviewCta": "Go to my account",
   "proc.backToCart": "Back to cart",
   // auth
   "auth.invalidEmail": "Enter a valid email", "auth.min8": "At least 8 characters",
@@ -302,6 +303,7 @@ const mn: Dict = {
   // processing
   "proc.missingRef": "Төлбөрийн лавлагаа алга", "proc.verifyFailed": "Төлбөр баталгаажуулж чадсангүй",
   "proc.timeout": "Төлбөр хүлээгдсэнээс удаж байна.", "proc.pendingTitle": "Төлбөр хүлээгдэж байна",
+  "proc.reviewTitle": "Төлбөр хүлээн авлаа", "proc.reviewDesc": "Таны төлбөрийг хүлээн авч, захиалгыг баталгаажуулж байна. Манай баг удахгүй имэйлээр холбогдоно — танаас давхар төлбөр аваагүй болно.", "proc.reviewCta": "Миний бүртгэл рүү",
   "proc.backToCart": "Сагс руу буцах",
   // auth
   "auth.invalidEmail": "Зөв имэйл оруулна уу", "auth.min8": "Дор хаяж 8 тэмдэгт",

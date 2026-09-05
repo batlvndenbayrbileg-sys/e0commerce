@@ -15,6 +15,7 @@ function Processing() {
   const clear = useCart(s => s.clear);
   const addOrder = useOrders(s => s.addOrder);
   const [error, setError] = useState<string | null>(null);
+  const [review, setReview] = useState(false);
   const done = useRef(false);
   const itemsRef = useRef(items);
   itemsRef.current = items;
@@ -41,6 +42,14 @@ function Processing() {
           router.replace(`/${lang}/checkout/success?id=${encodeURIComponent(order.id)}&total=${order.total}`);
           return;
         }
+        if (status === "review") {
+          // Payment captured but order not finalized — the team will reconcile.
+          // Clear the cart so the customer can't be charged again for it.
+          done.current = true;
+          clear();
+          setReview(true);
+          return;
+        }
       } catch (e: any) {
         if (++tries > 3) { setError(e.message || t("proc.verifyFailed")); return; }
       }
@@ -54,7 +63,14 @@ function Processing() {
     <div className="min-h-screen grid place-items-center p-6 mesh-light">
       <div className="bg-white rounded-3xl p-10 max-w-[460px] w-full border border-line shadow-lift text-center">
         <span className="font-display text-[22px] tracking-[.04em]">NARAN</span>
-        {!error ? (
+        {review ? (
+          <>
+            <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-accent-soft grid place-items-center text-accent text-3xl">✓</div>
+            <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.reviewTitle")}</h1>
+            <p className="text-muted mt-3">{t("proc.reviewDesc")}</p>
+            <button onClick={() => router.push(`/${lang}/account`)} className="btn btn-primary mt-6">{t("proc.reviewCta")}</button>
+          </>
+        ) : !error ? (
           <>
             <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full border-4 border-surface-3 border-t-accent animate-spin"/>
             <h1 className="font-display text-[26px] uppercase tracking-tight">{t("proc.title")}</h1>

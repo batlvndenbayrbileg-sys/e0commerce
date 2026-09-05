@@ -1,7 +1,10 @@
 // Storefront → Express Wire gateway (/api/* is rewritten to the Express API).
 
 export type IntentResponse = { intentId: string; checkoutUrl: string; live: boolean };
-export type IntentStatus = { status: "pending" | "succeeded"; order: { id: string; total: number; email: string; estimatedDelivery: string } | null };
+// "review" = Wire captured the payment but the order couldn't be finalized
+// (e.g. an item sold out during payment); the customer is not charged twice and
+// the team is alerted to reconcile. The storefront shows a reassuring message.
+export type IntentStatus = { status: "pending" | "succeeded" | "review"; order: { id: string; total: number; email: string; estimatedDelivery: string } | null };
 
 export const wire = {
   createIntent: async (input: {

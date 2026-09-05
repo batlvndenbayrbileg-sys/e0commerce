@@ -23,7 +23,15 @@
 - **M14** — Express CORS prod-д fail-closed (WEB_ORIGIN шаардана).
 - **M15** — Express demo хэрэглэгч + weak JWT secret prod-д fail-closed болсон.
 
-Үлдсэн доорх бүх зүйл хийгдээгүй хэвээр.
+**2-р ээлж (төлбөрийн бат байдал):**
+- **B2** — Wire мөнгө авчихаад cart complete хийж чадаагүй тохиолдол: retry (transient өөрөө сэргэнэ) → тэсэхгүй бол `needs_review` төлөв + Sentry alert + structured log (мөнгө-захиалгагүй хэзээ ч чимээгүй алдагдахгүй). Storefront "Төлбөр хүлээн авлаа, баталгаажуулж байна" мессеж харуулна (`api/src/routes/payments.ts`, `web/.../checkout/processing`).
+- **H4** — webhook + poll зэрэг settle дуудахыг нэг in-flight promise-оор coalesce; имэйл нэг л удаа (`emailed` guard); Medusa completion idempotent (нэг cart → нэг захиалга).
+- **M2** — авсан дүн ≠ захиалгын нийт бол Sentry warning + log.
+- **B3 (хэсэгчлэн)** — oversell-ийн *үр дагавар* аюулгүй боллоо (мөнгө алдагдахгүй, reconcile хийгдэнэ). Жинхэнэ pre-payment нөөц reservation нь тусдаа backend feature — **хийгдээгүй хэвээр** (доор B3 үзнэ үү).
+
+Live шалгасан: happy-path checkout → захиалга NT-15 ₮89,000 амжилттай (regression цэвэр). `needs_review` замыг логикоор шалгасан (live trigger хийхэд staged out-of-stock шаардана).
+
+Үлдсэн доорх зүйлс хийгдээгүй хэвээр (B3 бүрэн reservation, B4 e-Barimt, HIGH UX, MEDIUM/LOW).
 
 ---
 
