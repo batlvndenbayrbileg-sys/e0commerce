@@ -85,22 +85,22 @@ export default function AuthPage() {
   const toggle = () => { setMode(isReg ? "login" : "register"); setErrors({}); };
 
   return (
-    <div className="min-h-screen grid place-items-center px-4 py-8 sm:py-12" style={{ background: "linear-gradient(150deg, #7C6CF0 0%, #5A3FD6 55%, #4A2FB8 100%)" }}>
+    <div className="min-h-screen grid place-items-center px-4 py-8 sm:py-12" style={{ background: "linear-gradient(150deg, #FF8A3D 0%, #FF6A1A 55%, #D14A08 100%)" }}>
       <div className="relative w-full max-w-[960px] overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem] bg-white shadow-[0_40px_100px_-25px_rgba(30,12,70,.55)] lg:grid lg:grid-cols-2 lg:min-h-[580px]">
 
         {/* ============ PROMO (desktop) ============ */}
         <div className="relative hidden lg:flex flex-col items-center justify-center px-12 py-14 text-center text-white"
-          style={{ background: "linear-gradient(150deg, #7B6BF0 0%, #5E43DE 100%)" }}>
+          style={{ background: "linear-gradient(150deg, #FF7A2E 0%, #E8550A 100%)" }}>
           <div className="relative z-10 max-w-[300px]">
             <h2 className="font-display text-[32px] leading-tight">{isReg ? t("auth.backPromo") : t("auth.newHere")}</h2>
             <p className="mt-4 text-[14px] leading-relaxed text-white/80">{isReg ? t("auth.backPromoDesc") : t("auth.newHereDesc")}</p>
             <button type="button" onClick={toggle}
-              className="mt-9 h-11 rounded-full border-2 border-white/80 px-10 text-[13px] font-semibold uppercase tracking-[.12em] transition hover:bg-white hover:text-[#5E43DE]">
+              className="mt-9 h-11 rounded-full border-2 border-white/80 px-10 text-[13px] font-semibold uppercase tracking-[.12em] transition hover:bg-white hover:text-[#E8550A]">
               {isReg ? t("auth.signIn") : t("auth.signUp")}
             </button>
           </div>
           {/* curved divider bulging into the form panel */}
-          <svg className="absolute top-0 right-0 h-full w-[70px] translate-x-[99%]" viewBox="0 0 70 100" preserveAspectRatio="none" aria-hidden style={{ fill: "#5E43DE" }}>
+          <svg className="absolute top-0 right-0 h-full w-[70px] translate-x-[99%]" viewBox="0 0 70 100" preserveAspectRatio="none" aria-hidden style={{ fill: "#E8550A" }}>
             <path d="M0 0 C 48 20, 48 80, 0 100 Z" />
           </svg>
         </div>
@@ -159,7 +159,7 @@ export default function AuthPage() {
 
             <button disabled={busy} type="submit"
               className="w-full h-[52px] rounded-full text-white font-semibold uppercase tracking-[.12em] text-[13px] grid place-items-center disabled:opacity-60 transition active:scale-[.99] shadow-[0_12px_28px_-8px_rgba(110,84,236,.6)]"
-              style={{ background: "linear-gradient(95deg, #7B6BF0 0%, #5E43DE 100%)" }}>
+              style={{ background: "linear-gradient(95deg, #FF7A2E 0%, #E8550A 100%)" }}>
               {busy ? t("common.pleaseWait") : isReg ? t("auth.signUp") : t("auth.signIn")}
             </button>
 
@@ -194,7 +194,7 @@ function FloatingField({ label, error, right, labelRight, name, ...props }: {
 } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div>
-      <div className={`rounded-2xl border px-4 py-2 bg-white transition focus-within:border-[#6E54F0] focus-within:ring-4 focus-within:ring-[#6E54F0]/10 ${error ? "border-red-400" : "border-line"}`}>
+      <div className={`rounded-2xl border px-4 py-2 bg-white transition focus-within:border-[#FF6A1A] focus-within:ring-4 focus-within:ring-[#FF6A1A]/10 ${error ? "border-red-400" : "border-line"}`}>
         <div className="flex items-center justify-between">
           <label htmlFor={name} className="block text-[11px] font-medium text-subtle">{label}</label>
           {labelRight}
