@@ -29,9 +29,9 @@ export function Footer() {
   const t = useT();
   return (
     <footer className="relative mx-3 sm:mx-4 lg:mx-5 mb-3 sm:mb-4 lg:mb-5 rounded-[1.75rem] sm:rounded-[2.5rem] bg-ink text-white pt-12 sm:pt-20 pb-8 sm:pb-10 overflow-hidden grainy">
-      {/* Warm brand glow */}
-      <div className="pointer-events-none absolute -top-40 -right-24 w-[360px] sm:w-[460px] h-[360px] sm:h-[460px] rounded-full bg-accent/20 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -left-24 w-[300px] h-[300px] rounded-full bg-white/5 blur-[100px]" />
+      {/* Subtle warm accent, kept tight in the corner so it reads as a kiss of
+          brand colour, not a haze over the content. */}
+      <div className="pointer-events-none absolute -top-28 -right-20 w-[240px] h-[240px] rounded-full bg-accent/10 blur-[90px]" />
 
       <div className="container relative">
         {/* Statement */}
