@@ -1,12 +1,9 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { salesReport } from "../../../../../lib/reports";
+import { csvCell as cell } from "../../../../../lib/csv";
 
 // GET /admin/reports/sales/export?from=&to=&type=daily|category|product|vat
 // CSV export of a sales-report section (spec A-26). Guarded by reports.read.
-function cell(v: any): string {
-  const s = String(v ?? "");
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const from = (req.query.from as string) || undefined;

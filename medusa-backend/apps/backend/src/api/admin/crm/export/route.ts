@@ -1,13 +1,10 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
 import { aggregateByCustomer, segmentOf, SEGMENT_LABEL } from "../../../../lib/crm";
+import { csvCell } from "../../../../lib/csv";
 
 // GET /admin/crm/export — CSV of all customers with LTV, orders, last order and
 // segment (spec A-18). Guarded by customers.read.
-function csvCell(v: any): string {
-  const s = String(v ?? "");
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const customerModule = req.scope.resolve(Modules.CUSTOMER);
