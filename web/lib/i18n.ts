@@ -89,6 +89,11 @@ const en: Dict = {
   "foot.shop": "Shop", "foot.support": "Support", "foot.brand": "Brand", "foot.flagship": "Flagship",
   "foot.rights": "© 2026 NARAN Beauty", "foot.slogan": "Гоо сайхан · Нэг дороос",
   "foot.privacy": "Privacy", "foot.terms": "Terms", "foot.refund": "Returns",
+  "foot.eyebrow": "The new standard in beauty",
+  "foot.contact": "Contact", "foot.follow": "Follow us", "foot.payments": "We accept",
+  "foot.phone": "+976 7700 0329",
+  "foot.about": "About", "foot.stores": "Stores", "foot.journal": "Journal", "foot.faq": "FAQ",
+  "foot.backToTop": "Back to top",
   // breadcrumbs + extra common
   "bc.home": "Home", "bc.shop": "Shop", "bc.cart": "Cart", "bc.checkout": "Checkout",
   "common.loading": "Loading…", "common.remove": "Remove", "common.edit": "Edit",
@@ -231,6 +236,11 @@ const mn: Dict = {
   "foot.shop": "Дэлгүүр", "foot.support": "Тусламж", "foot.brand": "Брэнд", "foot.flagship": "Дэлгүүр",
   "foot.rights": "© 2026 NARAN Beauty", "foot.slogan": "Гоо сайхан · Нэг дороос",
   "foot.privacy": "Нууцлал", "foot.terms": "Үйлчилгээний нөхцөл", "foot.refund": "Буцаалт",
+  "foot.eyebrow": "Гоо сайхны шинэ стандарт",
+  "foot.contact": "Холбоо барих", "foot.follow": "Биднийг дагах", "foot.payments": "Төлбөрийн хэрэгсэл",
+  "foot.phone": "+976 7700 0329",
+  "foot.about": "Бидний тухай", "foot.stores": "Дэлгүүрүүд", "foot.journal": "Сэтгүүл", "foot.faq": "Түгээмэл асуулт",
+  "foot.backToTop": "Дээш буцах",
   // breadcrumbs + extra common
   "bc.home": "Нүүр", "bc.shop": "Дэлгүүр", "bc.cart": "Сагс", "bc.checkout": "Төлбөр",
   "common.loading": "Уншиж байна…", "common.remove": "Устгах", "common.edit": "Засах",
