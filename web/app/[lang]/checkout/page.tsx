@@ -157,15 +157,15 @@ export default function CheckoutPage() {
 
             <FormCard title={t("co.shippingAddress")}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <Field label={t("co.firstName")}><input name="first_name" placeholder="Bat" defaultValue="Bat" required/></Field>
-                <Field label={t("co.lastName")}><input name="last_name" placeholder="Erdene" defaultValue="Erdene" required/></Field>
-                <Field label={t("co.address")} full><input name="address_1" placeholder="District, street, building" defaultValue="Sukhbaatar District, 1-r khoroo" required/></Field>
-                <Field label={t("co.city")}><input name="city" placeholder="Ulaanbaatar" defaultValue="Ulaanbaatar" required/></Field>
-                <Field label={t("co.postal")}><input name="postal_code" placeholder="14200" defaultValue="14200" required/></Field>
+                <Field label={t("co.firstName")}><input name="first_name" placeholder="Бат" required/></Field>
+                <Field label={t("co.lastName")}><input name="last_name" placeholder="Эрдэнэ" required/></Field>
+                <Field label={t("co.address")} full><input name="address_1" placeholder={t("co.addressPh")} required/></Field>
+                <Field label={t("co.city")}><input name="city" placeholder="Улаанбаатар" required/></Field>
+                <Field label={t("co.postal")}><input name="postal_code" placeholder="14200" required/></Field>
                 <Field label={t("co.country")}>
                   <select name="country"><option value="mn">{t("co.mongolia")}</option></select>
                 </Field>
-                <Field label={t("co.phone")}><input name="phone" placeholder="+976 …" defaultValue="+976 9911 2233"/></Field>
+                <Field label={t("co.phone")}><input name="phone" placeholder="+976 …"/></Field>
               </div>
             </FormCard>
 

@@ -4,17 +4,17 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 
 const router = Router();
-const SECRET = process.env.JWT_SECRET || "nitec-dev-secret-change-me";
+// Fail closed in production: never sign tokens with a known dev secret.
+const SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === "production"
+    ? (() => { throw new Error("JWT_SECRET is required in production."); })()
+    : "nitec-dev-secret-change-me"
+);
 
 type User = { id: string; email: string; firstName: string; lastName: string; passwordHash: string };
+// NOTE: this Express auth is a legacy fallback used only when the storefront sets
+// NEXT_PUBLIC_USE_MEDUSA=0; production auth runs through Medusa. No seeded demo user.
 const users = new Map<string, User>();
-
-(async () => {
-  users.set("alex@vexo.gear", {
-    id: "u1", email: "alex@vexo.gear", firstName: "Alex", lastName: "Rivera",
-    passwordHash: await bcrypt.hash("password123", 10),
-  });
-})();
 
 const signupSchema = z.object({
   firstName: z.string().min(1),

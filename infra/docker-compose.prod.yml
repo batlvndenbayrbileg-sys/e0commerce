@@ -88,6 +88,12 @@ services:
       EBARIMT_URL: ${EBARIMT_URL:-}
       EBARIMT_MERCHANT_TIN: ${EBARIMT_MERCHANT_TIN:-}
       EBARIMT_DISTRICT_CODE: ${EBARIMT_DISTRICT_CODE:-}
+      # Storefront base for password-reset links + transactional email (Resend).
+      # Blank RESEND_API_KEY → emails log-only (mock). The worker sends these, so
+      # they belong in the shared env (B7).
+      STOREFRONT_URL: ${STOREFRONT_URL:-http://localhost:3000}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-NARAN <onboarding@resend.dev>}
     expose:
       - "9000"
     networks: [naran]

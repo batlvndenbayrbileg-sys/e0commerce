@@ -7,7 +7,12 @@ import {
 import { sendOrderConfirmation } from "../lib/email.js";
 
 const MEDUSA_URL = process.env.MEDUSA_URL || "http://localhost:9000";
-const MEDUSA_PK = process.env.MEDUSA_PK || "pk_e1804f58f4011bb9e1dafab18baff34de60dd2be69bd20f6c7cd75e14780208d";
+// No baked-in fallback: a wrong/absent key must fail loudly, not silently use a
+// key that won't match the deployed Medusa DB (H6). Dev may still export a local one.
+const MEDUSA_PK = process.env.MEDUSA_PK || "";
+if (!MEDUSA_PK && process.env.NODE_ENV === "production") {
+  throw new Error("MEDUSA_PK is required in production (Medusa publishable key).");
+}
 
 type OrderItem = { title: string; quantity: number; amount: number };
 type Record = {

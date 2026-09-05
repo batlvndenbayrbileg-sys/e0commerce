@@ -45,7 +45,7 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [sent, setSent] = useState(false);
-  const [form, setForm] = useState({ name: "Nicholas Ergemla", email: "alex@vexo.gear", password: "password123" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isReg = mode === "register";
   const isForgot = mode === "forgot";
@@ -216,7 +216,6 @@ export default function AuthPage() {
                   </div>
                 </div>
 
-                {!isReg && <p className="tiny text-center pt-2">{t("auth.demo")} <span className="font-mono">alex@vexo.gear / password123</span></p>}
               </>
             )}
           </form>
