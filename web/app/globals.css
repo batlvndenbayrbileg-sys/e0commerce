@@ -64,6 +64,21 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 .lenis.lenis-stopped { overflow: clip; }
 
+/* Hero: slow, continuous Ken Burns on the active slide image (layered under the
+   scroll parallax on its parent). Neutralized by the reduce-motion media query. */
+.hero-ken {
+  position: absolute; inset: 0;
+  animation: heroKen 12s ease-in-out infinite alternate;
+  transform-origin: 60% 40%;
+  will-change: transform;
+}
+@keyframes heroKen {
+  from { transform: scale(1.12) translate3d(0, 0, 0); }
+  to   { transform: scale(1.22) translate3d(-1.6%, -1.2%, 0); }
+}
+/* Hero dot: accent fill grows across the auto-advance interval. */
+@keyframes heroDot { from { width: 0; } to { width: 100%; } }
+
 .grainy { position: relative; }
 .grainy::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
