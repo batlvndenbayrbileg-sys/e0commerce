@@ -1,10 +1,12 @@
 "use client";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
+import { BagIcon } from "@/components/Icons";
 import { useAuth, useWish, useToast } from "@/lib/store";
 import { useT, useLang } from "@/components/LangProvider";
 import { Skeleton } from "@/components/Skeleton";
@@ -12,6 +14,8 @@ import { CountUp } from "@/components/CountUp";
 import { api, money } from "@/lib/api";
 import type { Product } from "@/lib/types";
 import type { CustomerOrder } from "@/lib/medusa";
+
+const EASE: [number, number, number, number] = [0.22, 0.61, 0.36, 1];
 
 const TABS = ["Overview", "Orders", "Wishlist", "Addresses", "Settings"] as const;
 type Tab = (typeof TABS)[number];
@@ -106,9 +110,12 @@ export default function AccountPage() {
           <Nav />
 
           {/* Profile header */}
-          <div className="mt-6 bg-white border border-line rounded-3xl p-5 sm:p-7 shadow-soft">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: EASE }}
+            className="mt-6 bg-white border border-line rounded-3xl p-5 sm:p-7 shadow-soft"
+          >
             <div className="flex items-center gap-4">
-              <span className="w-16 h-16 rounded-full grid place-items-center text-white font-display text-[22px]"
+              <span className="w-16 h-16 rounded-full grid place-items-center text-white font-display text-[22px] shadow-[0_10px_24px_-8px_rgba(232,85,10,.55)]"
                 style={{ background: "linear-gradient(135deg,#FF8A3D,#E8550A)" }}>
                 {user.firstName[0]}{user.lastName[0]}
               </span>
@@ -127,22 +134,30 @@ export default function AccountPage() {
               <Stat label={t("acc.statWishlist")} value={<CountUp key={`w${wished.length}`} value={wished.length}/>}/>
               <Stat label={t("acc.statAddresses")} value={<CountUp key={`a${addresses.length}`} value={addresses.length}/>}/>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Tabs */}
+          {/* Tabs — animated sliding pill under the active tab */}
           <div className="sticky top-2 z-20 mt-4 -mx-3 px-3 sm:mx-0 sm:px-0">
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar bg-white/80 backdrop-blur border border-line rounded-pill p-1.5 shadow-soft">
               {TABS.map(tb => (
                 <button key={tb} onClick={() => setTab(tb)}
-                  className={`h-9 px-4 rounded-pill text-[13px] font-medium whitespace-nowrap shrink-0 transition ${
-                    tab === tb ? "bg-ink text-white" : "text-muted hover:text-ink"
-                  }`}>{t(TAB_KEY[tb])}</button>
+                  className="relative h-9 px-4 rounded-pill text-[13px] font-medium whitespace-nowrap shrink-0 active:scale-95 transition-transform">
+                  {tab === tb && (
+                    <motion.span layoutId="acctTabPill" transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                      className="absolute inset-0 bg-ink rounded-pill"/>
+                  )}
+                  <span className={`relative z-10 transition-colors ${tab === tb ? "text-white" : "text-muted hover:text-ink"}`}>{t(TAB_KEY[tb])}</span>
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Tab content */}
+          {/* Tab content — keyed so each panel fades/rises in on switch (no exit
+              wait, so it can never stick if an animation is throttled) */}
           <div className="mt-5 mb-10">
+            <motion.div key={tab}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, ease: EASE }}>
             {tab === "Overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card title={t("acc.recentOrder")}>
@@ -236,6 +251,7 @@ export default function AccountPage() {
                 </button>
               </div>
             )}
+            </motion.div>
           </div>
         </div>
       </div>
@@ -246,7 +262,7 @@ export default function AccountPage() {
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="bg-surface-2 rounded-2xl p-4">
+    <div className="bg-surface-2 rounded-2xl p-4 transition-all duration-200 ease-elegant hover:-translate-y-0.5 hover:bg-white hover:shadow-soft">
       <div className="text-[12px] text-muted">{label}</div>
       <div className="font-display text-[24px] tracking-tight mt-1 num-tabular">{value}</div>
     </div>
@@ -338,7 +354,8 @@ function AddressBlock({ a }: { a: any }) {
 function Empty({ msg, cta }: { msg: string; cta?: boolean }) {
   const t = useT();
   return (
-    <div className="py-8 text-center">
+    <div className="py-10 text-center">
+      <span className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-surface-2 text-ink/35"><BagIcon width={22} height={22}/></span>
       <p className="text-muted">{msg}</p>
       {cta && <Link href="/shop" className="btn btn-primary btn-sm mt-4 inline-flex">{t("acc.startShopping")}</Link>}
     </div>
@@ -346,8 +363,8 @@ function Empty({ msg, cta }: { msg: string; cta?: boolean }) {
 }
 function Field({ label, defaultValue, full, type = "text", name, readOnly }: { label: string; defaultValue?: string; full?: boolean; type?: string; name?: string; readOnly?: boolean }) {
   return (
-    <label className={`field flex flex-col gap-1.5 ${full ? "sm:col-span-2" : ""}`}>
-      <span className="text-xs font-medium text-muted">{label}</span>
+    <label className={`field group flex flex-col gap-1.5 ${full ? "sm:col-span-2" : ""}`}>
+      <span className="text-xs font-medium text-muted transition-colors group-focus-within:text-accent-deep">{label}</span>
       <input type={type} name={name} defaultValue={defaultValue} readOnly={readOnly} className={readOnly ? "opacity-60 cursor-not-allowed" : undefined}/>
     </label>
   );
