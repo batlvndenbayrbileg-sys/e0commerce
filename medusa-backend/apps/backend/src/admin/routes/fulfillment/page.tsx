@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { HandTruck } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Badge, Button, Checkbox, Input, Label, FocusModal, toast } from "@medusajs/ui";
+import { Container, Text, Table, Badge, Button, Checkbox, Input, Label, FocusModal, toast } from "@medusajs/ui";
 import { useEffect, useMemo, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type QItem = { id: string; title: string; variant: string; sku: string; quantity: number; thumbnail: string };
 type QOrder = {
@@ -166,15 +167,11 @@ const FulfillmentPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Биелүүлэх дараалал</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            Шинэ захиалгыг биелүүлж, tracking-тэй илгээнэ. Түүвэрлэх/баглах жагсаалт хэвлэнэ.
-          </Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>
-      </div>
+      <PageHeader
+        title="Биелүүлэх дараалал"
+        description="Шинэ захиалгыг биелүүлж, tracking-тэй илгээнэ. Түүвэрлэх/баглах жагсаалт хэвлэнэ."
+        actions={<Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>}
+      />
 
       {/* Summary + bulk actions */}
       <div className="flex flex-wrap items-center gap-3 px-6 py-3">
@@ -193,6 +190,7 @@ const FulfillmentPage = () => {
         </div>
       </div>
 
+      <Panel>
       <Table>
         <Table.Header>
           <Table.Row>
@@ -258,6 +256,7 @@ const FulfillmentPage = () => {
           })}
         </Table.Body>
       </Table>
+      </Panel>
 
       {/* Ship modal */}
       <FocusModal open={!!shipFor} onOpenChange={(v) => !v && setShipFor(null)}>

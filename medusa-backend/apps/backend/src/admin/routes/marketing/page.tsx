@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ReceiptPercent } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Badge, Button, toast } from "@medusajs/ui";
+import { Container, Text, Table, Badge, Button, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type Promo = { id: string; code: string; automatic: boolean; status: string; type: string; value: number | null; currency: string | null; used: number };
 type Cart = { id: string; email: string; updated_at: string; value: number; items: { title: string; quantity: number }[] };
@@ -48,17 +49,14 @@ const MarketingPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Маркетинг</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Урамшууллын гүйцэтгэл ба орхисон сагс (борлуулалт сэргээх).</Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>
-      </div>
+      <PageHeader
+        title="Маркетинг"
+        description="Урамшууллын гүйцэтгэл ба орхисон сагс (борлуулалт сэргээх)."
+        actions={<Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>}
+      />
 
       {/* Promotions */}
-      <div className="px-6 py-4">
-        <Text weight="plus" size="small" className="mb-2">Урамшуулал ({promos.length})</Text>
+      <Panel title={`Урамшуулал (${promos.length})`}>
         <Table>
           <Table.Header><Table.Row>
             <Table.HeaderCell>Код</Table.HeaderCell>
@@ -85,14 +83,14 @@ const MarketingPage = () => {
             )}
           </Table.Body>
         </Table>
-      </div>
+      </Panel>
 
       {/* Abandoned carts */}
-      <div className="px-6 py-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Text weight="plus" size="small">Орхисон сагс ({carts.length})</Text>
-          {carts.length > 0 && <Badge size="2xsmall" color="orange">₮{nf(cartTotal)} боломжит</Badge>}
-        </div>
+      <Panel
+        title={`Орхисон сагс (${carts.length})`}
+        actions={carts.length > 0 ? <Badge size="2xsmall" color="orange">₮{nf(cartTotal)} боломжит</Badge> : undefined}
+        bodyClassName="p-4"
+      >
         <Text className="text-ui-fg-subtle mb-3" size="xsmall">1 цагаас дээш идэвхгүй, имэйлтэй, дуусаагүй сагснууд — эргэн холбогдож сэргээх боломжтой.</Text>
         {carts.length === 0 ? (
           <Text className="text-ui-fg-subtle" size="small">Орхисон сагс алга. 🎉</Text>
@@ -116,7 +114,7 @@ const MarketingPage = () => {
             </Table.Body>
           </Table>
         )}
-      </div>
+      </Panel>
     </Container>
   );
 };

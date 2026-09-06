@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ArrowUturnLeft } from "@medusajs/icons";
-import { Container, Heading, Table, Button, Badge, Text, toast } from "@medusajs/ui";
+import { Container, Table, Button, Badge, Text, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type ReturnItem = { quantity: number; item_id: string };
 type ReturnRow = {
@@ -78,23 +79,22 @@ const ReturnsPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Буцаалтын хүсэлт</Heading>
-          <Text className="text-ui-fg-subtle" size="small">
-            Хэрэглэгчийн буцаалтын хүсэлтийг зөвшөөрч, хүлээн авна уу.
-          </Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={load} disabled={loading}>
-          Сэргээх
-        </Button>
-      </div>
+      <PageHeader
+        title="Буцаалтын хүсэлт"
+        description="Хэрэглэгчийн буцаалтын хүсэлтийг зөвшөөрч, хүлээн авна уу."
+        actions={
+          <Button variant="secondary" size="small" onClick={load} disabled={loading}>
+            Сэргээх
+          </Button>
+        }
+      />
 
       <div className="px-6 py-3">
         <Badge color="orange">{pending.length}</Badge>{" "}
         <Text className="text-ui-fg-subtle inline" size="small">хүлээгдэж буй</Text>
       </div>
 
+      <Panel>
       <Table>
         <Table.Header>
           <Table.Row>
@@ -139,6 +139,7 @@ const ReturnsPage = () => {
           })}
         </Table.Body>
       </Table>
+      </Panel>
     </Container>
   );
 };

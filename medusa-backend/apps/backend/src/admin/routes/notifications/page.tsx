@@ -4,6 +4,7 @@ import { Container, Heading, Text, Badge, Button, Table, toast } from "@medusajs
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type Item = { key: string; label: string; count: number; tone: string; href: string };
 type LowStock = { sku: string; variant: string; product: string; stock: number };
@@ -41,13 +42,11 @@ const NotificationsPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Мэдэгдэл</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Анхаарал шаардсан зүйлс: нөөц, буцаалт, шинэ захиалга.</Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>
-      </div>
+      <PageHeader
+        title="Мэдэгдэл"
+        description="Анхаарал шаардсан зүйлс: нөөц, буцаалт, шинэ захиалга."
+        actions={<Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-ui-border-base">
         {items.map((it) => (
@@ -62,8 +61,7 @@ const NotificationsPage = () => {
       </div>
 
       {lowStock.length > 0 && (
-        <div className="px-6 py-4">
-          <Text weight="plus" size="small" className="mb-2">Бага нөөцтэй бараа</Text>
+        <Panel title="Бага нөөцтэй бараа">
           <Table>
             <Table.Header><Table.Row>
               <Table.HeaderCell>Бараа</Table.HeaderCell>
@@ -80,7 +78,7 @@ const NotificationsPage = () => {
               ))}
             </Table.Body>
           </Table>
-        </div>
+        </Panel>
       )}
     </Container>
   );

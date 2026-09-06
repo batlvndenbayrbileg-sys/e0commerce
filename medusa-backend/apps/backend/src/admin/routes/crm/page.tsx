@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { Users } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Badge, Button, Input, Select, Textarea, Label, FocusModal, toast } from "@medusajs/ui";
+import { Container, Text, Table, Badge, Button, Input, Select, Textarea, Label, FocusModal, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type Row = {
   id: string; email: string; name: string; has_account: boolean;
@@ -91,13 +92,11 @@ const CrmPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Харилцагч (CRM)</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Сегмент, LTV (нийт худалдан авалт), захиалгын түүх, тэмдэглэл.</Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={exportCsv}>CSV татах</Button>
-      </div>
+      <PageHeader
+        title="Харилцагч (CRM)"
+        description="Сегмент, LTV (нийт худалдан авалт), захиалгын түүх, тэмдэглэл."
+        actions={<Button variant="secondary" size="small" onClick={exportCsv}>CSV татах</Button>}
+      />
 
       {/* Segment chips */}
       <div className="flex flex-wrap items-center gap-2 px-6 py-3">
@@ -129,45 +128,47 @@ const CrmPage = () => {
         </div>
       </div>
 
-      <Table>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell>Харилцагч</Table.HeaderCell>
-            <Table.HeaderCell>Сегмент</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">LTV</Table.HeaderCell>
-            <Table.HeaderCell className="text-right">Захиалга</Table.HeaderCell>
-            <Table.HeaderCell>Сүүлийн</Table.HeaderCell>
-            <Table.HeaderCell>Тэмдэглэл</Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {!loading && rows.length === 0 && (
-            <Table.Row><Table.Cell {...({ colSpan: 6 } as any)}><Text className="text-ui-fg-subtle py-6" size="small">Харилцагч олдсонгүй.</Text></Table.Cell></Table.Row>
-          )}
-          {rows.map((r) => (
-            <Table.Row key={r.id}>
-              <Table.Cell>
-                <div>{r.name}</div>
-                <div className="text-ui-fg-subtle text-xs">{r.email} {r.has_account ? "" : "· зочин"}</div>
-              </Table.Cell>
-              <Table.Cell><Badge color={SEG_COLOR[r.segment]} size="2xsmall">{SEG_LABEL[r.segment]}</Badge></Table.Cell>
-              <Table.Cell className="text-right font-medium">₮{nf(r.ltv)}</Table.Cell>
-              <Table.Cell className="text-right">{nf(r.orders)}</Table.Cell>
-              <Table.Cell className="text-ui-fg-subtle text-xs">{r.last_order ? r.last_order.slice(0, 10) : "—"}</Table.Cell>
-              <Table.Cell>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-ui-fg-subtle max-w-[160px] truncate">{r.note || "—"}</span>
-                  {canWrite && (
-                    <Button size="small" variant="transparent" onClick={() => { setNoteFor(r); setNoteText(r.note || ""); }}>
-                      {r.note ? "Засах" : "Нэмэх"}
-                    </Button>
-                  )}
-                </div>
-              </Table.Cell>
+      <Panel title="Харилцагч">
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Харилцагч</Table.HeaderCell>
+              <Table.HeaderCell>Сегмент</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">LTV</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">Захиалга</Table.HeaderCell>
+              <Table.HeaderCell>Сүүлийн</Table.HeaderCell>
+              <Table.HeaderCell>Тэмдэглэл</Table.HeaderCell>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+          </Table.Header>
+          <Table.Body>
+            {!loading && rows.length === 0 && (
+              <Table.Row><Table.Cell {...({ colSpan: 6 } as any)}><Text className="text-ui-fg-subtle py-6" size="small">Харилцагч олдсонгүй.</Text></Table.Cell></Table.Row>
+            )}
+            {rows.map((r) => (
+              <Table.Row key={r.id}>
+                <Table.Cell>
+                  <div>{r.name}</div>
+                  <div className="text-ui-fg-subtle text-xs">{r.email} {r.has_account ? "" : "· зочин"}</div>
+                </Table.Cell>
+                <Table.Cell><Badge color={SEG_COLOR[r.segment]} size="2xsmall">{SEG_LABEL[r.segment]}</Badge></Table.Cell>
+                <Table.Cell className="text-right font-medium">₮{nf(r.ltv)}</Table.Cell>
+                <Table.Cell className="text-right">{nf(r.orders)}</Table.Cell>
+                <Table.Cell className="text-ui-fg-subtle text-xs">{r.last_order ? r.last_order.slice(0, 10) : "—"}</Table.Cell>
+                <Table.Cell>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-ui-fg-subtle max-w-[160px] truncate">{r.note || "—"}</span>
+                    {canWrite && (
+                      <Button size="small" variant="transparent" onClick={() => { setNoteFor(r); setNoteText(r.note || ""); }}>
+                        {r.note ? "Засах" : "Нэмэх"}
+                      </Button>
+                    )}
+                  </div>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </Panel>
 
       <div className="flex items-center justify-between px-6 py-3">
         <Text className="text-ui-fg-subtle" size="small">Хуудас {page} / {pages} · Нийт {nf(count)}</Text>

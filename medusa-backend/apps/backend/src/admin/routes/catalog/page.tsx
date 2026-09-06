@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { Tag } from "@medusajs/icons";
-import { Container, Heading, Text, Button, Table, Badge, Textarea, Input, toast } from "@medusajs/ui";
+import { Container, Text, Button, Table, Badge, Textarea, Input, toast } from "@medusajs/ui";
 import { useEffect, useRef, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, StatGrid, StatCard, Panel } from "../../lib/ui";
 
 type Stats = {
   total: number;
@@ -137,24 +138,21 @@ const CatalogPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Каталог</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Барааны нэгдсэн тойм + CSV импорт/экспорт (олон мянган бараанд).</Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={runExport} isLoading={exporting}>CSV татах</Button>
-      </div>
+      <PageHeader
+        title="Каталог"
+        description="Барааны нэгдсэн тойм + CSV импорт/экспорт (олон мянган бараанд)."
+        actions={<Button variant="secondary" size="small" onClick={runExport} isLoading={exporting}>CSV татах</Button>}
+      />
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-px bg-ui-border-base">
-        <Stat label="Нийт бараа" value={stats ? nf(stats.total) : "…"} />
-        <Stat label="Нийтэлсэн" value={stats ? nf(stats.published) : "…"} />
-        <Stat label="Ноорог" value={stats ? nf(stats.draft) : "…"} />
-      </div>
+      <StatGrid cols={3}>
+        <StatCard tone="blue" label="Нийт бараа" value={stats ? nf(stats.total) : ""} loading={!stats} />
+        <StatCard tone="green" label="Нийтэлсэн" value={stats ? nf(stats.published) : ""} loading={!stats} />
+        <StatCard tone="orange" label="Ноорог" value={stats ? nf(stats.draft) : ""} loading={!stats} />
+      </StatGrid>
 
       {/* Per-category */}
-      <div className="px-6 py-4">
-        <Text weight="plus" size="small" className="mb-2">Ангиллаар</Text>
+      <Panel title="Ангиллаар">
         <Table>
           <Table.Header>
             <Table.Row>
@@ -173,7 +171,7 @@ const CatalogPage = () => {
             ))}
           </Table.Body>
         </Table>
-      </div>
+      </Panel>
 
       {/* Import */}
       {canWrite && (
@@ -206,11 +204,11 @@ const CatalogPage = () => {
       )}
 
       {/* Low stock */}
-      <div className="px-6 py-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Text weight="plus" size="small">Бага нөөц (≤5)</Text>
-          <Badge color={lowStock.length ? "red" : "green"} size="2xsmall">{nf(lowStock.length)}</Badge>
-        </div>
+      <Panel
+        title="Бага нөөц (≤5)"
+        actions={<Badge color={lowStock.length ? "red" : "green"} size="2xsmall">{nf(lowStock.length)}</Badge>}
+        bodyClassName={lowStock.length === 0 ? "p-4" : ""}
+      >
         {lowStock.length === 0 ? (
           <Text className="text-ui-fg-subtle" size="small">Бага нөөцтэй бараа алга.</Text>
         ) : (
@@ -235,7 +233,7 @@ const CatalogPage = () => {
             </Table.Body>
           </Table>
         )}
-      </div>
+      </Panel>
 
       {/* Bulk stock update */}
       {canWrite && (
@@ -266,11 +264,11 @@ const CatalogPage = () => {
       )}
 
       {/* Stock movement history (A-15) */}
-      <div className="px-6 py-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Text weight="plus" size="small">Нөөцийн хөдөлгөөний түүх</Text>
-          <Badge size="2xsmall" color="grey">{nf(history.length)}</Badge>
-        </div>
+      <Panel
+        title="Нөөцийн хөдөлгөөний түүх"
+        actions={<Badge size="2xsmall" color="grey">{nf(history.length)}</Badge>}
+        bodyClassName={history.length === 0 ? "p-4" : ""}
+      >
         {history.length === 0 ? (
           <Text className="text-ui-fg-subtle" size="small">Хөдөлгөөн бүртгэгдээгүй байна.</Text>
         ) : (
@@ -302,19 +300,10 @@ const CatalogPage = () => {
             </Table.Body>
           </Table>
         )}
-      </div>
+      </Panel>
     </Container>
   );
 };
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-ui-bg-base px-6 py-5">
-      <Text className="text-ui-fg-subtle" size="small">{label}</Text>
-      <Heading level="h2" className="mt-1">{value}</Heading>
-    </div>
-  );
-}
 
 export const config = defineRouteConfig({
   label: "Каталог",

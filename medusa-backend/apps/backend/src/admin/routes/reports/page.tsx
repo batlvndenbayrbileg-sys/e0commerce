@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Button, Input, Label, toast } from "@medusajs/ui";
+import { Container, Text, Table, Button, Input, Label, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, StatGrid, StatCard, Panel, Bar } from "../../lib/ui";
 
 type Report = {
   from: string | null; to: string | null;
@@ -63,12 +64,10 @@ const ReportsPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Борлуулалтын тайлан</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Хугацаа, ангилал, бараагаар. НӨАТ (10%) задаргаатай.</Text>
-        </div>
-      </div>
+      <PageHeader
+        title="Борлуулалтын тайлан"
+        description="Хугацаа, ангилал, бараагаар. НӨАТ (10%) задаргаатай."
+      />
 
       {/* Date range */}
       <div className="flex flex-wrap items-end gap-3 px-6 py-3">
@@ -86,20 +85,20 @@ const ReportsPage = () => {
       </div>
 
       {/* Totals */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-px bg-ui-border-base">
-        <Stat label="Нийт борлуулалт" value={data ? tug(data.totals.revenue) : "…"} />
-        <Stat label="НӨАТгүй (net)" value={data ? tug(data.totals.net) : "…"} />
-        <Stat label="НӨАТ (10%)" value={data ? tug(data.totals.vat) : "…"} />
-        <Stat label="Захиалга" value={data ? nf(data.totals.orders) : "…"} />
-        <Stat label="Дундаж захиалга" value={data ? tug(data.totals.aov) : "…"} />
-      </div>
+      <StatGrid cols={5}>
+        <StatCard label="Нийт борлуулалт" value={data ? tug(data.totals.revenue) : "…"} loading={loading} tone="green" />
+        <StatCard label="НӨАТгүй (net)" value={data ? tug(data.totals.net) : "…"} loading={loading} tone="green" />
+        <StatCard label="НӨАТ (10%)" value={data ? tug(data.totals.vat) : "…"} loading={loading} tone="orange" />
+        <StatCard label="Захиалга" value={data ? nf(data.totals.orders) : "…"} loading={loading} tone="blue" />
+        <StatCard label="Дундаж захиалга" value={data ? tug(data.totals.aov) : "…"} loading={loading} tone="orange" />
+      </StatGrid>
 
       {/* Daily trend */}
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-2">
-          <Text weight="plus" size="small">Өдрийн борлуулалт</Text>
-          <Button variant="secondary" size="small" onClick={() => exportCsv("daily")}>CSV</Button>
-        </div>
+      <Panel
+        title="Өдрийн борлуулалт"
+        actions={<Button variant="secondary" size="small" onClick={() => exportCsv("daily")}>CSV</Button>}
+        bodyClassName="p-4"
+      >
         {(data?.daily || []).length === 0 ? (
           <Text className="text-ui-fg-subtle" size="small">Мэдээлэл алга.</Text>
         ) : (
@@ -107,23 +106,20 @@ const ReportsPage = () => {
             {data!.daily.map((d) => (
               <div key={d.date} className="flex items-center gap-3">
                 <span className="text-xs text-ui-fg-subtle w-24 shrink-0">{d.date}</span>
-                <div className="flex-1 bg-ui-bg-subtle rounded h-4 overflow-hidden">
-                  <div className="h-full bg-ui-fg-interactive" style={{ width: `${(d.revenue / maxDay) * 100}%` }} />
-                </div>
-                <span className="text-xs font-medium w-24 text-right shrink-0">{tug(d.revenue)}</span>
-                <span className="text-xs text-ui-fg-subtle w-10 text-right shrink-0">{nf(d.orders)}</span>
+                <Bar value={d.revenue} max={maxDay} tone="interactive" className="flex-1" />
+                <span className="text-xs font-medium w-24 text-right shrink-0 tabular-nums">{tug(d.revenue)}</span>
+                <span className="text-xs text-ui-fg-subtle w-10 text-right shrink-0 tabular-nums">{nf(d.orders)}</span>
               </div>
             ))}
           </div>
         )}
-      </div>
+      </Panel>
 
       {/* By category */}
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-2">
-          <Text weight="plus" size="small">Ангиллаар</Text>
-          <Button variant="secondary" size="small" onClick={() => exportCsv("category")}>CSV</Button>
-        </div>
+      <Panel
+        title="Ангиллаар"
+        actions={<Button variant="secondary" size="small" onClick={() => exportCsv("category")}>CSV</Button>}
+      >
         <Table>
           <Table.Header><Table.Row>
             <Table.HeaderCell>Ангилал</Table.HeaderCell>
@@ -134,20 +130,19 @@ const ReportsPage = () => {
             {(data?.byCategory || []).map((c) => (
               <Table.Row key={c.name}>
                 <Table.Cell>{c.name}</Table.Cell>
-                <Table.Cell className="text-right">{nf(c.qty)}</Table.Cell>
-                <Table.Cell className="text-right font-medium">{tug(c.revenue)}</Table.Cell>
+                <Table.Cell className="text-right tabular-nums">{nf(c.qty)}</Table.Cell>
+                <Table.Cell className="text-right font-medium tabular-nums">{tug(c.revenue)}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table>
-      </div>
+      </Panel>
 
       {/* By product */}
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-2">
-          <Text weight="plus" size="small">Бараагаар (топ 50)</Text>
-          <Button variant="secondary" size="small" onClick={() => exportCsv("product")}>CSV</Button>
-        </div>
+      <Panel
+        title="Бараагаар (топ 50)"
+        actions={<Button variant="secondary" size="small" onClick={() => exportCsv("product")}>CSV</Button>}
+      >
         <Table>
           <Table.Header><Table.Row>
             <Table.HeaderCell>Бараа</Table.HeaderCell>
@@ -158,36 +153,25 @@ const ReportsPage = () => {
             {(data?.byProduct || []).map((p) => (
               <Table.Row key={p.name}>
                 <Table.Cell>{p.name}</Table.Cell>
-                <Table.Cell className="text-right">{nf(p.qty)}</Table.Cell>
-                <Table.Cell className="text-right font-medium">{tug(p.revenue)}</Table.Cell>
+                <Table.Cell className="text-right tabular-nums">{nf(p.qty)}</Table.Cell>
+                <Table.Cell className="text-right font-medium tabular-nums">{tug(p.revenue)}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table>
-      </div>
+      </Panel>
 
       {/* VAT report (10% VAT-inclusive breakdown for accounting) */}
-      <div className="px-6 py-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Text weight="plus" size="small">НӨАТ тайлан</Text>
-          </div>
-          <Button variant="secondary" size="small" onClick={() => exportCsv("vat")}>CSV</Button>
-        </div>
+      <Panel
+        title="НӨАТ тайлан"
+        actions={<Button variant="secondary" size="small" onClick={() => exportCsv("vat")}>CSV</Button>}
+        bodyClassName="p-4"
+      >
         <Text className="text-ui-fg-subtle" size="xsmall">Үнэ НӨАТ багтсан (Монгол, 10%). Нийт {data ? tug(data.totals.revenue) : "…"} = НӨАТгүй {data ? tug(data.totals.net) : "…"} + НӨАТ {data ? tug(data.totals.vat) : "…"}.</Text>
-      </div>
+      </Panel>
     </Container>
   );
 };
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-ui-bg-base px-6 py-5">
-      <Text className="text-ui-fg-subtle" size="small">{label}</Text>
-      <Heading level="h2" className="mt-1">{value}</Heading>
-    </div>
-  );
-}
 
 export const config = defineRouteConfig({
   label: "Тайлан",

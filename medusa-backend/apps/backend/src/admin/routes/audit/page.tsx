@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ClockSolid } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Badge, Button, toast } from "@medusajs/ui";
+import { Container, Text, Table, Badge, Button, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type Entry = { at: number; actor: string; action: string; target?: string; meta?: Record<string, any> };
 
@@ -42,13 +43,12 @@ const AuditPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Аудит лог</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Чухал үйлдлүүд: эрх, багц засвар, биелүүлэлт, контент. (Сүүлийн 500)</Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>
-      </div>
+      <PageHeader
+        title="Аудит лог"
+        description="Чухал үйлдлүүд: эрх, багц засвар, биелүүлэлт, контент. (Сүүлийн 500)"
+        actions={<Button variant="secondary" size="small" onClick={load} disabled={loading}>Сэргээх</Button>}
+      />
+      <Panel>
       <Table>
         <Table.Header>
           <Table.Row>
@@ -74,6 +74,7 @@ const AuditPage = () => {
           ))}
         </Table.Body>
       </Table>
+      </Panel>
     </Container>
   );
 };

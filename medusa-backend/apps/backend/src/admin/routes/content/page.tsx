@@ -1,10 +1,11 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { DocumentText } from "@medusajs/icons";
-import { Container, Heading, Text, Button, Input, Textarea, Label, Switch, IconButton, toast } from "@medusajs/ui";
+import { Container, Text, Button, Input, Textarea, Label, Switch, IconButton, toast } from "@medusajs/ui";
 import { Trash, Plus, ArrowUpMini, ArrowDownMini } from "@medusajs/icons";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader } from "../../lib/ui";
 
 type Bi = { mn: string; en: string };
 type Slide = { kicker: Bi; top: Bi; accent: Bi; desc: Bi; img: string; href: string };
@@ -84,13 +85,11 @@ const ContentPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Контент — Нүүр хуудас</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Hero слайд ба урамшууллын баннерыг MN/EN-ээр удирдана.</Text>
-        </div>
-        <Button variant="primary" onClick={save} isLoading={saving}>Хадгалах</Button>
-      </div>
+      <PageHeader
+        title="Контент — Нүүр хуудас"
+        description="Hero слайд ба урамшууллын баннерыг MN/EN-ээр удирдана."
+        actions={<Button variant="primary" onClick={save} isLoading={saving}>Хадгалах</Button>}
+      />
 
       {/* Hero slides */}
       <div className="px-6 py-4">

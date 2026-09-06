@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { PencilSquare } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Badge, Button, Checkbox, Input, Select, Label, toast } from "@medusajs/ui";
+import { Container, Text, Table, Badge, Button, Checkbox, Input, Select, Label, toast } from "@medusajs/ui";
 import { useEffect, useMemo, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type Cat = { id: string; name: string };
 type Prod = { id: string; title: string; status: string; thumbnail: string; price: number | null; categories: Cat[] };
@@ -118,12 +119,10 @@ const BulkEditPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="px-6 py-4">
-        <Heading level="h1">Багц засвар</Heading>
-        <Text className="text-ui-fg-subtle" size="small">
-          Олон бараа сонгоод үнэ, төлөв, ангиллыг нэг дор өөрчилнө (олон мянган бараанд зориулав).
-        </Text>
-      </div>
+      <PageHeader
+        title="Багц засвар"
+        description="Олон бараа сонгоод үнэ, төлөв, ангиллыг нэг дор өөрчилнө (олон мянган бараанд зориулав)."
+      />
 
       {/* Filters */}
       <div className="flex flex-wrap items-end gap-3 px-6 py-3">
@@ -205,6 +204,7 @@ const BulkEditPage = () => {
       )}
 
       {/* Product table */}
+      <Panel>
       <Table>
         <Table.Header>
           <Table.Row>
@@ -239,6 +239,7 @@ const BulkEditPage = () => {
           ))}
         </Table.Body>
       </Table>
+      </Panel>
 
       {/* Pagination */}
       <div className="flex items-center justify-between px-6 py-3">

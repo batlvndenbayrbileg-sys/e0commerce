@@ -1,9 +1,10 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
-import { Container, Heading, Text, Button, Table, Badge, toast } from "@medusajs/ui";
+import { Container, Text, Button, Table, Badge, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
+import { PageHeader, StatGrid, StatCard, Panel } from "../../lib/ui";
 
 type Overview = {
   orders: number;
@@ -32,13 +33,6 @@ const IcoOrders = () => (<svg {...ico}><path d="M6 7h15l-1.5 9H7.5L6 4H3" /><cir
 const IcoAvg = () => (<svg {...ico}><path d="M4 19V5M4 15l4-4 4 3 8-8" /><path d="M20 6v4h-4" /></svg>);
 const IcoCustomers = () => (<svg {...ico}><circle cx="9" cy="8" r="3.2" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 6.2a3.2 3.2 0 0 1 0 6M18 13.5a5.5 5.5 0 0 1 3 5" /></svg>);
 
-const TONES: Record<string, string> = {
-  green: "bg-ui-tag-green-bg text-ui-tag-green-icon",
-  blue: "bg-ui-tag-blue-bg text-ui-tag-blue-icon",
-  orange: "bg-ui-tag-orange-bg text-ui-tag-orange-icon",
-  purple: "bg-ui-tag-purple-bg text-ui-tag-purple-icon",
-};
-
 const AnalyticsPage = () => {
   const { loading: permLoading, can } = usePermissions();
   const [data, setData] = useState<Overview | null>(null);
@@ -64,33 +58,29 @@ const AnalyticsPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="flex items-center justify-between px-6 py-4">
-        <div>
-          <Heading level="h1">Аналитик</Heading>
-          <Text className="text-ui-fg-subtle" size="small">Борлуулалтын тойм, тэргүүлэх бараа, сүүлийн захиалга.</Text>
-        </div>
-        <Button variant="secondary" size="small" onClick={load} disabled={loading} isLoading={loading}>Сэргээх</Button>
-      </div>
+      <PageHeader
+        title="Аналитик"
+        description="Борлуулалтын тойм, тэргүүлэх бараа, сүүлийн захиалга."
+        actions={<Button variant="secondary" size="small" onClick={load} disabled={loading} isLoading={loading}>Сэргээх</Button>}
+      />
 
       {/* KPI cards */}
-      <div className="px-6 py-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <Stat icon={<IcoRevenue />} tone="green" label="Нийт орлого" value={data ? tug(data.revenue) : ""} loading={loading} />
-          <Stat icon={<IcoOrders />} tone="blue" label="Захиалга" value={data ? nf(data.orders) : ""} loading={loading} />
-          <Stat icon={<IcoAvg />} tone="orange" label="Дундаж захиалга" value={data ? tug(data.avgOrder) : ""} loading={loading} />
-          <Stat icon={<IcoCustomers />} tone="purple" label="Харилцагч" value={data ? nf(data.customers) : ""} loading={loading} />
-        </div>
+      <div>
+        <StatGrid cols={4}>
+          <StatCard icon={<IcoRevenue />} tone="green" label="Нийт орлого" value={data ? tug(data.revenue) : ""} loading={loading} />
+          <StatCard icon={<IcoOrders />} tone="blue" label="Захиалга" value={data ? nf(data.orders) : ""} loading={loading} />
+          <StatCard icon={<IcoAvg />} tone="orange" label="Дундаж захиалга" value={data ? tug(data.avgOrder) : ""} loading={loading} />
+          <StatCard icon={<IcoCustomers />} tone="purple" label="Харилцагч" value={data ? nf(data.customers) : ""} loading={loading} />
+        </StatGrid>
         {data?.capped && (
-          <Text className="text-ui-fg-muted mt-3 block" size="xsmall">
+          <Text className="text-ui-fg-muted px-6 pb-5 block" size="xsmall">
             Орлого/тэргүүлэх бараа нь сүүлийн {nf(data.scanned)} захиалгаас тооцоолсон.
           </Text>
         )}
       </div>
 
       {/* Top products */}
-      <div className="px-6 py-5">
-        <Text weight="plus" size="small" className="mb-3">Тэргүүлэх бараа (орлогоор)</Text>
-        <div className="rounded-lg border border-ui-border-base overflow-hidden">
+      <Panel title="Тэргүүлэх бараа (орлогоор)">
           <Table>
             <Table.Header>
               <Table.Row>
@@ -131,13 +121,10 @@ const AnalyticsPage = () => {
               ))}
             </Table.Body>
           </Table>
-        </div>
-      </div>
+      </Panel>
 
       {/* Recent orders */}
-      <div className="px-6 py-5">
-        <Text weight="plus" size="small" className="mb-3">Сүүлийн захиалга</Text>
-        <div className="rounded-lg border border-ui-border-base overflow-hidden">
+      <Panel title="Сүүлийн захиалга">
           <Table>
             <Table.Header>
               <Table.Row>
@@ -171,25 +158,10 @@ const AnalyticsPage = () => {
               ))}
             </Table.Body>
           </Table>
-        </div>
-      </div>
+      </Panel>
     </Container>
   );
 };
-
-function Stat({ icon, tone, label, value, loading }: { icon: React.ReactNode; tone: string; label: string; value: string; loading: boolean }) {
-  return (
-    <div className="rounded-lg border border-ui-border-base bg-ui-bg-subtle p-4 transition-shadow hover:shadow-elevation-card-rest">
-      <div className="flex items-center justify-between gap-2">
-        <Text className="text-ui-fg-subtle" size="small">{label}</Text>
-        <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${TONES[tone] || TONES.blue}`}>{icon}</span>
-      </div>
-      {loading
-        ? <div className="mt-2 h-8 w-28 rounded bg-ui-bg-component animate-pulse" />
-        : <Heading level="h2" className="mt-2 tabular-nums">{value}</Heading>}
-    </div>
-  );
-}
 
 export const config = defineRouteConfig({
   label: "Аналитик",

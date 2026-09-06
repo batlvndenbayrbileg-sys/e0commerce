@@ -4,6 +4,7 @@ import { Container, Heading, Text, Table, Badge, Select, toast } from "@medusajs
 import { useEffect, useState } from "react";
 import { ROLES, Role } from "../../../lib/rbac";
 import { usePermissions } from "../../lib/perms";
+import { PageHeader, Panel } from "../../lib/ui";
 
 type AdminUser = {
   id: string;
@@ -73,14 +74,12 @@ const TeamPage = () => {
 
   return (
     <Container className="divide-y p-0">
-      <div className="px-6 py-4">
-        <Heading level="h1">Баг ба эрх</Heading>
-        <Text className="text-ui-fg-subtle" size="small">
-          Ажилтнуудад дүр (role) оноож, админ хэсгийн эрхийг хязгаарлана. Дүргүй хэрэглэгч түр зуур бүх эрхтэй (Super Admin) гэж тооцогдоно.
-        </Text>
-      </div>
+      <PageHeader
+        title="Баг ба эрх"
+        description="Ажилтнуудад дүр (role) оноож, админ хэсгийн эрхийг хязгаарлана. Дүргүй хэрэглэгч түр зуур бүх эрхтэй (Super Admin) гэж тооцогдоно."
+      />
 
-      <div className="px-6 py-4">
+      <Panel>
         <Table>
           <Table.Header>
             <Table.Row>
@@ -132,7 +131,7 @@ const TeamPage = () => {
             )}
           </Table.Body>
         </Table>
-      </div>
+      </Panel>
 
       {/* Role reference */}
       <div className="px-6 py-4">
