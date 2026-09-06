@@ -140,7 +140,7 @@ const en: Dict = {
   // cart / checkout / shop two-tone titles
   "cart.titlePre": "Your", "cart.titleAccent": "bag",
   "co.titlePre": "Check", "co.titleAccent": "out", "co.mongolia": "Mongolia",
-  "shop.titlePre": "The", "shop.titleAccent": "collection",
+  "shop.titlePre": "", "shop.titleAccent": "Products",
   // processing
   "proc.missingRef": "Missing payment reference", "proc.verifyFailed": "Payment verification failed",
   "proc.timeout": "Payment is taking longer than expected.", "proc.pendingTitle": "Payment pending",
@@ -305,7 +305,7 @@ const mn: Dict = {
   // cart / checkout / shop two-tone titles
   "cart.titlePre": "Таны", "cart.titleAccent": "сагс",
   "co.titlePre": "", "co.titleAccent": "Төлбөр", "co.mongolia": "Монгол",
-  "shop.titlePre": "", "shop.titleAccent": "Цуглуулга",
+  "shop.titlePre": "", "shop.titleAccent": "Бүтээгдэхүүнүүд",
   // processing
   "proc.missingRef": "Төлбөрийн лавлагаа алга", "proc.verifyFailed": "Төлбөр баталгаажуулж чадсангүй",
   "proc.timeout": "Төлбөр хүлээгдсэнээс удаж байна.", "proc.pendingTitle": "Төлбөр хүлээгдэж байна",
