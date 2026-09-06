@@ -78,7 +78,7 @@ export default async function initial_data_seed({
     input: {
       stores: [
         {
-          name: "Default Store",
+          name: "NARAN",
           supported_currencies: [
             {
               currency_code: "eur",
