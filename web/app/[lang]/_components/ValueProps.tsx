@@ -1,7 +1,8 @@
 import { tFor, type Lang } from "@/lib/i18n";
 import { Reveal } from "./Reveal";
+import { TiltCard } from "./TiltCard";
 
-const ico = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+const ico = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
 const Truck = () => (<svg {...ico}><path d="M3 6h11v9H3z"/><path d="M14 9h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>);
 const Returns = () => (<svg {...ico}><path d="M3 9a9 9 0 0 1 15-3l3 3"/><path d="M21 4v5h-5"/><path d="M21 15a9 9 0 0 1-15 3l-3-3"/><path d="M3 20v-5h5"/></svg>);
@@ -18,16 +19,23 @@ const ITEMS = [
 export function ValueProps({ lang }: { lang: Lang }) {
   const t = tFor(lang);
   return (
-    <section className="mt-9">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+    <section className="mt-10 sm:mt-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 items-stretch">
         {ITEMS.map(({ Icon, k, s }, i) => (
-          <Reveal key={k} delay={i * 0.07} y={20}
-            className="group flex items-center gap-3 bg-white border border-line rounded-2xl p-3.5 sm:p-4 shadow-soft transition-all duration-200 ease-elegant hover:-translate-y-0.5 hover:shadow-card hover:border-ink/15">
-            <span className="w-10 h-10 rounded-full bg-surface-2 grid place-items-center text-ink shrink-0 transition-colors group-hover:bg-accent-soft group-hover:text-accent-deep"><Icon /></span>
-            <div className="min-w-0">
-              <div className="font-semibold text-[13px] leading-tight">{t(k)}</div>
-              <div className="tiny truncate">{t(s)}</div>
-            </div>
+          <Reveal key={k} delay={i * 0.07} y={22} className="h-full">
+            <TiltCard className="group h-full flex items-center gap-3.5 sm:gap-4 bg-white border border-line rounded-[1.5rem] p-4 sm:p-5 elev-3d elev-3d-hover transition-colors duration-200 hover:border-accent/30">
+              <span
+                className="depth relative overflow-hidden w-12 h-12 sm:w-14 sm:h-14 rounded-2xl grid place-items-center text-accent-deep shrink-0 transition-colors duration-300 group-hover:text-white shadow-[inset_0_1px_0_rgba(255,255,255,.8),0_10px_20px_-10px_rgba(232,85,10,.45)]"
+                style={{ background: "linear-gradient(150deg,#FFEAD9,#FFFFFF)" }}
+              >
+                <span className="hover-icon-bg absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(150deg,#FF8A3D,#E8550A)" }} aria-hidden />
+                <span className="relative"><Icon /></span>
+              </span>
+              <div className="depth-sm min-w-0">
+                <div className="font-semibold text-[14px] sm:text-[15px] leading-tight">{t(k)}</div>
+                <div className="text-[12px] sm:text-[12.5px] text-muted mt-0.5 truncate">{t(s)}</div>
+              </div>
+            </TiltCard>
           </Reveal>
         ))}
       </div>

@@ -11,6 +11,7 @@ import { PRODUCT_IMG, HERO_IMG, FILM_IMG, productImg } from "@/lib/images";
 import { NewsletterForm } from "./_components/NewsletterForm";
 import { Reveal } from "./_components/Reveal";
 import { ValueProps } from "./_components/ValueProps";
+import { CategoryRail } from "./_components/CategoryRail";
 import { Marquee } from "./_components/Marquee";
 import { tFor, type Lang } from "@/lib/i18n";
 
@@ -81,22 +82,13 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
           </section>
 
           {/* ===================== CATEGORY ===================== */}
-          <section className="mt-9">
-            <Reveal className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-[22px] sm:text-[24px] tracking-tight">{t("home.category")}</h2>
+          <section className="mt-10 sm:mt-12">
+            <Reveal className="flex items-end justify-between mb-5">
+              <h2 className="font-display text-[24px] sm:text-[28px] tracking-tight">{t("home.category")}</h2>
               <Link href="/shop" className="text-accent text-[13px] font-semibold hover:text-accent-deep transition-colors">{t("common.seeAll")}</Link>
             </Reveal>
-            <Reveal delay={0.08} className="flex gap-2.5 overflow-x-auto no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
-              {CATS.map(c => (
-                <Link key={c.key} href={c.href}
-                  className="flex items-center gap-2.5 bg-white border border-line rounded-pill pl-1.5 pr-4 py-1.5 shadow-soft hover:border-ink/30 hover:-translate-y-0.5 hover:shadow-card active:scale-95 transition-all duration-200 ease-elegant whitespace-nowrap shrink-0">
-                  <span className="relative w-9 h-9 rounded-full overflow-hidden bg-surface-3 grid place-items-center shrink-0">
-                    <Photo src={c.img} alt="" fallback={<span className="w-full h-full bg-surface-3"/>}
-                      imgClassName="w-full h-full object-cover"/>
-                  </span>
-                  <span className="text-[14px] font-medium">{t(c.key)}</span>
-                </Link>
-              ))}
+            <Reveal delay={0.08}>
+              <CategoryRail items={CATS.map(c => ({ label: t(c.key), href: c.href, img: c.img }))} />
             </Reveal>
           </section>
 
