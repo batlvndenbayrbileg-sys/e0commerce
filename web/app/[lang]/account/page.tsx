@@ -117,7 +117,7 @@ export default function AccountPage() {
             <div className="flex items-center gap-4">
               <span className="w-16 h-16 rounded-full grid place-items-center text-white font-display text-[22px] shadow-[0_10px_24px_-8px_rgba(232,85,10,.55)]"
                 style={{ background: "linear-gradient(135deg,#FF8A3D,#E8550A)" }}>
-                {user.firstName[0]}{user.lastName[0]}
+                {user.firstName?.[0]}{user.lastName?.[0]}
               </span>
               <div className="min-w-0">
                 <h1 className="font-display text-[24px] tracking-tight truncate">{user.firstName} {user.lastName}</h1>

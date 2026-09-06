@@ -15,6 +15,11 @@ const nextConfig = {
   reactStrictMode: true,
   // Standalone output → small production image (only the needed node_modules).
   output: "standalone",
+  // Drop console.* (except errors/warnings) from the production client bundle —
+  // smaller JS and no dev logging cost in the browser.
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error", "warn"] } : false,
+  },
   images: {
     // Serve modern formats + responsive sizes; product images are local (public/)
     // in dev and move to R2/CDN in prod (remotePatterns above).

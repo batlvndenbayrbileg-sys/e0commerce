@@ -13,6 +13,9 @@ export function SmoothScroll() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Touch devices already have buttery native momentum scrolling; intercepting it
+    // with JS only adds perceptible lag. Run Lenis on fine-pointer (desktop) only.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
     const lenis = new Lenis({ duration: 1.05, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
     lenisRef.current = lenis;
     let raf = 0;
