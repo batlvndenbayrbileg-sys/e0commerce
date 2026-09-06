@@ -16,12 +16,34 @@ export function SmoothScroll() {
     // Touch devices already have buttery native momentum scrolling; intercepting it
     // with JS only adds perceptible lag. Run Lenis on fine-pointer (desktop) only.
     if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    const lenis = new Lenis({ duration: 1.05, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    // Premium glide: framerate-independent lerp smoothing (modern Lenis default
+    // style) gives a soft, continuous deceleration that settles gracefully —
+    // smoother than duration+easing, without feeling floaty or laggy.
+    const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, smoothWheel: true });
     lenisRef.current = lenis;
     let raf = 0;
     const loop = (time: number) => { lenis.raf(time); raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); lenis.destroy(); lenisRef.current = null; };
+
+    // Smoothly glide to in-page anchors (#section) instead of the browser's instant jump.
+    const onAnchorClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement)?.closest?.('a[href^="#"]') as HTMLAnchorElement | null;
+      if (!a) return;
+      const id = a.getAttribute("href");
+      if (!id || id === "#") return;
+      const target = document.querySelector(id);
+      if (!target) return;
+      e.preventDefault();
+      lenis.scrollTo(target as HTMLElement, { offset: -80, duration: 1.4 });
+    };
+    document.addEventListener("click", onAnchorClick);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("click", onAnchorClick);
+      lenis.destroy();
+      lenisRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
