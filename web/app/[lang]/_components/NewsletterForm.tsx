@@ -13,7 +13,7 @@ export function NewsletterForm() {
       onSubmit={(e) => { e.preventDefault(); showToast(t("news.subscribed")); setEmail(""); }}
       className="relative z-10 flex flex-col gap-3"
     >
-      <div className="flex gap-2 bg-white border border-line rounded-pill p-1.5 shadow-soft transition-colors hover:border-ink/20 focus-within:border-accent">
+      <div className="flex gap-2 bg-surface-2 border border-line rounded-pill p-1.5 transition-colors hover:border-ink/20 focus-within:border-accent focus-within:bg-white">
         <input
           type="email" required value={email} onChange={e => setEmail(e.target.value)}
           placeholder={t("news.placeholder")}
