@@ -35,11 +35,12 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.55, delay: index * 0.05, ease: [0.22, 0.61, 0.36, 1] }}
+      /* Cap the stagger so items deep in a large grid don't lag seconds behind. */
+      transition={{ duration: 0.55, delay: Math.min(index, 8) * 0.045, ease: [0.22, 0.61, 0.36, 1] }}
     >
       <Link href={`/product/${product.slug}`} className="group block">
         {/* Image — kept clean; controls overlay, product info sits below */}
-        <div className="relative overflow-hidden rounded-[1.4rem] bg-graphite aspect-[4/5] transition-all duration-500 group-hover:shadow-lift">
+        <div className="relative overflow-hidden rounded-[1.4rem] bg-graphite aspect-[4/5] transition-[transform,box-shadow] duration-500 ease-elegant group-hover:-translate-y-1 group-hover:shadow-deep">
           <Photo
             src={product.image ?? productImg(product.id)}
             alt={product.name}
@@ -61,21 +62,21 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           {/* wishlist */}
           <button
             onClick={(e) => { e.preventDefault(); toggleWish(product.id); }}
-            className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full grid place-items-center backdrop-blur transition-all ${
-              wished ? "text-red-500 bg-white" : "text-ink bg-white/85 hover:bg-white"
+            className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full grid place-items-center backdrop-blur transition-all duration-200 ease-elegant active:scale-90 ${
+              wished ? "text-red-500 bg-white scale-105" : "text-ink bg-white/85 hover:bg-white hover:scale-105"
             }`}
             aria-label={t("nav.wishlist")}
           >
             <HeartIcon width={16} height={16} filled={wished}/>
           </button>
 
-          {/* quick view — desktop hover */}
+          {/* quick view — desktop hover (rises in with the hover) */}
           {!soldOut && (
             <button
               onClick={(e) => { e.preventDefault(); openQuickView(product); }}
-              className="hidden lg:flex absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              className="hidden lg:flex absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 justify-center opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-elegant"
             >
-              <span className="bg-white/90 backdrop-blur text-ink text-[12px] font-semibold uppercase tracking-wide px-4 h-9 rounded-pill grid place-items-center shadow-soft hover:bg-white">
+              <span className="bg-white/90 backdrop-blur text-ink text-[12px] font-semibold uppercase tracking-wide px-4 h-9 rounded-pill grid place-items-center shadow-soft hover:bg-white active:scale-95 transition-transform">
                 {t("common.quickView")}
               </span>
             </button>
@@ -85,8 +86,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           <button
             disabled={soldOut}
             onClick={(e) => { e.preventDefault(); if (soldOut) return; add(product); flyToCart(e.currentTarget, product.accent); showToast(`${product.name} · ${t("common.addToBag")}`); }}
-            className={`absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full grid place-items-center transition-all ${
-              soldOut ? "bg-white/40 text-ink/40 cursor-not-allowed" : "bg-ink text-white hover:bg-accent hover:scale-105"
+            className={`absolute right-3 bottom-3 z-10 w-10 h-10 rounded-full grid place-items-center transition-all duration-200 ease-elegant ${
+              soldOut ? "bg-white/40 text-ink/40 cursor-not-allowed" : "bg-ink text-white hover:bg-accent hover:scale-110 active:scale-95 shadow-soft"
             }`}
             aria-label={soldOut ? t("common.soldOut") : t("common.addToBag")}
           >

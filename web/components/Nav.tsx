@@ -63,7 +63,7 @@ export function Nav() {
   }
 
   const Bag = (
-    <button onClick={openCart} data-cart-anchor className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist transition" aria-label={t("nav.cart")}>
+    <button onClick={openCart} data-cart-anchor className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist hover:-translate-y-px active:scale-90 transition-all duration-200 ease-elegant" aria-label={t("nav.cart")}>
       <BagIcon width={18} height={18}/>
       <AnimatePresence>
         {count > 0 && (
@@ -99,7 +99,8 @@ export function Nav() {
       <nav className="hidden lg:flex items-center gap-4 bg-white/85 backdrop-blur rounded-pill pl-6 pr-2 py-2.5 border border-line shadow-soft">
         <div className="flex items-center gap-6">
           {[["/shop","nav.shop"],["/shop?category=Fragrance","cat.Fragrance"],["/shop?category=Skincare","cat.Skincare"],["/shop?category=Makeup","cat.Makeup"]].map(([h,k]) => (
-            <Link key={k} href={h} className={`text-[12px] uppercase tracking-[.12em] font-medium transition-colors ${pathname===h?"text-ink":"text-muted hover:text-ink"}`}>{t(k)}</Link>
+            <Link key={k} href={h}
+              className={`relative text-[12px] uppercase tracking-[.12em] font-medium transition-colors after:absolute after:left-0 after:-bottom-1.5 after:h-[1.5px] after:bg-accent after:transition-all after:duration-300 after:ease-elegant hover:after:w-full ${pathname===h?"text-ink after:w-full":"text-muted hover:text-ink after:w-0"}`}>{t(k)}</Link>
           ))}
         </div>
         <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-[22px] tracking-[.04em] leading-none">NARAN</Link>
@@ -111,9 +112,9 @@ export function Nav() {
           </form>
           <LangToggle/>
           {Bag}
-          <Link href={user ? "/account" : "/auth"} aria-label={t("nav.account")} className="flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:opacity-90 transition">
+          <Link href={user ? "/account" : "/auth"} aria-label={t("nav.account")} className="group flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:-translate-y-px hover:shadow-lift active:scale-[.98] transition-all duration-200 ease-elegant">
             {user ? user.firstName : t("nav.signin")}
-            <span className="w-8 h-8 rounded-full bg-white/15 grid place-items-center"><UserIcon width={15} height={15}/></span>
+            <span className="w-8 h-8 rounded-full bg-white/15 grid place-items-center transition-colors group-hover:bg-accent"><UserIcon width={15} height={15}/></span>
           </Link>
         </div>
       </nav>
