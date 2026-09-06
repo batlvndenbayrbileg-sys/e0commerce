@@ -1,4 +1,5 @@
 import { tFor, type Lang } from "@/lib/i18n";
+import { Reveal } from "./Reveal";
 
 const ico = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 
@@ -19,14 +20,15 @@ export function ValueProps({ lang }: { lang: Lang }) {
   return (
     <section className="mt-9">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
-        {ITEMS.map(({ Icon, k, s }) => (
-          <div key={k} className="flex items-center gap-3 bg-white border border-line rounded-2xl p-3.5 sm:p-4 shadow-soft">
-            <span className="w-10 h-10 rounded-full bg-surface-2 grid place-items-center text-ink shrink-0"><Icon /></span>
+        {ITEMS.map(({ Icon, k, s }, i) => (
+          <Reveal key={k} delay={i * 0.07} y={20}
+            className="group flex items-center gap-3 bg-white border border-line rounded-2xl p-3.5 sm:p-4 shadow-soft transition-all duration-200 ease-elegant hover:-translate-y-0.5 hover:shadow-card hover:border-ink/15">
+            <span className="w-10 h-10 rounded-full bg-surface-2 grid place-items-center text-ink shrink-0 transition-colors group-hover:bg-accent-soft group-hover:text-accent-deep"><Icon /></span>
             <div className="min-w-0">
               <div className="font-semibold text-[13px] leading-tight">{t(k)}</div>
               <div className="tiny truncate">{t(s)}</div>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     </section>

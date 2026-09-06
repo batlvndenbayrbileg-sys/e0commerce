@@ -82,14 +82,14 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
 
           {/* ===================== CATEGORY ===================== */}
           <section className="mt-9">
-            <div className="flex items-center justify-between mb-4">
+            <Reveal className="flex items-center justify-between mb-4">
               <h2 className="font-display text-[22px] sm:text-[24px] tracking-tight">{t("home.category")}</h2>
-              <Link href="/shop" className="text-accent text-[13px] font-semibold">{t("common.seeAll")}</Link>
-            </div>
-            <div className="flex gap-2.5 overflow-x-auto no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
+              <Link href="/shop" className="text-accent text-[13px] font-semibold hover:text-accent-deep transition-colors">{t("common.seeAll")}</Link>
+            </Reveal>
+            <Reveal delay={0.08} className="flex gap-2.5 overflow-x-auto no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0">
               {CATS.map(c => (
                 <Link key={c.key} href={c.href}
-                  className="flex items-center gap-2.5 bg-white border border-line rounded-pill pl-1.5 pr-4 py-1.5 shadow-soft hover:border-ink/30 transition whitespace-nowrap shrink-0">
+                  className="flex items-center gap-2.5 bg-white border border-line rounded-pill pl-1.5 pr-4 py-1.5 shadow-soft hover:border-ink/30 hover:-translate-y-0.5 hover:shadow-card active:scale-95 transition-all duration-200 ease-elegant whitespace-nowrap shrink-0">
                   <span className="relative w-9 h-9 rounded-full overflow-hidden bg-surface-3 grid place-items-center shrink-0">
                     <Photo src={c.img} alt="" fallback={<span className="w-full h-full bg-surface-3"/>}
                       imgClassName="w-full h-full object-cover"/>
@@ -97,7 +97,7 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
                   <span className="text-[14px] font-medium">{t(c.key)}</span>
                 </Link>
               ))}
-            </div>
+            </Reveal>
           </section>
 
           {/* ===================== VALUE PROPS ===================== */}
@@ -105,10 +105,10 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
 
           {/* ===================== RECOMMEND ===================== */}
           <section className="mt-9">
-            <div className="flex items-center justify-between mb-4">
+            <Reveal className="flex items-center justify-between mb-4">
               <h2 className="font-display text-[22px] sm:text-[24px] tracking-tight">{t("home.recommended")}</h2>
-              <Link href="/shop" className="text-accent text-[13px] font-semibold">{t("common.seeAll")}</Link>
-            </div>
+              <Link href="/shop" className="text-accent text-[13px] font-semibold hover:text-accent-deep transition-colors">{t("common.seeAll")}</Link>
+            </Reveal>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {products.slice(0, 8).map((p, i) => <ProductCard key={p.id} product={p} index={i}/>)}
             </div>
@@ -124,7 +124,7 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
       {/* ===================== PROMO BANNER ===================== */}
       <section className="py-16 lg:py-24">
         <div className="container">
-          <Reveal>
+          <Reveal blur>
             <div className="relative overflow-hidden rounded-[2rem] bg-accent text-white grid grid-cols-1 lg:grid-cols-2 items-center min-h-[280px]">
               <div className="absolute -right-20 -bottom-20 w-72 h-72 rounded-full bg-white/15 blur-2xl"/>
               <div className="relative z-10 p-8 sm:p-12">
@@ -174,7 +174,7 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
       {/* ===================== NEWSLETTER ===================== */}
       <section className="pb-16 lg:pb-24">
         <div className="container">
-          <div className="relative overflow-hidden bg-ink text-white rounded-[2rem] p-8 sm:p-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center grainy">
+          <Reveal blur className="relative overflow-hidden bg-ink text-white rounded-[2rem] p-8 sm:p-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center grainy">
             <div className="absolute -right-24 -top-24 w-[420px] h-[420px] rounded-full bg-accent/30 blur-3xl"/>
             <div className="relative z-10">
               <span className="eyebrow text-white/55">{t("home.newsKicker")}</span>
@@ -184,7 +184,7 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
               <p className="text-white/65 mt-4 max-w-[380px]">{t("home.newsDesc")}</p>
             </div>
             <NewsletterForm />
-          </div>
+          </Reveal>
         </div>
       </section>
 
