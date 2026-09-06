@@ -102,22 +102,26 @@ export function Nav() {
         {Bag}
       </div>
 
-      {/* ---------- Desktop bar — floating glass pill ---------- */}
-      <nav className="hidden lg:flex items-center gap-4 bg-white/65 backdrop-blur-xl rounded-pill pl-6 pr-2 py-2.5 border border-white/60 ring-1 ring-black/[.04] shadow-[0_10px_34px_-16px_rgba(10,10,11,.28)]">
-        <div className="flex items-center gap-6">
-          {[["/shop","nav.shop"],["/shop?category=Fragrance","cat.Fragrance"],["/shop?category=Skincare","cat.Skincare"],["/shop?category=Makeup","cat.Makeup"]].map(([h,k]) => (
-            <Link key={k} href={h}
-              className={`relative text-[12px] uppercase tracking-[.12em] font-medium transition-colors after:absolute after:left-0 after:-bottom-1.5 after:h-[1.5px] after:bg-accent after:transition-all after:duration-300 after:ease-elegant hover:after:w-full ${pathname===h?"text-ink after:w-full":"text-muted hover:text-ink after:w-0"}`}>{t(k)}</Link>
+      {/* ---------- Desktop bar — floating glass pill ----------
+          3-column grid (links · centered logo · controls) so the centered logo
+          always has reserved space and can never be overlapped by the side
+          content. Secondary links, search width and the account name scale down
+          between lg and xl so nothing ever collides at tighter widths. */}
+      <nav className="hidden lg:grid grid-cols-[auto_1fr_auto] items-center gap-3 xl:gap-4 bg-white/65 backdrop-blur-xl rounded-pill pl-5 xl:pl-6 pr-2 py-2.5 border border-white/60 ring-1 ring-black/[.04] shadow-[0_10px_34px_-16px_rgba(10,10,11,.28)]">
+        <div className="flex items-center gap-5 xl:gap-6 min-w-0">
+          {[["/shop","nav.shop",true],["/shop?category=Fragrance","cat.Fragrance",false],["/shop?category=Skincare","cat.Skincare",false],["/shop?category=Makeup","cat.Makeup",false]].map(([h,k,pri]) => (
+            <Link key={k as string} href={h as string}
+              className={`relative whitespace-nowrap text-[12px] uppercase tracking-[.12em] font-medium transition-colors after:absolute after:left-0 after:-bottom-1.5 after:h-[1.5px] after:bg-accent after:transition-all after:duration-300 after:ease-elegant hover:after:w-full ${pri ? "inline-flex" : "hidden xl:inline-flex"} ${pathname===h?"text-ink after:w-full":"text-muted hover:text-ink after:w-0"}`}>{t(k as string)}</Link>
           ))}
         </div>
 
-        <Link href="/" className="group absolute left-1/2 -translate-x-1/2 flex items-center gap-2 font-display text-[22px] tracking-[.04em] leading-none">
+        <Link href="/" className="group justify-self-center flex items-center gap-2 font-display text-[20px] xl:text-[22px] tracking-[.04em] leading-none whitespace-nowrap">
           <span className="w-2 h-2 rounded-full bg-accent transition-transform duration-300 ease-spring group-hover:scale-125"/>
           NARAN
         </Link>
 
-        <div className="flex items-center gap-2.5 ml-auto">
-          <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition-all duration-300 w-[200px] focus-within:w-[260px]">
+        <div className="flex items-center gap-2 xl:gap-2.5 justify-self-end">
+          <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition-all duration-300 w-[150px] xl:w-[200px] focus-within:w-[210px] xl:focus-within:w-[260px]">
             <button type="submit" className="text-subtle hover:text-ink shrink-0 active:scale-90 transition" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
             <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")} data-search-input
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
@@ -125,8 +129,8 @@ export function Nav() {
           <LangToggle/>
           {Wish}
           {Bag}
-          <Link href={user ? "/account" : "/auth"} aria-label={t("nav.account")} className="group flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:-translate-y-px hover:shadow-lift active:scale-[.98] transition-all duration-200 ease-elegant">
-            {user ? user.firstName : t("nav.signin")}
+          <Link href={user ? "/account" : "/auth"} aria-label={t("nav.account")} className="group flex items-center gap-2.5 bg-ink text-white rounded-pill pl-1.5 xl:pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:-translate-y-px hover:shadow-lift active:scale-[.98] transition-all duration-200 ease-elegant">
+            <span className="hidden xl:inline">{user ? user.firstName : t("nav.signin")}</span>
             <span className="w-8 h-8 rounded-full bg-white/15 grid place-items-center transition-colors group-hover:bg-accent"><UserIcon width={15} height={15}/></span>
           </Link>
         </div>
