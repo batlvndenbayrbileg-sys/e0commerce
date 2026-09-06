@@ -1,9 +1,12 @@
 "use client";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCart, useOrders } from "@/lib/store";
 import { useT, useLang } from "@/components/LangProvider";
 import { wire } from "@/lib/wire";
+
+const EASE: [number, number, number, number] = [0.22, 0.61, 0.36, 1];
 
 function Processing() {
   const t = useT();
@@ -59,35 +62,53 @@ function Processing() {
     tick();
   }, [pi, addOrder, clear, router]);
 
+  const state = review ? "review" : error ? "error" : "loading";
+
   return (
     <div className="min-h-screen grid place-items-center p-6 mesh-light">
-      <div className="bg-white rounded-3xl p-10 max-w-[460px] w-full border border-line shadow-lift text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="bg-white rounded-3xl p-10 max-w-[460px] w-full border border-line shadow-lift text-center"
+      >
         <span className="font-display text-[22px] tracking-[.04em]">NARAN</span>
-        {review ? (
-          <>
-            <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-accent-soft grid place-items-center text-accent text-3xl">✓</div>
-            <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.reviewTitle")}</h1>
-            <p className="text-muted mt-3">{t("proc.reviewDesc")}</p>
-            <button onClick={() => router.push(`/${lang}/account`)} className="btn btn-primary mt-6">{t("proc.reviewCta")}</button>
-          </>
-        ) : !error ? (
-          <>
-            <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full border-4 border-surface-3 border-t-accent animate-spin"/>
-            <h1 className="font-display text-[26px] uppercase tracking-tight">{t("proc.title")}</h1>
-            <p className="text-muted mt-3">{t("proc.desc")}</p>
-            <div className="mt-5 inline-flex items-center gap-2 text-[12px] text-muted bg-surface-2 px-3 py-1.5 rounded-pill">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"/> {t("proc.waiting")}
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-surface-2 grid place-items-center text-2xl">!</div>
-            <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.pendingTitle")}</h1>
-            <p className="text-muted mt-3">{error}</p>
-            <button onClick={() => router.push(`/${lang}/cart`)} className="btn btn-primary mt-6">{t("proc.backToCart")}</button>
-          </>
-        )}
-      </div>
+        <AnimatePresence mode="wait" initial={false}>
+          {state === "review" ? (
+            <motion.div key="review" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35, ease: EASE }}>
+              <motion.div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-accent-soft grid place-items-center text-accent-deep"
+                initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 320, damping: 18 }}>
+                <svg width="34" height="34" viewBox="0 0 52 52" fill="none"><path d="M14 27 l8 8 l16 -18" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </motion.div>
+              <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.reviewTitle")}</h1>
+              <p className="text-muted mt-3">{t("proc.reviewDesc")}</p>
+              <button onClick={() => router.push(`/${lang}/account`)} className="btn btn-primary mt-6">{t("proc.reviewCta")}</button>
+            </motion.div>
+          ) : state === "loading" ? (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35, ease: EASE }}>
+              {/* dual-ring loader: soft track + accent arc spinning */}
+              <div className="my-8 mx-auto relative w-[72px] h-[72px]">
+                <div className="absolute inset-0 rounded-full border-4 border-surface-3"/>
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-accent border-r-accent animate-spin"/>
+                <span className="absolute inset-0 grid place-items-center"><span className="w-2.5 h-2.5 rounded-full bg-accent animate-pulse"/></span>
+              </div>
+              <h1 className="font-display text-[26px] uppercase tracking-tight">{t("proc.title")}</h1>
+              <p className="text-muted mt-3">{t("proc.desc")}</p>
+              <div className="mt-5 inline-flex items-center gap-2 text-[12px] text-muted bg-surface-2 px-3 py-1.5 rounded-pill">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"/> {t("proc.waiting")}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div key="error" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35, ease: EASE }}>
+              <motion.div className="my-8 mx-auto w-[72px] h-[72px] rounded-full bg-surface-2 grid place-items-center text-2xl text-ink/60"
+                initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 320, damping: 18 }}>!</motion.div>
+              <h1 className="font-display text-[24px] uppercase tracking-tight">{t("proc.pendingTitle")}</h1>
+              <p className="text-muted mt-3">{error}</p>
+              <button onClick={() => router.push(`/${lang}/cart`)} className="btn btn-primary mt-6">{t("proc.backToCart")}</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }
