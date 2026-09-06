@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { UsersSolid } from "@medusajs/icons";
-import { Container, Heading, Text, Table, Badge, Select, Button, toast } from "@medusajs/ui";
+import { Container, Heading, Text, Table, Badge, Select, toast } from "@medusajs/ui";
 import { useEffect, useState } from "react";
 import { ROLES, Role } from "../../../lib/rbac";
 import { usePermissions } from "../../lib/perms";
