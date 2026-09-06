@@ -6,13 +6,18 @@ export function LegalPage({ title, updated, children }: { title: string; updated
   return (
     <>
       <div className="px-3 pt-3 sm:px-4 sm:pt-4 lg:px-5 lg:pt-5 pb-2 mesh-light min-h-screen">
-        <div className="max-w-[820px] mx-auto">
+        {/* Nav gets the full page width (like every other page) — its responsive
+            breakpoints assume it; constraining it to a narrow column made the
+            desktop bar overlap. Only the reading content is capped at 820px. */}
+        <div className="max-w-[1280px] mx-auto">
           <Nav />
-          <div className="card p-7 sm:p-10 my-6">
-            <h1 className="font-display text-[30px] sm:text-[40px] uppercase tracking-tight leading-[.95] mb-2">{title}</h1>
-            <p className="tiny mb-8">Сүүлд шинэчилсэн: {updated}</p>
-            <div className="legal-prose text-[15px] leading-[1.75] text-muted space-y-5">
-              {children}
+          <div className="max-w-[820px] mx-auto">
+            <div className="card p-7 sm:p-10 my-6">
+              <h1 className="font-display text-[30px] sm:text-[40px] uppercase tracking-tight leading-[.95] mb-2">{title}</h1>
+              <p className="tiny mb-8">Сүүлд шинэчилсэн: {updated}</p>
+              <div className="legal-prose text-[15px] leading-[1.75] text-muted space-y-5">
+                {children}
+              </div>
             </div>
           </div>
         </div>
