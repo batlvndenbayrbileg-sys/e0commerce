@@ -88,7 +88,7 @@ export function QuickViewModal() {
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
             role="dialog" aria-modal="true" aria-label={product.name}
-            className="relative w-[min(820px,96vw)] max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-deep grid grid-cols-1 sm:grid-cols-2"
+            className="relative w-[min(820px,96vw)] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-white rounded-3xl shadow-deep grid grid-cols-1 sm:grid-cols-2"
           >
             <button ref={closeRef} onClick={close} aria-label={t("common.close")}
               className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full grid place-items-center bg-white/85 backdrop-blur hover:bg-white shadow-soft text-xl leading-none">×</button>
@@ -153,14 +153,14 @@ export function QuickViewModal() {
                 </div>
               )}
 
-              {/* Actions */}
-              <div className="flex gap-2.5 mt-6">
+              {/* Actions — stacked full-width so long labels never overflow */}
+              <div className="flex flex-col gap-2.5 mt-6">
                 <button disabled={soldOut} onClick={(e) => handleAdd(e.currentTarget)}
-                  className="btn btn-dark flex-1 justify-center disabled:opacity-50">
+                  className="btn btn-dark w-full justify-center disabled:opacity-50">
                   {soldOut ? t("common.soldOut") : t("common.addToBag")}
                 </button>
                 <Link href={`/product/${product.slug}`} onClick={close}
-                  className="btn btn-outline justify-center">
+                  className="btn btn-outline w-full justify-center">
                   {t("common.viewDetails")}
                   <span className="arrow-cap !bg-ink !text-white"><ArrowUpRight width={14} height={14}/></span>
                 </Link>
