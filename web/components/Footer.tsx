@@ -33,7 +33,7 @@ const PhoneIcon = (p: any) => (
 export function Footer() {
   const t = useT();
   return (
-    <footer className="relative z-10 mx-3 mb-3 overflow-hidden rounded-[1.75rem] border border-line bg-white px-6 pt-12 pb-7 text-ink shadow-[0_24px_60px_-40px_rgba(232,85,10,.35)] sm:mx-4 sm:rounded-[2.25rem] sm:px-10 lg:mx-5">
+    <footer className="relative z-10 hidden lg:block mx-3 mb-3 overflow-hidden rounded-[1.75rem] border border-line bg-white px-6 pt-12 pb-7 text-ink shadow-[0_24px_60px_-40px_rgba(232,85,10,.35)] sm:mx-4 sm:rounded-[2.25rem] sm:px-10 lg:mx-5">
       {/* faint warm corner bloom */}
       <div className="pointer-events-none absolute -top-24 right-[8%] h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
 
