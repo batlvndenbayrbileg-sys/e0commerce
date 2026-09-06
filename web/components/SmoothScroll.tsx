@@ -19,7 +19,7 @@ export function SmoothScroll() {
     // Premium glide: framerate-independent lerp smoothing (modern Lenis default
     // style) gives a soft, continuous deceleration that settles gracefully —
     // smoother than duration+easing, without feeling floaty or laggy.
-    const lenis = new Lenis({ lerp: 0.1, wheelMultiplier: 1, smoothWheel: true });
+    const lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 1, smoothWheel: true });
     lenisRef.current = lenis;
     let raf = 0;
     const loop = (time: number) => { lenis.raf(time); raf = requestAnimationFrame(loop); };
