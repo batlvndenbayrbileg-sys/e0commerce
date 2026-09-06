@@ -166,14 +166,17 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
       {/* ===================== NEWSLETTER ===================== */}
       <section className="pb-16 lg:pb-24">
         <div className="container">
-          <Reveal blur className="relative overflow-hidden bg-ink text-white rounded-[2rem] p-8 sm:p-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center grainy">
-            <div className="absolute -right-24 -top-24 w-[420px] h-[420px] rounded-full bg-accent/30 blur-3xl"/>
+          <Reveal blur
+            className="relative overflow-hidden text-ink rounded-[2rem] p-8 sm:p-14 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center border border-accent/20 shadow-soft bg-[linear-gradient(135deg,#FFF7F0_0%,#FFEAD9_52%,#FFDBC0_100%)]">
+            {/* warm ambient glows */}
+            <div className="absolute -right-24 -top-24 w-[420px] h-[420px] rounded-full bg-accent/25 blur-3xl pointer-events-none"/>
+            <div className="absolute -left-20 -bottom-24 w-[320px] h-[320px] rounded-full bg-accent/10 blur-3xl pointer-events-none"/>
             <div className="relative z-10">
-              <span className="eyebrow text-white/55">{t("home.newsKicker")}</span>
-              <h2 className="font-display text-[32px] sm:text-[44px] tracking-tight mt-3 leading-[.95]">
+              <span className="eyebrow text-accent-deep">{t("home.newsKicker")}</span>
+              <h2 className="font-display text-[32px] sm:text-[44px] tracking-tight mt-3 leading-[.95] text-ink">
                 {t("home.newsTitle")}
               </h2>
-              <p className="text-white/65 mt-4 max-w-[380px]">{t("home.newsDesc")}</p>
+              <p className="text-ink/70 mt-4 max-w-[400px]">{t("home.newsDesc")}</p>
             </div>
             <NewsletterForm />
           </Reveal>
