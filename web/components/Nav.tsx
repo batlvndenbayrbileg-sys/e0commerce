@@ -3,18 +3,11 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { SearchIcon, BagIcon, UserIcon } from "./Icons";
-import { useAuth, useCart, useUI } from "@/lib/store";
+import { SearchIcon, BagIcon, UserIcon, HeartIcon } from "./Icons";
+import { useAuth, useCart, useWish, useUI } from "@/lib/store";
 import { useT, useLang } from "./LangProvider";
 import { LangToggle } from "./LangToggle";
 
-function Bell({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/>
-    </svg>
-  );
-}
 function Sliders({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -23,21 +16,38 @@ function Sliders({ size = 18 }: { size?: number }) {
   );
 }
 
+// Small circular icon button that carries an animated count badge (shared by the
+// wishlist + cart controls).
+function CountBadge({ count }: { count: number }) {
+  return (
+    <AnimatePresence>
+      {count > 0 && (
+        <motion.span
+          key={count}
+          initial={{ scale: 0.4 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
+          transition={{ type: "spring", stiffness: 500, damping: 14 }}
+          className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold grid place-items-center border-2 border-white num-tabular"
+        >{count}</motion.span>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const items = useCart(s => s.items);
+  const wishIds = useWish(s => s.ids);
   const user = useAuth(s => s.user);
   const openCart = useUI(s => s.openCart);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const count = mounted ? items.reduce((a, b) => a + b.qty, 0) : 0;
+  const wishCount = mounted ? wishIds.length : 0;
   const t = useT();
   const lang = useLang();
 
   const [q, setQ] = useState("");
-  // Keep the field in sync with the active query (client-only read → no CSR
-  // bailout, so pages using <Nav> can still be statically rendered).
   useEffect(() => { setQ(new URLSearchParams(window.location.search).get("q") ?? ""); }, [pathname]);
 
   // Keyboard: Cmd/Ctrl+K or "/" focuses the visible search input.
@@ -62,19 +72,18 @@ export function Nav() {
     router.push(term ? `/${lang}/shop?q=${encodeURIComponent(term)}` : `/${lang}/shop`);
   }
 
+  const iconBtn = "relative w-11 h-11 rounded-full bg-white/70 border border-white/60 shadow-soft grid place-items-center text-ink hover:bg-white hover:-translate-y-px active:scale-90 transition-all duration-200 ease-elegant";
+
+  const Wish = (
+    <Link href="/wishlist" aria-label={t("nav.wishlist")} className={iconBtn}>
+      <HeartIcon width={18} height={18} filled={wishCount > 0}/>
+      <CountBadge count={wishCount}/>
+    </Link>
+  );
   const Bag = (
-    <button onClick={openCart} data-cart-anchor className="relative w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink hover:bg-mist hover:-translate-y-px active:scale-90 transition-all duration-200 ease-elegant" aria-label={t("nav.cart")}>
+    <button onClick={openCart} data-cart-anchor className={iconBtn} aria-label={t("nav.cart")}>
       <BagIcon width={18} height={18}/>
-      <AnimatePresence>
-        {count > 0 && (
-          <motion.span
-            key={count}
-            initial={{ scale: 0.4 }} animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 500, damping: 14 }}
-            className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-bold grid place-items-center border-2 border-white num-tabular"
-          >{count}</motion.span>
-        )}
-      </AnimatePresence>
+      <CountBadge count={count}/>
     </button>
   );
 
@@ -82,35 +91,39 @@ export function Nav() {
     <>
       {/* ---------- Mobile bar ---------- */}
       <div className="lg:hidden flex items-center gap-2.5">
-        <button className="w-11 h-11 rounded-full bg-white border border-line shadow-soft grid place-items-center text-ink" aria-label={t("nav.notifications")}>
-          <Bell/>
-        </button>
-        <form onSubmit={search} className="flex-1 min-w-0 h-11 bg-white border border-line shadow-soft rounded-pill flex items-center gap-2.5 px-4">
-          <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
+        <form onSubmit={search} className="flex-1 min-w-0 h-11 bg-white/70 border border-white/60 shadow-soft rounded-pill flex items-center gap-2.5 px-4 backdrop-blur focus-within:bg-white transition">
+          <button type="submit" className="text-subtle hover:text-ink shrink-0 active:scale-90 transition" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
           <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")} data-search-input
             className="flex-1 bg-transparent outline-none text-[14px] placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
           <Link href="/shop" className="text-subtle hover:text-ink shrink-0" aria-label={t("shop.filters")}><Sliders size={17}/></Link>
         </form>
         <LangToggle/>
+        {Wish}
         {Bag}
       </div>
 
-      {/* ---------- Desktop bar ---------- */}
-      <nav className="hidden lg:flex items-center gap-4 bg-white/85 backdrop-blur rounded-pill pl-6 pr-2 py-2.5 border border-line shadow-soft">
+      {/* ---------- Desktop bar — floating glass pill ---------- */}
+      <nav className="hidden lg:flex items-center gap-4 bg-white/65 backdrop-blur-xl rounded-pill pl-6 pr-2 py-2.5 border border-white/60 ring-1 ring-black/[.04] shadow-[0_10px_34px_-16px_rgba(10,10,11,.28)]">
         <div className="flex items-center gap-6">
           {[["/shop","nav.shop"],["/shop?category=Fragrance","cat.Fragrance"],["/shop?category=Skincare","cat.Skincare"],["/shop?category=Makeup","cat.Makeup"]].map(([h,k]) => (
             <Link key={k} href={h}
               className={`relative text-[12px] uppercase tracking-[.12em] font-medium transition-colors after:absolute after:left-0 after:-bottom-1.5 after:h-[1.5px] after:bg-accent after:transition-all after:duration-300 after:ease-elegant hover:after:w-full ${pathname===h?"text-ink after:w-full":"text-muted hover:text-ink after:w-0"}`}>{t(k)}</Link>
           ))}
         </div>
-        <Link href="/" className="absolute left-1/2 -translate-x-1/2 font-display text-[22px] tracking-[.04em] leading-none">NARAN</Link>
-        <div className="flex items-center gap-3 ml-auto">
-          <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition w-[220px]">
-            <button type="submit" className="text-subtle hover:text-ink shrink-0" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
+
+        <Link href="/" className="group absolute left-1/2 -translate-x-1/2 flex items-center gap-2 font-display text-[22px] tracking-[.04em] leading-none">
+          <span className="w-2 h-2 rounded-full bg-accent transition-transform duration-300 ease-spring group-hover:scale-125"/>
+          NARAN
+        </Link>
+
+        <div className="flex items-center gap-2.5 ml-auto">
+          <form onSubmit={search} className="flex items-center gap-2.5 bg-surface-2 rounded-pill px-4 py-2.5 border border-transparent focus-within:border-line focus-within:bg-white transition-all duration-300 w-[200px] focus-within:w-[260px]">
+            <button type="submit" className="text-subtle hover:text-ink shrink-0 active:scale-90 transition" aria-label={t("nav.search")}><SearchIcon width={16} height={16}/></button>
             <input value={q} onChange={e => setQ(e.target.value)} aria-label={t("nav.search")} data-search-input
               className="flex-1 bg-transparent outline-none text-sm placeholder:text-subtle min-w-0" placeholder={t("nav.searchShort")}/>
           </form>
           <LangToggle/>
+          {Wish}
           {Bag}
           <Link href={user ? "/account" : "/auth"} aria-label={t("nav.account")} className="group flex items-center gap-2.5 bg-ink text-white rounded-pill pl-4 pr-1.5 py-1.5 text-[12px] font-semibold uppercase tracking-[.1em] hover:-translate-y-px hover:shadow-lift active:scale-[.98] transition-all duration-200 ease-elegant">
             {user ? user.firstName : t("nav.signin")}

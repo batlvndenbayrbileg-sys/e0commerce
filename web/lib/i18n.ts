@@ -84,6 +84,8 @@ const en: Dict = {
   // account
   "acc.welcome": "Welcome back", "acc.signOut": "Sign out", "acc.overview": "Overview", "acc.orders": "Orders",
   "acc.wishlist": "Wishlist", "acc.addresses": "Addresses", "acc.settings": "Settings",
+  "wish.title": "Your favorites", "wish.items": "saved", "wish.emptyTitle": "No favorites yet",
+  "wish.emptyDesc": "Tap the heart on any product to keep it here for later.", "wish.browse": "Explore the shop", "wish.clear": "Clear all",
   "acc.statOrders": "Orders", "acc.statSpent": "Spent", "acc.statWishlist": "Wishlist", "acc.statPoints": "Points",
   "acc.statAddresses": "Addresses", "acc.summary": "Summary", "acc.totalSpent": "Total spent", "acc.noAddress": "No saved addresses yet.", "acc.address": "Address", "acc.qpayNote": "Paid securely via bank apps", "acc.saveError": "Could not save. Try again.",
   "acc.dangerZone": "Danger zone", "acc.deleteDesc": "Request deletion of your personal data. Order records are kept as required by law; an admin will process your request.", "acc.deleteRequest": "Request data deletion", "acc.deleteConfirm": "Request deletion of your account data? You will be signed out.", "acc.deleteRequested": "Deletion request submitted.",
@@ -248,6 +250,8 @@ const mn: Dict = {
   "auth.or": "эсвэл үргэлжлүүлэх", "auth.haveAccount": "Бүртгэлтэй юу?", "auth.noAccount": "NARAN-д шинэ юу?",
   "acc.welcome": "Тавтай морил", "acc.signOut": "Гарах", "acc.overview": "Тойм", "acc.orders": "Захиалга",
   "acc.wishlist": "Хадгалсан", "acc.addresses": "Хаягууд", "acc.settings": "Тохиргоо",
+  "wish.title": "Таны дуртай", "wish.items": "хадгалсан", "wish.emptyTitle": "Одоохондоо хоосон байна",
+  "wish.emptyDesc": "Барааны зүрх дээр дарж энд хадгалж, дараа үзээрэй.", "wish.browse": "Дэлгүүр үзэх", "wish.clear": "Бүгдийг цэвэрлэх",
   "acc.statOrders": "Захиалга", "acc.statSpent": "Зарцуулсан", "acc.statWishlist": "Хадгалсан", "acc.statPoints": "Оноо",
   "acc.statAddresses": "Хаяг", "acc.summary": "Тойм", "acc.totalSpent": "Нийт зарцуулсан", "acc.noAddress": "Хадгалсан хаяг алга.", "acc.address": "Хаяг", "acc.qpayNote": "Банкны аппаар найдвартай төлнө", "acc.saveError": "Хадгалж чадсангүй. Дахин оролдоно уу.",
   "acc.dangerZone": "Аюултай бүс", "acc.deleteDesc": "Хувийн мэдээллээ устгах хүсэлт гаргах. Захиалгын бүртгэлийг хуулийн дагуу хадгална; админ хүсэлтийг боловсруулна.", "acc.deleteRequest": "Мэдээлэл устгах хүсэлт", "acc.deleteConfirm": "Бүртгэлийн мэдээллээ устгах хүсэлт гаргах уу? Та системээс гарна.", "acc.deleteRequested": "Устгах хүсэлт илгээгдлээ.",
