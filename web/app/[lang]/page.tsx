@@ -109,7 +109,7 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
       </div>
 
       {/* ===================== MARQUEE ===================== */}
-      <section className="py-7 sm:py-9 mt-2 bg-mist border-y border-line">
+      <section className="py-11 sm:py-16 mt-10 sm:mt-14 bg-mist border-y border-line">
         <Marquee items={[t("home.mqA"), "NARAN", t("home.mqB"), "NARAN", t("home.mqC"), "NARAN", t("home.mqD"), "NARAN"]} />
       </section>
 

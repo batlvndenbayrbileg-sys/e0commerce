@@ -85,6 +85,12 @@ html.lenis, html.lenis body { height: auto; }
 /* Hero dot: accent fill grows across the auto-advance interval. */
 @keyframes heroDot { from { width: 0; } to { width: 100%; } }
 
+/* Gentle staggered entrance — CSS (not JS/rAF) so it always completes to the
+   visible state even if the tab is backgrounded or the frame loop is throttled;
+   the reduce-motion rule above collapses it to an instant reveal. */
+@keyframes riseIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.rise-in { animation: riseIn .5s cubic-bezier(.22,.61,.36,1) both; }
+
 /* ---- Interactive 3D tilt (see TiltCard.tsx) ------------------------------ */
 .tilt-card {
   position: relative;
