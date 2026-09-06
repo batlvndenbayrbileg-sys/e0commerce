@@ -8,7 +8,7 @@ import { money } from "@/lib/api";
 import { Photo } from "./Photo";
 import { ProductVisual } from "./ProductVisual";
 import { productImg } from "@/lib/images";
-import { ArrowRight, TrashIcon } from "./Icons";
+import { ArrowRight, TrashIcon, BagIcon } from "./Icons";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 
 export function CartDrawer() {
@@ -19,6 +19,11 @@ export function CartDrawer() {
   const remove = useCart(s => s.remove);
   const t = useT();
   const subtotal = items.reduce((a, b) => a + b.price * b.qty, 0);
+  // Free-shipping incentive (mirrors checkout + the ₮150,000 backend promo).
+  const FREE_SHIP_THRESHOLD = 150000;
+  const freeShip = subtotal >= FREE_SHIP_THRESHOLD;
+  const freeShipRemaining = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
+  const freeShipPct = Math.min(100, Math.round((subtotal / FREE_SHIP_THRESHOLD) * 100));
   const closeRef = useRef<HTMLButtonElement>(null);
   const lastFocused = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -60,24 +65,33 @@ export function CartDrawer() {
             <header className="flex items-center justify-between px-5 h-16 border-b border-line shrink-0">
               <h2 className="font-display text-[20px] tracking-tight">{t("cart.title")}</h2>
               <button ref={closeRef} onClick={close} aria-label={t("common.close")}
-                className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2 text-xl leading-none">×</button>
+                className="w-9 h-9 rounded-full grid place-items-center hover:bg-surface-2 text-xl leading-none transition-all duration-200 ease-elegant hover:rotate-90 active:scale-90">×</button>
             </header>
 
             {items.length === 0 ? (
               <div className="flex-1 grid place-items-center text-center px-6">
-                <div>
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 0.61, 0.36, 1] }}>
+                  <span className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-surface-2 text-ink/40">
+                    <BagIcon width={26} height={26}/>
+                  </span>
                   <h3 className="font-display text-[20px] mb-2">{t("cart.emptyTitle")}</h3>
                   <p className="text-muted text-sm mb-5">{t("cart.emptyDesc")}</p>
                   <Link href="/shop" onClick={close} className="btn btn-primary inline-flex">
                     {t("common.browseShop")} <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
                   </Link>
-                </div>
+                </motion.div>
               </div>
             ) : (
               <>
                 <div data-lenis-prevent className="flex-1 overflow-y-auto px-3 py-2">
-                  {items.map(it => (
-                    <div key={it.variantId || it.id} className="flex gap-3 items-center p-2.5 border-b border-line last:border-none">
+                  {items.map((it, i) => {
+                      const key = it.variantId || it.id;
+                      return (
+                      <motion.div key={key}
+                        initial={{ opacity: 0, x: 28 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ type: "spring", stiffness: 420, damping: 38, delay: i * 0.04 }}
+                        className="flex gap-3 items-center p-2.5 border-b border-line last:border-none">
                       <div className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-graphite">
                         <Photo src={it.image ?? productImg(it.id)} alt={it.name}
                           fallback={<div className="w-full h-full grid place-items-center card-dark"><ProductVisual product={{ shape: it.shape, accent: it.accent }} size="sm"/></div>}
@@ -88,23 +102,38 @@ export function CartDrawer() {
                         <div className="tiny">{it.category}{it.size ? ` · ${it.size}` : ""}</div>
                         <div className="flex items-center justify-between mt-1.5">
                           <div className="inline-flex items-center bg-surface-2 rounded-pill p-0.5">
-                            <button onClick={() => setQty(it.variantId || it.id, it.qty - 1)} aria-label={t("common.decrease")} className="w-7 h-7 rounded-full grid place-items-center hover:bg-white">−</button>
-                            <span className="px-2.5 text-sm font-semibold num-tabular">{it.qty}</span>
-                            <button onClick={() => setQty(it.variantId || it.id, it.qty + 1)} aria-label={t("common.increase")} className="w-7 h-7 rounded-full grid place-items-center hover:bg-white">+</button>
+                            <button onClick={() => setQty(key, it.qty - 1)} aria-label={t("common.decrease")} className="w-7 h-7 rounded-full grid place-items-center text-ink/70 hover:bg-white hover:text-ink active:scale-90 transition-all duration-150">−</button>
+                            <span className="px-2.5 text-sm font-semibold num-tabular tabular-nums">{it.qty}</span>
+                            <button onClick={() => setQty(key, it.qty + 1)} aria-label={t("common.increase")} className="w-7 h-7 rounded-full grid place-items-center text-ink/70 hover:bg-white hover:text-ink active:scale-90 transition-all duration-150">+</button>
                           </div>
                           <span className="font-display text-[15px] num-tabular">{money(it.price * it.qty)}</span>
                         </div>
                       </div>
-                      <button onClick={() => remove(it.variantId || it.id)} aria-label={t("common.remove")}
-                        className="w-8 h-8 rounded-full grid place-items-center text-muted hover:text-red-500 hover:bg-red-50 self-start transition"><TrashIcon width={15} height={15}/></button>
-                    </div>
-                  ))}
+                      <button onClick={() => remove(key)} aria-label={t("common.remove")}
+                        className="w-8 h-8 rounded-full grid place-items-center text-muted hover:text-red-500 hover:bg-red-50 active:scale-90 self-start transition-all duration-150"><TrashIcon width={15} height={15}/></button>
+                      </motion.div>
+                      );
+                    })}
                 </div>
                 <footer className="border-t border-line p-4 shrink-0">
-                  <div className="flex justify-between font-display text-[18px] mb-1">
-                    <span>{t("cart.subtotal")}</span><span className="num-tabular">{money(subtotal)}</span>
+                  {/* Free-shipping progress — motivates toward the threshold */}
+                  {freeShip ? (
+                    <div className="text-[12px] text-green-600 mb-3 flex items-center gap-1.5"><span className="text-[13px]">✓</span> {t("cart.freeUnlocked")}</div>
+                  ) : (
+                    <div className="mb-3">
+                      <div className="text-[12px] text-muted mb-1.5">{t("co.freeShipHintPre")} <b className="text-ink num-tabular">{money(freeShipRemaining)}</b> {t("co.freeShipHintPost")}</div>
+                      <div className="h-1.5 rounded-pill bg-surface-2 overflow-hidden">
+                        <motion.div className="h-full rounded-pill bg-gradient-to-r from-accent to-accent-deep"
+                          initial={false} animate={{ width: `${freeShipPct}%` }} transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}/>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-display text-[18px] mb-3">
+                    <span>{t("cart.subtotal")}</span>
+                    <span className="num-tabular overflow-hidden">
+                      <motion.span key={subtotal} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: [0.22, 0.61, 0.36, 1] }} className="inline-block">{money(subtotal)}</motion.span>
+                    </span>
                   </div>
-                  <p className="tiny mb-3">{t("cart.freeNote")}</p>
                   <Link href="/checkout" onClick={close} className="btn btn-primary w-full justify-center">
                     {t("cart.checkout")} <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
                   </Link>
