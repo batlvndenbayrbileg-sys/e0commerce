@@ -2,7 +2,7 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { ArrowRight } from "@/components/Icons";
+import { ArrowRight, SearchIcon } from "@/components/Icons";
 import { api } from "@/lib/api";
 import { tFor, type Lang } from "@/lib/i18n";
 import { SortSelect, ShopFilters } from "./_ShopControls";
@@ -81,11 +81,14 @@ export default async function ShopPage({
 
           {/* Grid */}
           {products.length === 0 ? (
-            <div className="mt-10 bg-white border border-line rounded-2xl p-12 text-center">
+            <Reveal className="mt-10 bg-white border border-line rounded-2xl p-12 text-center">
+              <span className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-full bg-surface-2 text-ink/40">
+                <SearchIcon width={26} height={26}/>
+              </span>
               <h3 className="font-display text-[22px]">{t("shop.emptyTitle")}</h3>
-              <p className="text-muted mt-2 text-sm">{t("shop.emptyDesc")}</p>
-              <Link href="/shop" className="btn btn-primary mt-5 inline-flex">{t("shop.reset")} <ArrowRight width={14} height={14}/></Link>
-            </div>
+              <p className="text-muted mt-2 text-sm max-w-[320px] mx-auto">{t("shop.emptyDesc")}</p>
+              <Link href="/shop" className="btn btn-primary mt-6 inline-flex">{t("shop.reset")} <ArrowRight width={14} height={14}/></Link>
+            </Reveal>
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mt-6">
