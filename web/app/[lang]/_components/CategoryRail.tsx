@@ -15,7 +15,7 @@ export function CategoryRail({ items }: { items: Cat[] }) {
       {items.map((c) => (
         <Link key={c.href} href={c.href} aria-label={c.label}
           className="block shrink-0 basis-[42%] sm:basis-[27%] md:basis-auto">
-          <TiltCard max={11} lift={7}
+          <TiltCard
             className="group h-full bg-white border border-line rounded-[1.4rem] p-3.5 sm:p-4 flex flex-col items-center text-center gap-3 elev-3d elev-3d-hover transition-colors duration-200 hover:border-accent/30">
             <span className="depth relative w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-full overflow-hidden bg-surface-3 ring-2 ring-white shadow-[inset_0_0_0_1px_rgba(14,15,16,.05),0_12px_22px_-10px_rgba(14,15,16,.35)]">
               <Photo src={c.img} alt="" sizes="80px"

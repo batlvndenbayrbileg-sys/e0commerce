@@ -12,9 +12,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 export function TiltCard({
   children,
   className = "",
-  max = 9,
-  lift = 6,
-  scale = 1.03,
+  max = 4,
+  lift = 3,
+  scale = 1.01,
   glare = true,
 }: {
   children: ReactNode;

@@ -91,16 +91,16 @@ html.lenis, html.lenis body { height: auto; }
   transform-style: preserve-3d;
   will-change: transform;
 }
-/* Elements that should float above the card surface during the tilt. */
-.tilt-card .depth { transform: translateZ(30px); }
-.tilt-card .depth-sm { transform: translateZ(16px); }
-/* Soft specular glare that tracks the cursor (--mx/--my set by TiltCard). */
+/* Elements that lift a touch above the card surface during the tilt (subtle). */
+.tilt-card .depth { transform: translateZ(12px); }
+.tilt-card .depth-sm { transform: translateZ(6px); }
+/* Faint specular glare that tracks the cursor (--mx/--my set by TiltCard). */
 .tilt-glare {
   position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   opacity: 0; transition: opacity .35s ease; mix-blend-mode: soft-light;
-  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.65), transparent 60%);
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.35), transparent 62%);
 }
-.tilt-card:hover .tilt-glare { opacity: 1; }
+.tilt-card:hover .tilt-glare { opacity: .6; }
 @media (prefers-reduced-motion: reduce) {
   .tilt-card .depth, .tilt-card .depth-sm { transform: none; }
   .tilt-glare { display: none; }
@@ -116,8 +116,8 @@ html.lenis, html.lenis body { height: auto; }
 .elev-3d-hover:hover {
   box-shadow:
     0 2px 3px rgba(14,15,16,.05),
-    0 12px 24px -8px rgba(14,15,16,.16),
-    0 34px 60px -22px rgba(232,85,10,.26);
+    0 10px 20px -8px rgba(14,15,16,.13),
+    0 22px 40px -22px rgba(232,85,10,.14);
 }
 
 .grainy { position: relative; }
