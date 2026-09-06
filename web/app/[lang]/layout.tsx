@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Archivo, Archivo_Black, Rubik, JetBrains_Mono } from "next/font/google";
+import { Archivo, Playfair_Display, Rubik, JetBrains_Mono } from "next/font/google";
 import "../globals.css";
 import { Toast } from "@/components/Toast";
 import { MobileTabBar } from "@/components/MobileTabBar";
@@ -31,7 +31,8 @@ export function generateStaticParams() {
 
 // Self-hosted via next/font: no render-blocking external CSS, no FOUT (swap + fallback).
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-archivo", display: "swap" });
-const archivoBlack = Archivo_Black({ subsets: ["latin"], weight: "400", variable: "--font-archivo-black", display: "swap" });
+// Elegant high-contrast serif for display/headings — full Cyrillic (Mongolian) support.
+const playfair = Playfair_Display({ subsets: ["latin", "cyrillic"], weight: ["500", "600", "700", "800", "900"], variable: "--font-playfair", display: "swap" });
 const rubik = Rubik({ subsets: ["latin", "cyrillic"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-rubik", display: "swap" });
 const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-jetbrains", display: "swap" });
 
@@ -40,7 +41,7 @@ export default function LangLayout({ children, params }: { children: React.React
   const lang = params.lang;
   const t = tFor(lang);
   return (
-    <html lang={lang} className={`${archivo.variable} ${archivoBlack.variable} ${rubik.variable} ${mono.variable}`}>
+    <html lang={lang} className={`${archivo.variable} ${playfair.variable} ${rubik.variable} ${mono.variable}`}>
       <body className="font-sans pb-24 lg:pb-0">
         <a href="#main" className="skip-link">{t("a11y.skip")}</a>
         <LangProvider lang={lang}>
