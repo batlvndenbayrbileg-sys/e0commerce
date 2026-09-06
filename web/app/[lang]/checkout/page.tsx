@@ -1,6 +1,7 @@
 "use client";
 import { LocaleLink as Link } from "@/components/LocaleLink";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Nav } from "@/components/Nav";
 import { CheckIcon, LockIcon } from "@/components/Icons";
@@ -9,6 +10,8 @@ import { useT, useLang } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { medusa } from "@/lib/medusa";
 import { wire } from "@/lib/wire";
+
+const EASE: [number, number, number, number] = [0.22, 0.61, 0.36, 1];
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -147,7 +150,7 @@ export default function CheckoutPage() {
 
         <form onSubmit={place} className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 lg:gap-8 pb-10">
           <div>
-            <FormCard title={t("co.contact")}>
+            <FormCard title={t("co.contact")} i={0}>
               <div className="grid gap-3.5">
                 <Field label={t("co.email")} required>
                   <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("news.placeholder")}/>
@@ -155,7 +158,7 @@ export default function CheckoutPage() {
               </div>
             </FormCard>
 
-            <FormCard title={t("co.shippingAddress")}>
+            <FormCard title={t("co.shippingAddress")} i={1}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <Field label={t("co.firstName")}><input name="first_name" placeholder="Бат" required/></Field>
                 <Field label={t("co.lastName")}><input name="last_name" placeholder="Эрдэнэ" required/></Field>
@@ -169,7 +172,7 @@ export default function CheckoutPage() {
               </div>
             </FormCard>
 
-            <FormCard title={t("co.shippingMethod")}>
+            <FormCard title={t("co.shippingMethod")} i={2}>
               {shipOptions.length === 0 ? (
                 <div className="text-sm text-muted py-2">{t("common.pleaseWait")}</div>
               ) : shipOptions.map(o => {
@@ -184,9 +187,12 @@ export default function CheckoutPage() {
               })}
             </FormCard>
 
-            <FormCard title={t("co.payment")}>
+            <FormCard title={t("co.payment")} i={3}>
               <div className="border-2 border-ink rounded-xl p-4 flex items-center gap-3.5 bg-surface-2">
-                <input type="radio" name="pay" checked readOnly className="accent-ink"/>
+                <input type="radio" name="pay" checked readOnly className="sr-only"/>
+                <span className="shrink-0 w-5 h-5 rounded-full grid place-items-center border-2 border-ink bg-ink" aria-hidden>
+                  <span className="w-2 h-2 rounded-full bg-white"/>
+                </span>
                 <div className="flex-1">
                   <div className="font-semibold">{t("co.wireTitle")}</div>
                   <div className="tiny">{t("co.wireSub")}</div>
@@ -198,9 +204,12 @@ export default function CheckoutPage() {
               </div>
             </FormCard>
 
-            <button disabled={busy} type="submit" className="btn btn-primary w-full justify-center h-[60px] text-base disabled:opacity-50">
-              {busy ? t("co.starting") : t("co.payWire")}
-              <span className="arrow-cap"><CheckIcon width={14} height={14}/></span>
+            <button disabled={busy} type="submit" className="btn btn-primary w-full justify-center h-[60px] text-base disabled:opacity-60">
+              {busy ? (
+                <><span className="w-5 h-5 rounded-full border-2 border-ink/25 border-t-ink animate-spin"/> {t("co.starting")}</>
+              ) : (
+                <>{t("co.payWire")} <span className="arrow-cap"><CheckIcon width={14} height={14}/></span></>
+              )}
             </button>
             <p className="tiny text-center mt-3.5">
               {t("co.termsPre")}{" "}
@@ -251,13 +260,25 @@ export default function CheckoutPage() {
             <Row k={t("cart.subtotal")} v={money(subtotal)}/>
             {discount > 0 && <Row k={t("co.discount")} v={`− ${money(discount)}`}/>}
             <Row k={t("cart.shipping")} v={shipping === 0 ? t("common.free") : money(shipping)}/>
-            {mounted && !promo && (freeByThreshold
-              ? <div className="text-[12px] text-green-600 -mt-1 mb-1">✓ {t("co.freeShipEarned")}</div>
-              : freeShipRemaining > 0 && <div className="text-[12px] text-muted -mt-1 mb-1">{t("co.freeShipHintPre")} {money(freeShipRemaining)} {t("co.freeShipHintPost")}</div>
-            )}
+            {mounted && !promo && (freeByThreshold ? (
+              <div className="text-[12px] text-green-600 -mt-1 mb-2 flex items-center gap-1.5"><CheckIcon width={13} height={13}/> {t("co.freeShipEarned")}</div>
+            ) : freeShipRemaining > 0 && (
+              <div className="-mt-1 mb-2.5">
+                <div className="text-[12px] text-muted mb-1.5">{t("co.freeShipHintPre")} <b className="text-ink num-tabular">{money(freeShipRemaining)}</b> {t("co.freeShipHintPost")}</div>
+                <div className="h-1.5 rounded-pill bg-surface-2 overflow-hidden">
+                  <div className="h-full rounded-pill bg-gradient-to-r from-accent to-accent-deep transition-[width] duration-700 ease-elegant"
+                    style={{ width: `${Math.min(100, Math.round((subtotal / FREE_SHIP_THRESHOLD) * 100))}%` }}/>
+                </div>
+              </div>
+            ))}
             <Row k={t("cart.tax")} v={money(tax)}/>
             <div className="flex justify-between border-t border-border pt-4.5 mt-3 text-[18px] font-semibold">
-              <span>{t("cart.total")}</span><span>{money(total)}</span>
+              <span>{t("cart.total")}</span>
+              <span className="num-tabular overflow-hidden">
+                <motion.span key={total} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: EASE }} className="inline-block">
+                  {money(total)}
+                </motion.span>
+              </span>
             </div>
             <div className="flex items-center gap-2.5 mt-4 p-3 bg-surface-2 rounded-xl text-[13px] text-muted">
               <LockIcon width={14} height={14}/> {t("co.secure")}
@@ -284,31 +305,40 @@ function Sep() { return <span className="w-8 h-px bg-border self-center"/> }
 function Row({ k, v }: { k: string; v: string }) {
   return <div className="flex justify-between py-2 text-muted"><span>{k}</span><span>{v}</span></div>;
 }
-function FormCard({ title, children }: { title: string; children: React.ReactNode }) {
+function FormCard({ title, children, i = 0 }: { title: string; children: React.ReactNode; i?: number }) {
   return (
-    <div className="card p-7 mb-4">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: i * 0.07, ease: EASE }}
+      className="card p-7 mb-4"
+    >
       <h3 className="hd-3 mb-4">{title}</h3>
       {children}
-    </div>
+    </motion.div>
   );
 }
 function Field({ label, full, children, required }: { label: string; full?: boolean; children: React.ReactNode; required?: boolean }) {
   return (
-    <label className={`field flex flex-col gap-1.5 ${full ? "md:col-span-2" : ""}`}>
-      <span className="text-xs font-medium text-muted">{label}{required && " *"}</span>
+    <label className={`field group flex flex-col gap-1.5 ${full ? "md:col-span-2" : ""}`}>
+      <span className="text-xs font-medium text-muted transition-colors group-focus-within:text-accent-deep">{label}{required && " *"}</span>
       {children}
     </label>
   );
 }
+// Custom radio indicator (spring dot) + smooth selectable card.
 function Radio({ name, title, sub, right, checked, onChange }: { name: string; title: string; sub?: string; right?: string; checked?: boolean; onChange?: () => void }) {
   return (
-    <label className={`border rounded-xl p-4 flex items-center gap-3.5 cursor-pointer mb-2.5 ${checked ? "border-ink bg-surface-2" : "border-border"}`}>
-      <input type="radio" name={name} checked={checked} onChange={onChange} className="accent-ink"/>
+    <label className={`border rounded-xl p-4 flex items-center gap-3.5 cursor-pointer mb-2.5 transition-all duration-200 ease-elegant active:scale-[.99] ${checked ? "border-ink bg-surface-2 shadow-soft" : "border-border hover:border-ink/40 hover:-translate-y-px"}`}>
+      <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only"/>
+      <span className={`shrink-0 w-5 h-5 rounded-full grid place-items-center border-2 transition-colors duration-200 ${checked ? "border-ink bg-ink" : "border-ink/25"}`}>
+        {checked && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 18 }} className="w-2 h-2 rounded-full bg-white"/>}
+      </span>
       <div className="flex-1">
         <div className="font-semibold">{title}</div>
         {sub && <div className="tiny">{sub}</div>}
       </div>
-      {right && <div className="font-semibold">{right}</div>}
+      {right && <div className="font-semibold num-tabular">{right}</div>}
     </label>
   );
 }
