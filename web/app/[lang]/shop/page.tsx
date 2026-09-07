@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { ArrowRight, SearchIcon } from "@/components/Icons";
 import { api } from "@/lib/api";
 import { tFor, type Lang } from "@/lib/i18n";
+import type { Product } from "@/lib/types";
 import { SortSelect, ShopFilters } from "./_ShopControls";
 import { Reveal } from "@/app/[lang]/_components/Reveal";
 import type { Metadata } from "next";
@@ -36,7 +37,8 @@ export default async function ShopPage({
   searchParams,
 }: { params: { lang: Lang }; searchParams: { category?: string; sort?: string; q?: string; gender?: string; filter?: string; color?: string; tech?: string; minPrice?: string; maxPrice?: string } }) {
   const t = tFor(params.lang);
-  const [{ data: products, total }, allForColors] = await Promise.all([
+  // Resilient: a catalog outage degrades to the empty state, never a 500.
+  const [listRes, allForColors] = await Promise.all([
     api.products.list({
       category: searchParams.category,
       sort: searchParams.sort,
@@ -47,9 +49,10 @@ export default async function ShopPage({
       tech: searchParams.tech,
       minPrice: searchParams.minPrice,
       maxPrice: searchParams.maxPrice,
-    }),
-    api.products.list({}),
+    }).catch(() => ({ data: [] as Product[], total: 0 })),
+    api.products.list({}).catch(() => ({ data: [] as Product[] })),
   ]);
+  const { data: products, total } = listRes;
   // Real swatches: unique product accents, so every colour chip yields results.
   const availableColors = Array.from(new Set(allForColors.data.map(p => p.accent)));
 
