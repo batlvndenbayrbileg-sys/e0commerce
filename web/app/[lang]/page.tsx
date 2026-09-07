@@ -2,6 +2,7 @@ import { LocaleLink as Link } from "@/components/LocaleLink";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
+import type { Product } from "@/lib/types";
 import { Photo } from "@/components/Photo";
 import { HeroCarousel, type Slide } from "@/components/HeroCarousel";
 import { ArrowUpRight, ArrowRight } from "@/components/Icons";
@@ -29,10 +30,14 @@ const CATS = [
 export default async function HomePage({ params }: { params: { lang: Lang } }) {
   const t = tFor(params.lang);
   const L = params.lang;
-  const [{ data: products }, cms] = await Promise.all([
-    api.products.list({}),
+  // Resilient fetch: a transient catalog/CMS outage must never fail the whole
+  // build (mirrors generateStaticParams' catch elsewhere). The page prerenders
+  // with whatever it got and ISR (revalidate) backfills once the backend is up.
+  const [productsRes, cms] = await Promise.all([
+    api.products.list({}).catch(() => ({ data: [] as Product[] })),
     medusa.homepageContent(),
   ]);
+  const products = productsRes.data;
   // `hot` can be undefined if the catalog is empty (new/misconfigured store or a
   // transient Medusa error) — never dereference it directly (H2).
   const hot = products.find(p => p.badge === "Sale") || products[0];
