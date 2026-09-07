@@ -65,7 +65,8 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
             className={`absolute top-3 right-3 z-10 w-9 h-9 rounded-full grid place-items-center backdrop-blur transition-all duration-200 ease-elegant active:scale-90 ${
               wished ? "text-red-500 bg-white scale-105" : "text-ink bg-white/85 hover:bg-white hover:scale-105"
             }`}
-            aria-label={t("nav.wishlist")}
+            aria-label={`${t("nav.wishlist")}: ${product.name}`}
+            aria-pressed={wished}
           >
             <HeartIcon width={16} height={16} filled={wished}/>
           </button>
@@ -74,6 +75,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
           {!soldOut && (
             <button
               onClick={(e) => { e.preventDefault(); openQuickView(product); }}
+              aria-label={`${t("common.quickView")}: ${product.name}`}
               className="hidden lg:flex absolute inset-x-0 top-1/2 -translate-y-1/2 z-10 justify-center opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-elegant"
             >
               <span className="bg-white/90 backdrop-blur text-ink text-[12px] font-semibold uppercase tracking-wide px-4 h-9 rounded-pill grid place-items-center shadow-soft hover:bg-white active:scale-95 transition-transform">

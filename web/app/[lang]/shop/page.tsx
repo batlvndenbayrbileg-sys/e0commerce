@@ -7,9 +7,27 @@ import { api } from "@/lib/api";
 import { tFor, type Lang } from "@/lib/i18n";
 import { SortSelect, ShopFilters } from "./_ShopControls";
 import { Reveal } from "@/app/[lang]/_components/Reveal";
+import type { Metadata } from "next";
 
 // Reads searchParams (filters) → dynamic; product data is still fetch-cached.
 export const dynamic = "force-dynamic";
+
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://naran.mn").replace(/\/$/, "");
+
+export function generateMetadata({ params }: { params: { lang: Lang } }): Metadata {
+  const t = tFor(params.lang);
+  const title = `${t("shop.titleAccent")} — NARAN`;
+  const description = params.lang === "mn"
+    ? "NARAN дэлгүүрийн бүх бүтээгдэхүүн — үнэртэй ус, арьс арчилгаа, гоо сайхан. 100% жинхэнэ, QPay-ээр төлнө."
+    : "Browse all NARAN products — fragrance, skincare and makeup. 100% authentic, pay with QPay.";
+  const url = `${SITE}/${params.lang}/shop`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url, languages: { mn: `${SITE}/mn/shop`, en: `${SITE}/en/shop` } },
+    openGraph: { title, description, url, type: "website", siteName: "NARAN" },
+  };
+}
 
 const cats = ["all", "Fragrance", "Skincare", "Makeup", "Body", "Gift"];
 

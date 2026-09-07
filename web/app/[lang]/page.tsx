@@ -70,8 +70,19 @@ export default async function HomePage({ params }: { params: { lang: Lang } }) {
         cta: t("home.promoCta"), href: "/shop?filter=sale", img: hotImg,
       };
 
+  // Site-wide structured data (Organization + WebSite with a Sitelinks search box).
+  const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://naran.mn").replace(/\/$/, "");
+  const structuredData = [
+    { "@context": "https://schema.org", "@type": "Organization", name: "NARAN", url: SITE, logo: `${SITE}/icon.svg` },
+    {
+      "@context": "https://schema.org", "@type": "WebSite", name: "NARAN", url: SITE,
+      potentialAction: { "@type": "SearchAction", target: `${SITE}/${L}/shop?q={search_term_string}`, "query-input": "required name=search_term_string" },
+    },
+  ];
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
       <div className="px-3 pt-3 sm:px-4 sm:pt-4 lg:px-5 lg:pt-5 pb-2 mesh-light min-h-screen">
         <div className="max-w-[1280px] mx-auto">
           <Nav />

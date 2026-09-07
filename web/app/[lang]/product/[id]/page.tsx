@@ -85,9 +85,20 @@ export default async function ProductPage({ params }: { params: { lang: Lang; id
     ...(product.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: product.rating, reviewCount: product.reviews || 1 } } : {}),
   };
 
+  // Breadcrumb trail for rich results (Нүүр › Дэлгүүр › Бараа).
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: t("bc.home"), item: `${SITE_URL}/${params.lang}` },
+      { "@type": "ListItem", position: 2, name: t("bc.shop"), item: `${SITE_URL}/${params.lang}/shop` },
+      { "@type": "ListItem", position: 3, name: product.name, item: `${SITE_URL}/${params.lang}/product/${product.slug}` },
+    ],
+  };
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]).replace(/</g, "\\u003c") }} />
       <div className="px-3 pt-3 sm:px-4 sm:pt-4 lg:px-5 lg:pt-5 pb-2 mesh-light min-h-screen">
         <div className="max-w-[1280px] mx-auto">
           <Nav />
