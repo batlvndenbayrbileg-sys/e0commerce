@@ -4,7 +4,7 @@ import { Container, Text, Table, Button, Input, Label, toast } from "@medusajs/u
 import { useEffect, useState } from "react";
 import { usePermissions } from "../../lib/perms";
 import { AccessDenied } from "../../lib/AccessDenied";
-import { PageHeader, StatGrid, StatCard, Panel, Bar } from "../../lib/ui";
+import { PageHeader, StatGrid, StatCard, Panel, Bar, AreaChart } from "../../lib/ui";
 
 type Report = {
   from: string | null; to: string | null;
@@ -102,7 +102,14 @@ const ReportsPage = () => {
         {(data?.daily || []).length === 0 ? (
           <Text className="text-ui-fg-subtle" size="small">Мэдээлэл алга.</Text>
         ) : (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-4">
+            <AreaChart
+              points={data!.daily.map((d) => ({ label: d.date.slice(5), value: d.revenue }))}
+              height={96}
+              tone="interactive"
+              valueFormat={tug}
+            />
+            <div className="flex flex-col gap-1">
             {data!.daily.map((d) => (
               <div key={d.date} className="flex items-center gap-3">
                 <span className="text-xs text-ui-fg-subtle w-24 shrink-0">{d.date}</span>
@@ -111,6 +118,7 @@ const ReportsPage = () => {
                 <span className="text-xs text-ui-fg-subtle w-10 text-right shrink-0 tabular-nums">{nf(d.orders)}</span>
               </div>
             ))}
+            </div>
           </div>
         )}
       </Panel>

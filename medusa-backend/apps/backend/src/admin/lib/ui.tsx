@@ -97,3 +97,93 @@ export function Bar({ value, max, tone = "orange", className = "" }: { value: nu
     </div>
   );
 }
+
+/** Text-color tones for currentColor-driven SVG (mirrors BAR_TONE, as text-* utilities). */
+export const LINE_TONE: Record<string, string> = {
+  green: "text-ui-tag-green-icon",
+  blue: "text-ui-tag-blue-icon",
+  orange: "text-ui-tag-orange-icon",
+  purple: "text-ui-tag-purple-icon",
+  red: "text-ui-tag-red-icon",
+  interactive: "text-ui-fg-interactive",
+};
+
+/**
+ * Dependency-free responsive area chart (inline SVG, no chart libraries).
+ * Draws a gradient area fill + crisp top line for `points[].value`, a faint
+ * baseline, and emphasizes the final point with a dot. Color is driven by
+ * currentColor via a `tone` text-color class (see LINE_TONE).
+ */
+export function AreaChart({
+  points,
+  height = 64,
+  tone = "interactive",
+  valueFormat,
+}: {
+  points: { label: string; value: number }[];
+  height?: number;
+  tone?: string;
+  valueFormat?: (n: number) => string;
+}) {
+  const n = points.length;
+  if (n === 0) return null; // nothing to draw
+
+  // viewBox coordinate space — x stretches to container width (preserveAspectRatio="none"),
+  // strokes stay crisp via vector-effect="non-scaling-stroke".
+  const W = 100;
+  const H = Math.max(24, height);
+  const padY = 4; // keep line/dot off the top & bottom edges
+  const plotH = H - padY * 2;
+
+  const values = points.map((p) => (Number.isFinite(p.value) ? p.value : 0));
+  const maxV = Math.max(0, ...values);
+  const denom = maxV > 0 ? maxV : 1; // guard divide-by-zero (all-zero => flat baseline)
+
+  const yOf = (v: number) => padY + plotH - (v / denom) * plotH;
+  const xOf = (i: number) => (n === 1 ? 0 : (i / (n - 1)) * W);
+
+  // Build [x,y] coords — a single point renders as a flat line across the width.
+  const coords: [number, number][] =
+    n === 1 ? [[0, yOf(values[0])], [W, yOf(values[0])]] : values.map((v, i) => [xOf(i), yOf(v)]);
+
+  const linePath = coords.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
+  const areaPath = `${linePath} L${W},${H} L0,${H} Z`;
+  const [lastX, lastY] = coords[coords.length - 1];
+  const baseY = yOf(0);
+
+  const gradId = `ac-grad-${Math.random().toString(36).slice(2, 9)}`;
+  const last = values[values.length - 1];
+  const aria = `${n} өдрийн борлуулалт${valueFormat ? `, сүүлийн ${valueFormat(last)}` : ""}`;
+
+  return (
+    <div className={`w-full ${LINE_TONE[tone] || LINE_TONE.interactive}`}>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className="w-full"
+        style={{ height }}
+        role="img"
+        aria-label={aria}
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.24" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {/* faint baseline at value 0 */}
+        <line x1="0" y1={baseY} x2={W} y2={baseY} stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+        {/* gradient area fill (allowed to stretch) */}
+        <path d={areaPath} fill={`url(#${gradId})`} stroke="none" />
+        {/* crisp top line */}
+        <path d={linePath} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+        {/* emphasize the last point */}
+        <circle cx={lastX} cy={lastY} r="2.5" fill="currentColor" vectorEffect="non-scaling-stroke" />
+      </svg>
+      <div className="mt-1 flex justify-between text-[10px] text-ui-fg-muted">
+        <span>{points[0].label}</span>
+        {n > 1 && <span>{points[n - 1].label}</span>}
+      </div>
+    </div>
+  );
+}
