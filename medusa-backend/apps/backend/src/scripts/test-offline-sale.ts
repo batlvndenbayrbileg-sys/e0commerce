@@ -6,7 +6,7 @@ import {
   markPaymentCollectionAsPaid,
 } from "@medusajs/medusa/core-flows";
 import { decrementStockForVariants } from "../lib/catalog";
-import { fulfillOrder, shipOrder, deliverOrder } from "../lib/fulfillment";
+import { reserveOrderItems, fulfillOrder, shipOrder, deliverOrder } from "../lib/fulfillment";
 
 /**
  * Smoke test for the offline-sale flow (records a REAL test order in the DB).
@@ -79,22 +79,27 @@ export default async function testOfflineSale({ container }: ExecArgs) {
   } catch (e: any) { log.error(`  payment error: ${e?.message}`); }
   log.info(`2) markPaid: ${ok(paid)}`);
 
-  // 3) Fulfill → ship → deliver
+  // 3) Reserve → fulfill → ship → deliver
   let fulfilled = false;
   try {
+    const rz = await reserveOrderItems(container as any, orderId);
+    log.info(`  reserved: ${rz.reserved}`);
     const f = await fulfillOrder(container as any, orderId);
     if (f.fulfilled) { await shipOrder(container as any, orderId); await deliverOrder(container as any, orderId); fulfilled = true; }
     else log.info(`  fulfillOrder skipped: ${f.reason}`);
   } catch (e: any) { log.error(`  fulfillment error: ${e?.message}`); }
-  log.info(`3) fulfill→ship→deliver: ${ok(fulfilled)}`);
+  log.info(`3) reserve→fulfill→ship→deliver: ${ok(fulfilled)}`);
 
-  // 4) Decrement stock
+  // 4) Stock: fulfillment already decremented managed items; only fall back to a
+  // manual decrement when fulfillment did NOT complete (avoids double-count).
   let adjusted = 0;
-  try { adjusted = (await decrementStockForVariants(container, [{ variant_id: chosen.variant_id, quantity: 1 }])).adjusted; }
-  catch (e: any) { log.error(`  stock error: ${e?.message}`); }
+  if (!fulfilled) {
+    try { adjusted = (await decrementStockForVariants(container, [{ variant_id: chosen.variant_id, quantity: 1 }])).adjusted; }
+    catch (e: any) { log.error(`  stock error: ${e?.message}`); }
+  }
   const stockAfter = await readStock(query, chosen.variant_id);
   const stockOk = !chosen.manage || stockBefore == null || stockAfter == null || stockAfter === stockBefore - 1;
-  log.info(`4) decrementStock: ${ok(chosen.manage ? adjusted === 1 && stockOk : true)} (before=${stockBefore}, after=${stockAfter}, adjusted=${adjusted})`);
+  log.info(`4) stock: ${ok(!chosen.manage || stockOk)} (before=${stockBefore}, after=${stockAfter}, fulfilledDecremented=${fulfilled}, manualAdjusted=${adjusted})`);
 
   // 5) Re-read order status
   try {

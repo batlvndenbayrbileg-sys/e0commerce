@@ -6,7 +6,7 @@ import {
   markPaymentCollectionAsPaid,
 } from "@medusajs/medusa/core-flows";
 import { decrementStockForVariants } from "../../../lib/catalog";
-import { fulfillOrder, shipOrder, deliverOrder } from "../../../lib/fulfillment";
+import { reserveOrderItems, fulfillOrder, shipOrder, deliverOrder } from "../../../lib/fulfillment";
 
 const CURRENCY = "mnt";
 
@@ -125,11 +125,15 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     } catch { /* order recorded; payment status left as-is */ }
 
-    // An in-person sale is handed over on the spot — fulfill, ship and deliver it
-    // so it doesn't linger as "awaiting fulfillment". Best-effort/idempotent.
+    // An in-person sale is handed over on the spot — reserve stock, then fulfill,
+    // ship and deliver so it ends as Delivered rather than "awaiting fulfillment".
+    // Direct orders have no reservations, so we create them first (fulfillment
+    // consumes the reservation, which is what decrements managed stock).
+    // Best-effort/idempotent.
     let fulfilled = false;
     try {
       if (orderId) {
+        await reserveOrderItems(req.scope, orderId);
         const f = await fulfillOrder(req.scope, orderId);
         if (f.fulfilled) {
           await shipOrder(req.scope, orderId);
@@ -139,12 +143,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     } catch { /* order recorded + paid; fulfillment left as-is */ }
 
-    // Best-effort inventory decrement — only inventory-managed variants change.
+    // Stock: when fulfillment completed it already decremented managed items via
+    // the reservation. Only fall back to a manual decrement when it did NOT, so
+    // stock is never reduced twice. Unmanaged variants are unlimited (skipped).
     let stockAdjusted = 0;
-    try {
-      const r = await decrementStockForVariants(req.scope, items.map((i) => ({ variant_id: i.variant_id, quantity: i.quantity })));
-      stockAdjusted = r.adjusted;
-    } catch { /* leave stock untouched; sale still recorded */ }
+    if (!fulfilled) {
+      try {
+        const r = await decrementStockForVariants(req.scope, items.map((i) => ({ variant_id: i.variant_id, quantity: i.quantity })));
+        stockAdjusted = r.adjusted;
+      } catch { /* leave stock untouched; sale still recorded */ }
+    }
 
     res.json({ id: orderId, display_id: (result as any)?.display_id ?? null, total, paid, fulfilled, stockAdjusted });
   } catch (e: any) {
