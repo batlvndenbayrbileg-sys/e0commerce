@@ -57,6 +57,12 @@ export default function AccountPage() {
     return useAuth.persist.onFinishHydration(() => setHydrated(true));
   }, []);
 
+  // Clear the profile save banner/errors when leaving Settings, so a stale
+  // "saved" (or error) banner never reappears on returning to the tab.
+  useEffect(() => {
+    if (tab !== "Settings") { setSettingsBanner(null); setSettingsErrors({}); }
+  }, [tab]);
+
   const refreshOrders = () => { if (token) api.customers.orders(token).then(r => setOrders(r.data)).catch(() => {}); };
 
   useEffect(() => {
