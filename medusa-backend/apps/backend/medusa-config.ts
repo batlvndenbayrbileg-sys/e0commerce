@@ -1,6 +1,24 @@
 import { loadEnv, defineConfig, Modules } from '@medusajs/framework/utils'
+import { execSync } from 'node:child_process'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+
+// Synchronous, short TCP reachability probe (config load is sync, so this spawns
+// a tiny node child that connects with a timeout). Used to skip optional infra
+// whose plugin/module would otherwise throw at boot when the service is down.
+function reachable(url: string, timeoutMs = 1200): boolean {
+  try {
+    const u = new URL(url)
+    const port = u.port || (u.protocol === 'https:' ? '443' : '80')
+    execSync(
+      `node -e "const s=require('net').connect(${port},'${u.hostname}',()=>{s.destroy();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(${timeoutMs},()=>{s.destroy();process.exit(1)})"`,
+      { stdio: 'ignore', timeout: timeoutMs + 2000 },
+    )
+    return true
+  } catch {
+    return false
+  }
+}
 
 // --- Optional infra, gated on env so local dev boots without these services ---
 // MeiliSearch (typo-tolerant, faceted product search — scales to 10k+).
@@ -22,8 +40,17 @@ const productTransformer = (product: any) => ({
   category_names: (product.categories || []).map((c: any) => c.name).filter(Boolean),
 })
 
+// Register MeiliSearch only when it's actually reachable — if MEILISEARCH_HOST is
+// set but the service is down, the plugin's loader throws and takes the whole
+// Medusa boot down with it. Probing here lets Medusa (and the admin) start
+// regardless; search is simply unavailable until Meili is back and Medusa
+// restarts.
 const plugins: any[] = []
-if (MEILI_HOST) {
+const meiliUp = !!MEILI_HOST && reachable(MEILI_HOST)
+if (MEILI_HOST && !meiliUp) {
+  console.warn(`[medusa-config] MeiliSearch (${MEILI_HOST}) unreachable — search plugin disabled so Medusa can still boot.`)
+}
+if (meiliUp) {
   plugins.push({
     resolve: '@rokmohar/medusa-plugin-meilisearch',
     options: {
