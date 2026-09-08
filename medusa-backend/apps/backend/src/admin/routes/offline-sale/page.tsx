@@ -89,7 +89,8 @@ const OfflineSalePage = () => {
         }),
       });
       const no = r.display_id ? `NT-${r.display_id}` : (r.id || "");
-      toast.success(`Борлуулалт бүртгэгдлээ ${no ? `(${no})` : ""} · ${tug(r.total ?? total)}`);
+      const paidTxt = r.paid ? " · Төлсөн" : "";
+      toast.success(`Борлуулалт бүртгэгдлээ ${no ? `(${no})` : ""} · ${tug(r.total ?? total)}${paidTxt}`);
       setLines([]); setCustomerName(""); setPhone(""); setEmail(""); setNote(""); setPaymentMethod("cash");
     } catch (e: any) {
       toast.error(e?.message || "Борлуулалт бүртгэхэд алдаа гарлаа");

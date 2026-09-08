@@ -1,6 +1,10 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
-import { createOrderWorkflow } from "@medusajs/medusa/core-flows";
+import {
+  createOrderWorkflow,
+  createOrderPaymentCollectionWorkflow,
+  markPaymentCollectionAsPaid,
+} from "@medusajs/medusa/core-flows";
 import { decrementStockForVariants } from "../../../lib/catalog";
 
 const CURRENCY = "mnt";
@@ -93,16 +97,41 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         },
       } as any,
     });
-    // Best-effort inventory decrement — the sale is already recorded, so a stock
-    // hiccup must never fail the request. Only inventory-managed variants change.
+    const orderId = (result as any)?.id as string | undefined;
+    const total = items.reduce((a: number, b: any) => a + b.unit_price * b.quantity, 0);
+    const orderTotal = Number((result as any)?.total) || total;
+
+    // Mark the sale as paid: an offline sale is money already collected. Create a
+    // payment collection for the order then mark it captured. Best-effort — a
+    // payment hiccup must not undo the recorded order.
+    let paid = false;
+    try {
+      if (orderId) {
+        const { result: pcs } = await createOrderPaymentCollectionWorkflow(req.scope).run({
+          input: { order_id: orderId, amount: orderTotal },
+        });
+        const pcId = Array.isArray(pcs) ? (pcs[0] as any)?.id : (pcs as any)?.id;
+        if (pcId) {
+          await markPaymentCollectionAsPaid(req.scope).run({
+            input: {
+              payment_collection_id: pcId,
+              order_id: orderId,
+              captured_by: (req as any).auth_context?.actor_id || undefined,
+            },
+          });
+          paid = true;
+        }
+      }
+    } catch { /* order recorded; payment status left as-is */ }
+
+    // Best-effort inventory decrement — only inventory-managed variants change.
     let stockAdjusted = 0;
     try {
       const r = await decrementStockForVariants(req.scope, items.map((i) => ({ variant_id: i.variant_id, quantity: i.quantity })));
       stockAdjusted = r.adjusted;
     } catch { /* leave stock untouched; sale still recorded */ }
 
-    const total = items.reduce((a: number, b: any) => a + b.unit_price * b.quantity, 0);
-    res.json({ id: (result as any)?.id, display_id: (result as any)?.display_id ?? null, total, stockAdjusted });
+    res.json({ id: orderId, display_id: (result as any)?.display_id ?? null, total, paid, stockAdjusted });
   } catch (e: any) {
     res.status(500).json({ message: e?.message || "Борлуулалт бүртгэхэд алдаа гарлаа" });
   }
