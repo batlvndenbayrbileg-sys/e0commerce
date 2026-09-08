@@ -5,7 +5,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { ProductVisual } from "@/components/ProductVisual";
 import { Photo } from "@/components/Photo";
-import { ArrowRight, TrashIcon } from "@/components/Icons";
+import { ArrowRight, TrashIcon, CheckIcon } from "@/components/Icons";
 import { useCart } from "@/lib/store";
 import { useT } from "@/components/LangProvider";
 import { Skeleton } from "@/components/Skeleton";
@@ -28,6 +28,8 @@ export default function CartPage() {
   // that then jumps up on the next page (H3). Keep in sync with checkout page.
   const FREE_SHIP_THRESHOLD = 150000;
   const freeShip = subtotal >= FREE_SHIP_THRESHOLD;
+  const freeShipRemaining = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
+  const freeShipPct = Math.min(100, Math.round((subtotal / FREE_SHIP_THRESHOLD) * 100));
   const total = subtotal + tax; // merchandise total; shipping added at checkout when not free
 
   return (
@@ -81,7 +83,7 @@ export default function CartPage() {
                       <div className="tiny">{it.category}{it.size ? ` · ${it.size}` : ""}</div>
                       <div className="flex items-center justify-between mt-2.5">
                         <div className="inline-flex items-center bg-surface-2 rounded-pill p-1">
-                          <button onClick={() => setQty(it.variantId || it.id, it.qty - 1)} aria-label={t("common.decrease")} className="w-8 h-8 rounded-full grid place-items-center hover:bg-white">−</button>
+                          <button onClick={() => setQty(it.variantId || it.id, it.qty - 1)} disabled={it.qty <= 1} aria-label={t("common.decrease")} className="w-8 h-8 rounded-full grid place-items-center hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">−</button>
                           <span className="px-3 font-semibold text-sm min-w-[28px] text-center num-tabular">{it.qty}</span>
                           <button onClick={() => setQty(it.variantId || it.id, it.qty + 1)} aria-label={t("common.increase")} className="w-8 h-8 rounded-full grid place-items-center hover:bg-white">+</button>
                         </div>
@@ -107,9 +109,20 @@ export default function CartPage() {
               <Link href="/checkout" className={`btn btn-primary w-full justify-center mt-4 ${items.length === 0 ? "pointer-events-none opacity-50" : ""}`}>
                 {t("cart.checkout")} <span className="arrow-cap !bg-white !text-ink"><ArrowRight width={14} height={14}/></span>
               </Link>
-              <div className="mt-4 p-3 rounded-xl bg-accent-soft text-[12px] text-accent-deep text-center font-medium">
-                {freeShip ? t("cart.freeUnlocked") : t("cart.freeNote")}
-              </div>
+              {mounted && (freeShip ? (
+                <div className="mt-4 p-3 rounded-xl bg-green-50 border border-green-200 text-[12px] text-green-700 text-center font-medium flex items-center justify-center gap-1.5">
+                  <CheckIcon width={13} height={13}/> {t("cart.freeUnlocked")}
+                </div>
+              ) : (
+                <div className="mt-4 p-3 rounded-xl bg-accent-soft/60">
+                  <div className="text-[12px] text-accent-deep mb-1.5 text-center">
+                    {t("co.freeShipHintPre")} <b className="num-tabular">{money(freeShipRemaining)}</b> {t("co.freeShipHintPost")}
+                  </div>
+                  <div className="h-1.5 rounded-pill bg-white/70 overflow-hidden" role="progressbar" aria-valuenow={freeShipPct} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="h-full rounded-pill bg-gradient-to-r from-accent to-accent-deep transition-[width] duration-700 ease-elegant" style={{ width: `${freeShipPct}%` }}/>
+                  </div>
+                </div>
+              ))}
             </aside>
           </div>
         </div>

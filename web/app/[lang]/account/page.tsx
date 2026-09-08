@@ -46,6 +46,8 @@ export default function AccountPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [settingsErrors, setSettingsErrors] = useState<Record<string, string>>({});
+  const [settingsBanner, setSettingsBanner] = useState<{ ok: boolean; text: string } | null>(null);
   const [hydrated, setHydrated] = useState(false);
 
   // Wait for the persisted auth store to rehydrate before deciding to redirect,
@@ -72,17 +74,26 @@ export default function AccountPage() {
     e.preventDefault();
     if (!token) return;
     const fd = new FormData(e.currentTarget);
+    const first = String(fd.get("first") || "").trim();
+    const last = String(fd.get("last") || "").trim();
+    const phone = String(fd.get("phone") || "").trim();
+    // Inline validation — first name required, phone format-checked when present.
+    const er: Record<string, string> = {};
+    if (!first) er.first = t("common.required");
+    if (phone && !/^[0-9+()\-\s]{6,}$/.test(phone)) er.phone = t("co.phoneInvalid");
+    setSettingsErrors(er);
+    if (Object.keys(er).length) { setSettingsBanner({ ok: false, text: t("co.checkFields") }); return; }
+    setSettingsBanner(null);
     setSaving(true);
     try {
-      const { user: updated } = await api.customers.update(token, {
-        firstName: String(fd.get("first") || ""),
-        lastName: String(fd.get("last") || ""),
-        phone: String(fd.get("phone") || ""),
-      });
+      const { user: updated } = await api.customers.update(token, { firstName: first, lastName: last, phone });
       setSession(updated, token);
       showToast(t("toast.profileSaved"));
-    } catch {
-      showToast(t("acc.saveError"));
+      setSettingsBanner({ ok: true, text: t("toast.profileSaved") });
+    } catch (err: any) {
+      const msg = err?.message || t("acc.saveError");
+      showToast(msg);
+      setSettingsBanner({ ok: false, text: msg });
     } finally { setSaving(false); }
   }
 
@@ -227,14 +238,24 @@ export default function AccountPage() {
 
             {tab === "Settings" && (
               <Card title={t("acc.profileSettings")}>
-                <form onSubmit={saveProfile} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field name="first" label={t("co.firstName")} defaultValue={user.firstName}/>
+                <form onSubmit={saveProfile}
+                  onInput={(e) => { const el = e.target as HTMLInputElement; if (el.name && settingsErrors[el.name]) setSettingsErrors(p => ({ ...p, [el.name]: "" })); }}
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field name="first" label={t("co.firstName")} defaultValue={user.firstName} error={settingsErrors.first}/>
                   <Field name="last" label={t("co.lastName")} defaultValue={user.lastName}/>
                   <Field name="email" label={t("co.email")} defaultValue={user.email} full type="email" readOnly/>
-                  <Field name="phone" label={t("co.phone")} defaultValue={user.phone} full/>
+                  <Field name="phone" label={t("co.phone")} defaultValue={user.phone} full error={settingsErrors.phone}/>
                   <label className="sm:col-span-2 flex items-center gap-2.5 text-sm text-muted">
                     <input type="checkbox" defaultChecked className="accent-accent"/> {t("acc.emailOptin")}
                   </label>
+                  {settingsBanner && (
+                    <div role="alert" className={`sm:col-span-2 flex items-center gap-2.5 rounded-xl border px-4 py-3 text-[13px] ${settingsBanner.ok ? "border-green-200 bg-green-50 text-green-700" : "border-red-200 bg-red-50 text-red-700"}`}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
+                        {settingsBanner.ok ? <path d="m5 12 5 5L20 7"/> : <><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></>}
+                      </svg>
+                      <span>{settingsBanner.text}</span>
+                    </div>
+                  )}
                   <div className="sm:col-span-2 flex gap-3 mt-2">
                     <button type="submit" disabled={saving} className="btn btn-primary disabled:opacity-60">{saving ? t("common.pleaseWait") : t("acc.saveChanges")}</button>
                     <button type="button" onClick={() => { signOut(); router.push(`/${lang}`); }} className="btn btn-outline sm:hidden">{t("acc.signOut")}</button>
@@ -361,11 +382,12 @@ function Empty({ msg, cta }: { msg: string; cta?: boolean }) {
     </div>
   );
 }
-function Field({ label, defaultValue, full, type = "text", name, readOnly }: { label: string; defaultValue?: string; full?: boolean; type?: string; name?: string; readOnly?: boolean }) {
+function Field({ label, defaultValue, full, type = "text", name, readOnly, error }: { label: string; defaultValue?: string; full?: boolean; type?: string; name?: string; readOnly?: boolean; error?: string }) {
   return (
-    <label className={`field group flex flex-col gap-1.5 ${full ? "sm:col-span-2" : ""}`}>
+    <label className={`field group flex flex-col gap-1.5 ${full ? "sm:col-span-2" : ""} ${error ? "[&_input]:border-red-400 [&_input:focus]:border-red-400" : ""}`}>
       <span className="text-xs font-medium text-muted transition-colors group-focus-within:text-accent-deep">{label}</span>
-      <input type={type} name={name} defaultValue={defaultValue} readOnly={readOnly} className={readOnly ? "opacity-60 cursor-not-allowed" : undefined}/>
+      <input type={type} name={name} defaultValue={defaultValue} readOnly={readOnly} aria-invalid={!!error} className={readOnly ? "opacity-60 cursor-not-allowed" : undefined}/>
+      {error && <span role="alert" className="text-[11px] text-red-500">{error}</span>}
     </label>
   );
 }
