@@ -1,6 +1,7 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { createOrderWorkflow } from "@medusajs/medusa/core-flows";
+import { decrementStockForVariants } from "../../../lib/catalog";
 
 const CURRENCY = "mnt";
 
@@ -92,8 +93,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         },
       } as any,
     });
+    // Best-effort inventory decrement — the sale is already recorded, so a stock
+    // hiccup must never fail the request. Only inventory-managed variants change.
+    let stockAdjusted = 0;
+    try {
+      const r = await decrementStockForVariants(req.scope, items.map((i) => ({ variant_id: i.variant_id, quantity: i.quantity })));
+      stockAdjusted = r.adjusted;
+    } catch { /* leave stock untouched; sale still recorded */ }
+
     const total = items.reduce((a: number, b: any) => a + b.unit_price * b.quantity, 0);
-    res.json({ id: (result as any)?.id, display_id: (result as any)?.display_id ?? null, total });
+    res.json({ id: (result as any)?.id, display_id: (result as any)?.display_id ?? null, total, stockAdjusted });
   } catch (e: any) {
     res.status(500).json({ message: e?.message || "Борлуулалт бүртгэхэд алдаа гарлаа" });
   }

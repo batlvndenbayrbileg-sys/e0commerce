@@ -182,6 +182,55 @@ export async function lowStockVariants(container: any, threshold = 5): Promise<L
   return out.sort((a, b) => a.stock - b.stock);
 }
 
+// Decrement on-hand stock for a set of variants (used when recording an offline
+// sale). Only touches inventory-managed variants; unmanaged ones are treated as
+// unlimited and skipped. Clamps at 0. Absolute set via updateInventoryLevelsWorkflow.
+export async function decrementStockForVariants(
+  container: any,
+  items: { variant_id: string; quantity: number }[],
+): Promise<{ adjusted: number; skipped: number }> {
+  if (!items.length) return { adjusted: 0, skipped: 0 };
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const stockLocationModule = container.resolve(Modules.STOCK_LOCATION);
+  const [location] = await stockLocationModule.listStockLocations({});
+  if (!location) return { adjusted: 0, skipped: items.length };
+
+  const qtyById = new Map<string, number>();
+  for (const it of items) {
+    const key = String(it.variant_id);
+    qtyById.set(key, (qtyById.get(key) || 0) + Math.max(1, Math.floor(Number(it.quantity) || 1)));
+  }
+
+  const { data } = await query.graph({
+    entity: "variant",
+    fields: [
+      "id", "manage_inventory",
+      "inventory_items.inventory_item_id",
+      "inventory_items.inventory.location_levels.location_id",
+      "inventory_items.inventory.location_levels.stocked_quantity",
+    ],
+    filters: { id: [...qtyById.keys()] } as any,
+  });
+
+  const updates: { inventory_item_id: string; location_id: string; stocked_quantity: number }[] = [];
+  let skipped = 0;
+  for (const v of data as any[]) {
+    const dec = qtyById.get(v.id) || 0;
+    if (!dec) continue;
+    if (!v.manage_inventory) { skipped++; continue; }
+    const item = (v.inventory_items || [])[0];
+    const iid = item?.inventory_item_id;
+    if (!iid) { skipped++; continue; }
+    const level = (item?.inventory?.location_levels || []).find((l: any) => l.location_id === location.id);
+    const from = Number(level?.stocked_quantity ?? 0);
+    updates.push({ inventory_item_id: iid, location_id: location.id, stocked_quantity: Math.max(0, from - dec) });
+  }
+  if (updates.length) {
+    await updateInventoryLevelsWorkflow(container).run({ input: { updates } });
+  }
+  return { adjusted: updates.length, skipped };
+}
+
 export type StockMove = { sku: string; product: string; from: number; to: number };
 export type StockResult = { updated: number; notManaged: number; notFound: number; moves: StockMove[] };
 
