@@ -27,6 +27,8 @@ export default function CheckoutPage() {
   const [shipOptions, setShipOptions] = useState<{ id: string; name: string; amount: number }[]>([]);
   const [shipOptionId, setShipOptionId] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState("");
   const [mounted, setMounted] = useState(false);
   // Coupon state
   const [promoInput, setPromoInput] = useState("");
@@ -89,6 +91,21 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shipOptionId]);
 
+  // Inline validation — custom messages (consistent with the design) instead of
+  // the browser's native popups. Returns true when the form is good to submit.
+  function validate(fd: FormData): boolean {
+    const er: Record<string, string> = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) er.email = t("auth.invalidEmail");
+    for (const f of ["first_name", "last_name", "address_1", "city", "postal_code"]) {
+      if (!String(fd.get(f) || "").trim()) er[f] = t("common.required");
+    }
+    const phone = String(fd.get("phone") || "").trim();
+    if (!phone) er.phone = t("common.required");
+    else if (!/^[0-9+()\-\s]{6,}$/.test(phone)) er.phone = t("co.phoneInvalid");
+    setErrors(er);
+    return Object.keys(er).length === 0;
+  }
+
   async function place(e: React.FormEvent) {
     e.preventDefault();
     if (items.length === 0) return showToast(t("toast.cartEmpty"));
@@ -96,6 +113,13 @@ export default function CheckoutPage() {
     if (lineItems.length === 0) return showToast(t("toast.readd"));
 
     const fd = new FormData(e.target as HTMLFormElement);
+    if (!validate(fd)) {
+      setFormError(t("co.checkFields"));
+      // Bring the first invalid field into view for the user.
+      (e.target as HTMLFormElement).querySelector<HTMLElement>("[aria-invalid='true']")?.scrollIntoView({ block: "center" });
+      return;
+    }
+    setFormError("");
     const address = {
       first_name: String(fd.get("first_name") || "Customer"),
       last_name: String(fd.get("last_name") || ""),
@@ -121,7 +145,9 @@ export default function CheckoutPage() {
       }
       router.push(`/${lang}/checkout/processing?pi=${encodeURIComponent(intent.intentId)}`);
     } catch (err: any) {
-      showToast(err.message || t("toast.payFailed"));
+      const msg = err.message || t("toast.payFailed");
+      showToast(msg);
+      setFormError(msg);
       setBusy(false);
     }
   }
@@ -148,27 +174,31 @@ export default function CheckoutPage() {
           <Step n={4} label={t("co.confirm")}/>
         </div>
 
-        <form onSubmit={place} className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 lg:gap-8 pb-10">
+        <form onSubmit={place} noValidate aria-busy={busy}
+          onInput={(e) => { const el = e.target as HTMLInputElement; if (el.name && errors[el.name]) setErrors(prev => ({ ...prev, [el.name]: "" })); }}
+          className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 lg:gap-8 pb-10">
           <div>
             <FormCard title={t("co.contact")} i={0}>
               <div className="grid gap-3.5">
-                <Field label={t("co.email")} required>
-                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("news.placeholder")}/>
+                <Field label={t("co.email")} required error={errors.email}>
+                  <input type="email" name="email" value={email} aria-invalid={!!errors.email}
+                    onChange={e => { setEmail(e.target.value); if (errors.email) setErrors(p => ({ ...p, email: "" })); }}
+                    placeholder={t("news.placeholder")}/>
                 </Field>
               </div>
             </FormCard>
 
             <FormCard title={t("co.shippingAddress")} i={1}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <Field label={t("co.firstName")}><input name="first_name" placeholder="Бат" required/></Field>
-                <Field label={t("co.lastName")}><input name="last_name" placeholder="Эрдэнэ" required/></Field>
-                <Field label={t("co.address")} full><input name="address_1" placeholder={t("co.addressPh")} required/></Field>
-                <Field label={t("co.city")}><input name="city" placeholder="Улаанбаатар" required/></Field>
-                <Field label={t("co.postal")}><input name="postal_code" placeholder="14200" required/></Field>
+                <Field label={t("co.firstName")} required error={errors.first_name}><input name="first_name" placeholder="Бат" aria-invalid={!!errors.first_name}/></Field>
+                <Field label={t("co.lastName")} required error={errors.last_name}><input name="last_name" placeholder="Эрдэнэ" aria-invalid={!!errors.last_name}/></Field>
+                <Field label={t("co.address")} full required error={errors.address_1}><input name="address_1" placeholder={t("co.addressPh")} aria-invalid={!!errors.address_1}/></Field>
+                <Field label={t("co.city")} required error={errors.city}><input name="city" placeholder="Улаанбаатар" aria-invalid={!!errors.city}/></Field>
+                <Field label={t("co.postal")} required error={errors.postal_code}><input name="postal_code" placeholder="14200" aria-invalid={!!errors.postal_code}/></Field>
                 <Field label={t("co.country")}>
                   <select name="country"><option value="mn">{t("co.mongolia")}</option></select>
                 </Field>
-                <Field label={t("co.phone")}><input name="phone" placeholder="+976 …"/></Field>
+                <Field label={t("co.phone")} required error={errors.phone}><input name="phone" type="tel" inputMode="tel" placeholder="+976 …" aria-invalid={!!errors.phone}/></Field>
               </div>
             </FormCard>
 
@@ -204,6 +234,12 @@ export default function CheckoutPage() {
               </div>
             </FormCard>
 
+            {formError && (
+              <div role="alert" className="mb-3 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" className="mt-0.5 shrink-0" aria-hidden><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+                <span>{formError}</span>
+              </div>
+            )}
             <button disabled={busy} type="submit" className="btn btn-primary w-full justify-center h-[60px] text-base disabled:opacity-60">
               {busy ? (
                 <><span className="w-5 h-5 rounded-full border-2 border-ink/25 border-t-ink animate-spin"/> {t("co.starting")}</>
@@ -318,11 +354,12 @@ function FormCard({ title, children, i = 0 }: { title: string; children: React.R
     </motion.div>
   );
 }
-function Field({ label, full, children, required }: { label: string; full?: boolean; children: React.ReactNode; required?: boolean }) {
+function Field({ label, full, children, required, error }: { label: string; full?: boolean; children: React.ReactNode; required?: boolean; error?: string }) {
   return (
-    <label className={`field group flex flex-col gap-1.5 ${full ? "md:col-span-2" : ""}`}>
+    <label className={`field group flex flex-col gap-1.5 ${full ? "md:col-span-2" : ""} ${error ? "[&_input]:border-red-400 [&_select]:border-red-400 [&_input:focus]:border-red-400" : ""}`}>
       <span className="text-xs font-medium text-muted transition-colors group-focus-within:text-accent-deep">{label}{required && " *"}</span>
       {children}
+      {error && <span role="alert" className="text-[11px] text-red-500">{error}</span>}
     </label>
   );
 }

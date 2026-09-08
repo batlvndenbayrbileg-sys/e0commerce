@@ -36,6 +36,7 @@ export default function AuthPage() {
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState("");
   const isReg = mode === "register";
   const isForgot = mode === "forgot";
 
@@ -56,6 +57,7 @@ export default function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
+    setFormError("");
     setBusy(true);
     try {
       if (isForgot) {
@@ -78,19 +80,21 @@ export default function AuthPage() {
       showToast(`${t("auth.welcomeName")}, ${result.user.firstName}!`);
       router.push(`/${lang}/account`);
     } catch (err: any) {
-      showToast(err.message || t("toast.authFailed"));
+      const msg = err.message || t("toast.authFailed");
+      showToast(msg);
+      setFormError(msg);
       setBusy(false);
     }
   }
 
-  const goForgot = () => { setMode("forgot"); setSent(false); setErrors({}); };
-  const backToLogin = () => { setMode("login"); setSent(false); setErrors({}); };
+  const goForgot = () => { setMode("forgot"); setSent(false); setErrors({}); setFormError(""); };
+  const backToLogin = () => { setMode("login"); setSent(false); setErrors({}); setFormError(""); };
 
   const score = pwScore(form.password);
   const strengthLabel = [t("auth.pwWeak"), t("auth.pwWeak"), t("auth.pwFair"), t("auth.pwStrong")][score];
   const strengthColor = ["#9aa0a6", "#ef4444", "#f59e0b", "#16a34a"][score];
 
-  const toggle = () => { setMode(isReg ? "login" : "register"); setErrors({}); };
+  const toggle = () => { setMode(isReg ? "login" : "register"); setErrors({}); setFormError(""); };
 
   return (
     <div className="min-h-screen grid place-items-center px-4 py-8 sm:py-12" style={{ background: "linear-gradient(160deg, #FFFFFF 0%, #FDF3EC 100%)" }}>
@@ -181,6 +185,12 @@ export default function AuthPage() {
               </div>
             )}
 
+            {formError && (
+              <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" className="mt-0.5 shrink-0" aria-hidden><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+                <span>{formError}</span>
+              </div>
+            )}
             <button disabled={busy} type="submit"
               className="w-full h-[52px] rounded-full text-white font-semibold uppercase tracking-[.12em] text-[13px] grid place-items-center disabled:opacity-60 transition active:scale-[.99] shadow-[0_12px_28px_-8px_rgba(110,84,236,.6)]"
               style={{ background: "linear-gradient(95deg, #FF7A2E 0%, #E8550A 100%)" }}>
