@@ -19,6 +19,13 @@ const BRAND_CSS = `
   --bg-interactive: rgba(232, 85, 10, 1) !important;
   --border-interactive: rgba(232, 85, 10, 1) !important;
 }
+/* Login page: hide Medusa's default logo + "Welcome to Medusa" heading/subtitle
+   (the first two children of the max-w-[280px] login column) so the NARAN sign-in
+   header renders as the hero. Best-effort — a no-op if Medusa changes the markup. */
+[class*="min-h-dvh"] [class*="max-w-[280px]"] > :first-child,
+[class*="min-h-dvh"] [class*="max-w-[280px]"] > :nth-child(2) {
+  display: none !important;
+}
 /* Sidebar store badge → NARAN sun mark. Targets the store-header button's first
    (24px avatar) cell via its distinctive arbitrary grid template. Best-effort:
    if Medusa changes this structure the rule simply no-ops. A white sun sits over
