@@ -19,6 +19,20 @@ const BRAND_CSS = `
   --bg-interactive: rgba(232, 85, 10, 1) !important;
   --border-interactive: rgba(232, 85, 10, 1) !important;
 }
+/* Sidebar store badge → NARAN sun mark. Targets the store-header button's first
+   (24px avatar) cell via its distinctive arbitrary grid template. Best-effort:
+   if Medusa changes this structure the rule simply no-ops. A white sun sits over
+   the warm gradient; the gradient alone still brands the badge if the SVG fails. */
+[class*="1fr_15px"] > :first-child > * {
+  background-image:
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23fff'%20stroke-width='2.2'%20stroke-linecap='round'%3E%3Ccircle%20cx='12'%20cy='12'%20r='4.2'%20fill='%23fff'/%3E%3Cpath%20d='M12%203v2M12%2019v2M5%205l1.5%201.5M17.5%2017.5L19%2019M3%2012h2M19%2012h2M5%2019l1.5-1.5M17.5%206.5L19%205'/%3E%3C/svg%3E"),
+    linear-gradient(135deg, #FF8A3D 0%, #E8550A 100%) !important;
+  background-size: 66% 66%, cover !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  border-radius: 6px !important;
+  color: transparent !important;
+}
 `;
 
 const BrandTheme = () => {
