@@ -201,29 +201,36 @@ export async function decrementStockForVariants(
     qtyById.set(key, (qtyById.get(key) || 0) + Math.max(1, Math.floor(Number(it.quantity) || 1)));
   }
 
-  const { data } = await query.graph({
-    entity: "variant",
-    fields: [
-      "id", "manage_inventory",
-      "inventory_items.inventory_item_id",
-      "inventory_items.inventory.location_levels.location_id",
-      "inventory_items.inventory.location_levels.stocked_quantity",
-    ],
-    filters: { id: [...qtyById.keys()] } as any,
-  });
-
+  // Paginate variants and match by id in JS — same proven shape as
+  // setStockFromRows (no reliance on an id-array filter). Stops early once every
+  // requested variant is found.
   const updates: { inventory_item_id: string; location_id: string; stocked_quantity: number }[] = [];
   let skipped = 0;
-  for (const v of data as any[]) {
-    const dec = qtyById.get(v.id) || 0;
-    if (!dec) continue;
-    if (!v.manage_inventory) { skipped++; continue; }
-    const item = (v.inventory_items || [])[0];
-    const iid = item?.inventory_item_id;
-    if (!iid) { skipped++; continue; }
-    const level = (item?.inventory?.location_levels || []).find((l: any) => l.location_id === location.id);
-    const from = Number(level?.stocked_quantity ?? 0);
-    updates.push({ inventory_item_id: iid, location_id: location.id, stocked_quantity: Math.max(0, from - dec) });
+  const seen = new Set<string>();
+  for (let skip = 0; seen.size < qtyById.size; skip += 500) {
+    const { data } = await query.graph({
+      entity: "variant",
+      fields: [
+        "id", "manage_inventory",
+        "inventory_items.inventory_item_id",
+        "inventory_items.inventory.location_levels.location_id",
+        "inventory_items.inventory.location_levels.stocked_quantity",
+      ],
+      pagination: { skip, take: 500 },
+    });
+    for (const v of data as any[]) {
+      const dec = qtyById.get(v.id);
+      if (!dec || seen.has(v.id)) continue;
+      seen.add(v.id);
+      if (!v.manage_inventory) { skipped++; continue; }
+      const item = (v.inventory_items || [])[0];
+      const iid = item?.inventory_item_id;
+      if (!iid) { skipped++; continue; }
+      const level = (item?.inventory?.location_levels || []).find((l: any) => l.location_id === location.id);
+      const from = Number(level?.stocked_quantity ?? 0);
+      updates.push({ inventory_item_id: iid, location_id: location.id, stocked_quantity: Math.max(0, from - dec) });
+    }
+    if (data.length < 500) break;
   }
   if (updates.length) {
     await updateInventoryLevelsWorkflow(container).run({ input: { updates } });

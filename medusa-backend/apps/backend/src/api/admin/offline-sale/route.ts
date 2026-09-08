@@ -6,6 +6,7 @@ import {
   markPaymentCollectionAsPaid,
 } from "@medusajs/medusa/core-flows";
 import { decrementStockForVariants } from "../../../lib/catalog";
+import { fulfillOrder, shipOrder, deliverOrder } from "../../../lib/fulfillment";
 
 const CURRENCY = "mnt";
 
@@ -124,6 +125,20 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       }
     } catch { /* order recorded; payment status left as-is */ }
 
+    // An in-person sale is handed over on the spot — fulfill, ship and deliver it
+    // so it doesn't linger as "awaiting fulfillment". Best-effort/idempotent.
+    let fulfilled = false;
+    try {
+      if (orderId) {
+        const f = await fulfillOrder(req.scope, orderId);
+        if (f.fulfilled) {
+          await shipOrder(req.scope, orderId);
+          await deliverOrder(req.scope, orderId);
+          fulfilled = true;
+        }
+      }
+    } catch { /* order recorded + paid; fulfillment left as-is */ }
+
     // Best-effort inventory decrement — only inventory-managed variants change.
     let stockAdjusted = 0;
     try {
@@ -131,7 +146,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       stockAdjusted = r.adjusted;
     } catch { /* leave stock untouched; sale still recorded */ }
 
-    res.json({ id: orderId, display_id: (result as any)?.display_id ?? null, total, paid, stockAdjusted });
+    res.json({ id: orderId, display_id: (result as any)?.display_id ?? null, total, paid, fulfilled, stockAdjusted });
   } catch (e: any) {
     res.status(500).json({ message: e?.message || "Борлуулалт бүртгэхэд алдаа гарлаа" });
   }
