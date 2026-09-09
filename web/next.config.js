@@ -1,15 +1,23 @@
 /** @type {import('next').NextConfig} */
 
-// Allow next/image to optimize images served from the CDN/R2 host (if set).
-const remotePatterns = [];
+// Allow next/image to optimize images served from the CDN/R2 host (if set) plus
+// Unsplash (the demo/seed catalog's image host — real catalogs use R2).
+const remotePatterns = [{ protocol: "https", hostname: "images.unsplash.com" }];
 try {
   const cdn = process.env.NEXT_PUBLIC_SITE_URL && process.env.S3_FILE_URL;
   if (process.env.S3_FILE_URL) {
     const u = new URL(process.env.S3_FILE_URL);
     remotePatterns.push({ protocol: u.protocol.replace(":", ""), hostname: u.hostname });
   }
+  // Medusa's own file host — admin-uploaded images (e.g. hero/promo pictures) are
+  // served from Medusa's /static in dev, and from R2 above in prod. Allow it so
+  // next/image can render them.
+  if (process.env.NEXT_PUBLIC_MEDUSA_URL) {
+    const m = new URL(process.env.NEXT_PUBLIC_MEDUSA_URL);
+    remotePatterns.push({ protocol: m.protocol.replace(":", ""), hostname: m.hostname, port: m.port || undefined });
+  }
   void cdn;
-} catch { /* ignore malformed S3_FILE_URL */ }
+} catch { /* ignore malformed URLs */ }
 
 const nextConfig = {
   reactStrictMode: true,
