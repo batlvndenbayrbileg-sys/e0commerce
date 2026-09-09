@@ -124,6 +124,11 @@ services:
       MEDUSA_URL: http://medusa:9000
       MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK}
       NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
+      # Botxon (botxon.chat → QPay) — active gateway; REQUIRED in prod.
+      # Webhook: https://<storefront>/api/webhooks/botxon
+      BOTXON_GATEWAY_URL: ${BOTXON_GATEWAY_URL:-https://botxon.chat}
+      BOTXON_GATEWAY_KEY: ${BOTXON_GATEWAY_KEY:-}
+      BOTXON_WEBHOOK_SECRET: ${BOTXON_WEBHOOK_SECRET:-}
       WIRE_SECRET_KEY: ${WIRE_SECRET_KEY:-}
       WIRE_WEBHOOK_SECRET: ${WIRE_WEBHOOK_SECRET:-}
       RESEND_API_KEY: ${RESEND_API_KEY:-}

@@ -17,7 +17,8 @@ export const wire = {
       body: JSON.stringify({ ...input, origin: window.location.origin }),
     });
     const d = await r.json();
-    if (!r.ok) throw new Error(d.error || "Payment could not be started");
+    // Prefer a human message (e.g. the out-of-stock notice) over the error code.
+    if (!r.ok) throw new Error(d.message || d.error || "Payment could not be started");
     return d.data;
   },
   status: async (intentId: string): Promise<IntentStatus> => {

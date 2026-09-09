@@ -159,8 +159,13 @@ services:
       MEDUSA_URL: http://medusa:9000
       MEDUSA_PK: ${NEXT_PUBLIC_MEDUSA_PK}
       NEXT_PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-https://naran.mn}
-      # Wire (wire.mn → QPay & bank apps). REQUIRED in prod — the api refuses to
-      # boot without WIRE_SECRET_KEY (would otherwise auto-succeed payments).
+      # Botxon (botxon.chat → QPay & bank apps) — the ACTIVE gateway. REQUIRED in
+      # prod: the api refuses to boot without BOTXON_GATEWAY_KEY (blank = mock,
+      # would auto-"pay"). Webhook: https://<storefront>/api/webhooks/botxon
+      BOTXON_GATEWAY_URL: ${BOTXON_GATEWAY_URL:-https://botxon.chat}
+      BOTXON_GATEWAY_KEY: ${BOTXON_GATEWAY_KEY:-}
+      BOTXON_WEBHOOK_SECRET: ${BOTXON_WEBHOOK_SECRET:-}
+      # Legacy Wire gateway (unused by checkout).
       WIRE_SECRET_KEY: ${WIRE_SECRET_KEY:-}
       WIRE_WEBHOOK_SECRET: ${WIRE_WEBHOOK_SECRET:-}
       # Email (Resend).

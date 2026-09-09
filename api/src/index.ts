@@ -5,16 +5,16 @@ import express from "express";
 import cors from "cors";
 import productsRouter from "./routes/products.js";
 import authRouter from "./routes/auth.js";
-import paymentsRouter, { wireWebhook } from "./routes/payments.js";
+import paymentsRouter, { wireWebhook, botxonWebhook } from "./routes/payments.js";
 import { rateLimit } from "./lib/rate-limit.js";
 
 const IS_PROD = process.env.NODE_ENV === "production";
 
-// B1 — never run mock payments in production. Without WIRE_SECRET_KEY the Wire
-// client auto-"succeeds" every intent, so a live store would take orders while
-// collecting no money. Refuse to boot instead of failing silently.
-if (IS_PROD && !process.env.WIRE_SECRET_KEY) {
-  throw new Error("WIRE_SECRET_KEY is required in production — refusing to start in mock payment mode.");
+// B1 — never run mock payments in production. Botxon (the active QPay gateway)
+// auto-"pays" invoices in mock mode without a key, so a live store would take
+// orders while collecting no money. Refuse to boot instead of failing silently.
+if (IS_PROD && !process.env.BOTXON_GATEWAY_KEY) {
+  throw new Error("BOTXON_GATEWAY_KEY is required in production — refusing to start in mock payment mode.");
 }
 
 const app = express();
@@ -28,8 +28,9 @@ if (IS_PROD && (!webOrigins || webOrigins.length === 0)) {
 }
 app.use(cors({ origin: webOrigins && webOrigins.length ? webOrigins : true, credentials: true }));
 
-// Wire webhook needs the raw body for signature verification — mount BEFORE json
+// Payment webhooks need the RAW body for signature verification — mount BEFORE json.
 app.post("/api/webhooks/wire", express.raw({ type: "*/*" }), wireWebhook);
+app.post("/api/webhooks/botxon", express.raw({ type: "*/*" }), botxonWebhook);
 
 app.use(express.json({ limit: "1mb" }));
 

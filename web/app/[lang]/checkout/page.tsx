@@ -9,7 +9,7 @@ import { useCart, useToast, useAuth } from "@/lib/store";
 import { useT, useLang } from "@/components/LangProvider";
 import { money } from "@/lib/api";
 import { medusa } from "@/lib/medusa";
-import { wire } from "@/lib/wire";
+import { botxon } from "@/lib/botxon";
 
 const EASE: [number, number, number, number] = [0.22, 0.61, 0.36, 1];
 
@@ -136,14 +136,11 @@ export default function CheckoutPage() {
       const coarse: "standard" | "express" = /express/i.test(selectedShip?.name || "") ? "express" : "standard";
       // 1. Build the Medusa cart (not completed yet)
       const { cartId, total: cartTotal } = await medusa.prepareCart({ email, items: lineItems, shippingOptionId: shipOptionId || undefined, address, token: token ?? undefined, promoCode: promoCode ?? undefined });
-      // 2. Start a Wire payment (QPay / bank apps)
-      const intent = await wire.createIntent({ cartId, amount: cartTotal, email, shippingMethod: coarse });
-      // 3a. Live → redirect to Wire hosted checkout; 3b. mock → our processing page polls
-      if (intent.live && intent.checkoutUrl) {
-        window.location.href = intent.checkoutUrl;
-        return;
-      }
-      router.push(`/${lang}/checkout/processing?pi=${encodeURIComponent(intent.intentId)}`);
+      // 2. Create a Botxon invoice (QPay / bank apps) — money to the merchant's QPay.
+      const invoice = await botxon.createInvoice({ cartId, amount: cartTotal, email, shippingMethod: coarse, description: "NARAN" });
+      // 3. Stash QR + deeplinks for the pay page, then show the QR and poll status.
+      try { sessionStorage.setItem(`botxon_inv_${invoice.invoiceId}`, JSON.stringify({ ...invoice, amount: cartTotal })); } catch { /* private mode */ }
+      router.push(`/${lang}/checkout/pay?inv=${encodeURIComponent(invoice.invoiceId)}`);
     } catch (err: any) {
       const msg = err.message || t("toast.payFailed");
       showToast(msg);

@@ -5,6 +5,10 @@ import {
   createPaymentIntent, getPaymentIntent, createCheckoutSession,
   verifyWireSignature, WIRE_LIVE, WIRE_WEBHOOK_IP,
 } from "../lib/wire.js";
+import {
+  createInvoice as botxonCreateInvoice, getInvoice as botxonGetInvoice,
+  verifyBotxonSignature, BOTXON_LIVE, type BotxonInvoice,
+} from "../lib/botxon.js";
 import { sendOrderConfirmation } from "../lib/email.js";
 import { rateLimit } from "../lib/rate-limit.js";
 
@@ -26,11 +30,13 @@ type Record = {
   // paid         → cart completed into a real order
   // needs_review → Wire captured money but the cart could not be completed after
   //                MAX_SETTLE_ATTEMPTS (e.g. out of stock); flagged for a human.
-  status: "pending" | "paid" | "needs_review";
+  // failed       → the gateway reported the payment failed (Botxon only); stop polling.
+  status: "pending" | "paid" | "needs_review" | "failed";
   attempts?: number;   // completion attempts made (across polls/webhook)
   emailed?: boolean;   // guard: send the confirmation email exactly once
   reported?: boolean;  // guard: alert on an unfulfilled paid order exactly once
   order?: { id: string; total: number; email: string; estimatedDelivery: string; items: OrderItem[] };
+  invoice?: BotxonInvoice; // Botxon: QR + bank deeplinks, so the pay page can re-render them
 };
 const intents = new Map<string, Record>();
 
@@ -68,6 +74,39 @@ async function cartTotal(cartId: string): Promise<number> {
   const total = data?.cart?.total;
   if (typeof total !== "number" || !Number.isFinite(total)) throw new Error("Cart not found");
   return Math.round(total);
+}
+
+// Pre-payment stock guard (B3). Returns the titles of any cart lines whose
+// managed inventory is already short of the requested quantity, so we can refuse
+// to charge for something we cannot fulfil. FAIL-OPEN by design: if the cart or
+// its inventory data can't be read (field unsupported, backend blip, unmanaged
+// variant), it returns [] and the charge proceeds — this can only ever BLOCK a
+// clearly out-of-stock purchase, never a valid one. The residual millisecond
+// race (two buyers of the last unit both passing here) is still caught safely by
+// settle() → needs_review, so no paid order is ever lost.
+async function cartStockShortfall(cartId: string): Promise<string[]> {
+  try {
+    const fields =
+      "items.quantity,items.title,items.product_title,items.variant.manage_inventory,items.variant.inventory_items.inventory.location_levels.available_quantity";
+    const res = await fetch(`${MEDUSA_URL}/store/carts/${cartId}?fields=${encodeURIComponent(fields)}`, {
+      headers: { "content-type": "application/json", "x-publishable-api-key": MEDUSA_PK },
+    });
+    const data: any = await res.json().catch(() => ({}));
+    const items = data?.cart?.items;
+    if (!Array.isArray(items) || !items.length) return []; // unknown → allow
+    const short: string[] = [];
+    for (const it of items) {
+      const v = it?.variant;
+      if (!v || v.manage_inventory === false) continue;         // unlimited → skip
+      const levels = (v.inventory_items || []).flatMap((ii: any) => ii?.inventory?.location_levels || []);
+      if (!levels.length) continue;                              // no data → allow this line
+      const available = levels.reduce((a: number, l: any) => a + Number(l?.available_quantity ?? 0), 0);
+      if (available < Number(it.quantity || 0)) short.push(it.product_title || it.title || "Бараа");
+    }
+    return short;
+  } catch {
+    return []; // any error → fail open, never block a valid checkout
+  }
 }
 
 // Complete the Medusa cart (already has address + shipping + payment session) → real order
@@ -154,6 +193,65 @@ async function doSettle(intentId: string): Promise<Record | null> {
   return rec;
 }
 
+/* ============================ Botxon gateway ============================ */
+// Same money-critical guarantees as Wire above — reuses completeMedusaCart,
+// reportUnfulfilledPayment, cartStockShortfall and the needs_review flow — but
+// for Botxon's invoice/QR model. Keyed by invoiceId; the order ref IS the cart
+// id, so a cold restart can still complete via getInvoice(orderRef).
+const invoices = new Map<string, Record>();
+const botxonInFlight = new Map<string, Promise<Record | null>>();
+
+function settleBotxon(invoiceId: string): Promise<Record | null> {
+  const cached = invoices.get(invoiceId);
+  if (cached?.status === "paid") return Promise.resolve(cached);
+  const running = botxonInFlight.get(invoiceId);
+  if (running) return running;
+  const p = doSettleBotxon(invoiceId).finally(() => botxonInFlight.delete(invoiceId));
+  botxonInFlight.set(invoiceId, p);
+  return p;
+}
+
+async function doSettleBotxon(invoiceId: string): Promise<Record | null> {
+  const cached = invoices.get(invoiceId);
+  if (cached?.status === "paid") return cached;
+
+  // Botxon is the source of truth — re-check even when a webhook triggered us.
+  const inv = await botxonGetInvoice(invoiceId);
+  const cartId = cached?.cartId ?? inv.orderRef;
+  if (!cartId) return null; // unknown invoice
+
+  const rec: Record =
+    cached ?? { cartId, amount: Math.round(inv.amount || 0), email: "", shippingMethod: "standard", status: "pending", attempts: 0 };
+
+  // Terminal failure from the gateway → stop polling, no order.
+  if (inv.status === "failed") { rec.status = "failed"; invoices.set(invoiceId, rec); return rec; }
+  if (inv.status !== "paid") { invoices.set(invoiceId, rec); return rec; }
+  if (rec.status === "paid") return rec;
+
+  // Money is in. Turn the cart into a Medusa order (idempotent); on persistent
+  // failure flag for reconciliation rather than losing a paid order (B2).
+  rec.attempts = (rec.attempts ?? 0) + 1;
+  try {
+    const order = await completeMedusaCart(cartId, rec.shippingMethod);
+    rec.order = order;
+    rec.amount = order.total;
+    rec.status = "paid";
+    // Amount integrity: what Botxon collected must equal the order total.
+    const paid = typeof inv.amount === "number" ? Math.round(inv.amount) : null;
+    if (paid != null && paid !== order.total) {
+      console.error(`[botxon] amount mismatch invoice=${invoiceId} paid=${paid} order=${order.total}`);
+      try { Sentry.captureMessage(`Botxon amount mismatch: invoice ${invoiceId} paid ${paid} vs order ${order.total}`, "warning"); } catch { /* no DSN */ }
+    }
+    if (!rec.emailed) { rec.emailed = true; sendOrderConfirmation(order).catch(() => {}); }
+  } catch (e: any) {
+    rec.status = "needs_review";
+    if (rec.attempts >= MAX_SETTLE_ATTEMPTS) reportUnfulfilledPayment(invoiceId, rec, e);
+    else console.error(`[botxon] completion attempt ${rec.attempts}/${MAX_SETTLE_ATTEMPTS} failed for cart ${cartId}: ${e.message}`);
+  }
+  invoices.set(invoiceId, rec);
+  return rec;
+}
+
 const router = Router();
 
 const intentSchema = z.object({
@@ -174,13 +272,20 @@ router.post("/intent", intentCreateLimit, async (req, res) => {
   if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
   const { cartId, email, shippingMethod, origin } = parsed.data;
   try {
+    // Stock guard (B3): refuse to start a payment for a cart that already can't be
+    // fulfilled, so the customer is told BEFORE they pay — not left with a captured
+    // charge and no order. Fail-open (see cartStockShortfall); the rare residual
+    // race is still caught by settle() → needs_review, so money is never lost.
+    const short = await cartStockShortfall(cartId);
+    if (short.length) {
+      return res.status(409).json({
+        error: "out_of_stock",
+        items: short,
+        message: `Уучлаарай, дараах бараа дууссан байна: ${short.join(", ")}. Сагсаа шинэчилнэ үү.`,
+      });
+    }
     // Authoritative amount from the cart, not the client. This also confirms the
     // cart still exists/prices before we charge.
-    // NOTE (B3): Medusa reserves inventory only at cart completion, so there is a
-    // small window where two buyers can both pay for the last unit. That is not a
-    // money-loss bug here — settle() catches an un-completable paid cart, flags it
-    // (needs_review + Sentry alert) and never double-charges. True pre-payment
-    // inventory reservation is a separate backend feature (see audit B3).
     const amount = await cartTotal(cartId);
     const intent = await createPaymentIntent({
       amount, idempotencyKey: `cart_${cartId}`,
@@ -220,6 +325,66 @@ router.get("/intent", async (req, res) => {
   }
 });
 
+/* ---- Botxon: create invoice (QR) + poll status ---- */
+const botxonInvoiceSchema = z.object({
+  cartId: z.string().min(1),
+  email: z.string().email(),
+  shippingMethod: z.enum(["standard", "express"]).default("standard"),
+  description: z.string().max(200).optional(),
+});
+
+// Reuse the payment-start limiter (invoice creation is the abusable step).
+router.post("/botxon/invoice", intentCreateLimit, async (req, res) => {
+  const parsed = botxonInvoiceSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() });
+  const { cartId, email, shippingMethod, description } = parsed.data;
+  try {
+    // Stock guard (B3): never invoice for a cart we can't fulfil.
+    const short = await cartStockShortfall(cartId);
+    if (short.length) {
+      return res.status(409).json({
+        error: "out_of_stock", items: short,
+        message: `Уучлаарай, дараах бараа дууссан байна: ${short.join(", ")}. Сагсаа шинэчилнэ үү.`,
+      });
+    }
+    // Authoritative amount from the cart, never the client.
+    const amount = await cartTotal(cartId);
+    // customerRef is Botxon's optional QPay receiver code (a phone), NOT an email
+    // — omit it rather than send a wrongly-shaped value. orderRef (the cart id)
+    // already links the payment back to the order (which carries the email).
+    const invoice = await botxonCreateInvoice({
+      amount, description: description || `NARAN order ${cartId}`,
+      orderRef: cartId,
+    });
+    invoices.set(invoice.invoiceId, { cartId, amount, email, shippingMethod, status: "pending", attempts: 0, invoice });
+    res.json({ data: {
+      invoiceId: invoice.invoiceId, qrText: invoice.qrText, qrImage: invoice.qrImage,
+      shortUrl: invoice.shortUrl, urls: invoice.urls, live: BOTXON_LIVE,
+    } });
+  } catch (e: any) {
+    console.error("botxon invoice error:", e.message);
+    res.status(502).json({ error: "Payment could not be started" });
+  }
+});
+
+router.get("/botxon/invoice", async (req, res) => {
+  const id = req.query.id as string;
+  if (!id) return res.status(400).json({ error: "id required" });
+  try {
+    const rec = await settleBotxon(id);
+    if (!rec) return res.status(404).json({ error: "invoice not found" });
+    const exhausted = rec.status === "needs_review" && (rec.attempts ?? 0) >= MAX_SETTLE_ATTEMPTS;
+    const status =
+      rec.status === "paid" ? "succeeded" :
+      rec.status === "failed" ? "failed" :
+      exhausted ? "review" : "pending";
+    res.json({ data: { status, order: rec.order ?? null, invoice: rec.invoice ?? null } });
+  } catch (e: any) {
+    console.error("botxon settle error:", e.message);
+    res.status(502).json({ error: "Could not verify payment" });
+  }
+});
+
 export default router;
 
 // Webhook (mounted with raw body in index.ts)
@@ -247,6 +412,37 @@ export async function wireWebhook(req: Request, res: Response) {
   if (event?.type === "payment_intent.succeeded") {
     const intentId = (event.data?.object ?? event.data)?.id;
     if (intentId) { try { await settle(intentId); } catch (e: any) { console.error("webhook settle:", e.message); } }
+  }
+  res.json({ received: true });
+}
+
+// Botxon webhook: POST { event:"invoice.paid", invoiceId, orderRef, amount, paymentId }
+// with header `X-Botxon-Signature: sha256=HMAC(raw_body, BOTXON_WEBHOOK_SECRET)`.
+export async function botxonWebhook(req: Request, res: Response) {
+  const rawBody = (req.body as Buffer)?.toString("utf8") || "";
+  const secret = process.env.BOTXON_WEBHOOK_SECRET;
+  // Live mode MUST be signed. Refuse if misconfigured rather than trusting it.
+  if (BOTXON_LIVE && !secret) {
+    console.error("botxon webhook: BOTXON_WEBHOOK_SECRET not set in live mode — refusing");
+    return res.status(500).json({ error: "Webhook not configured" });
+  }
+  if (secret) {
+    const sig = (req.headers["x-botxon-signature"] as string) || null;
+    if (!verifyBotxonSignature(rawBody, sig, secret)) return res.status(400).json({ error: "Invalid signature" });
+  }
+  let event: any;
+  try { event = JSON.parse(rawBody); } catch { return res.json({ received: true }); }
+  if (event?.event === "invoice.paid" && event?.invoiceId) {
+    // Defense in depth: the webhook's amount must match what we invoiced. Don't
+    // settle a mismatched amount — leave it to the status poll / manual review.
+    // (settleBotxon re-verifies against the completed order total regardless.)
+    const rec = invoices.get(event.invoiceId);
+    if (rec && typeof event.amount === "number" && Math.round(event.amount) !== rec.amount) {
+      console.error(`[botxon] webhook amount mismatch invoice=${event.invoiceId} webhook=${event.amount} expected=${rec.amount}`);
+      try { Sentry.captureMessage(`Botxon webhook amount mismatch invoice ${event.invoiceId}`, "warning"); } catch { /* no DSN */ }
+      return res.json({ received: true });
+    }
+    try { await settleBotxon(event.invoiceId); } catch (e: any) { console.error("botxon webhook settle:", e.message); }
   }
   res.json({ received: true });
 }
