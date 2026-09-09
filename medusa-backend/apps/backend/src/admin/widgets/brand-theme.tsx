@@ -26,6 +26,18 @@ const BRAND_CSS = `
 [class*="min-h-dvh"] [class*="max-w-[280px]"] > :nth-child(2) {
   display: none !important;
 }
+/* Active sidebar nav item → NARAN orange accent. React Router's NavLink sets
+   aria-current="page" on the active link, so this reliably tints the active
+   route's label + icon warm and adds a soft orange rail, without depending on
+   Medusa's (minified) active class names. Best-effort: no-op if absent. */
+nav a[aria-current="page"] {
+  color: var(--fg-interactive) !important;
+  background-image: linear-gradient(rgba(232,85,10,.08), rgba(232,85,10,.08)) !important;
+  box-shadow: inset 2px 0 0 0 var(--fg-interactive) !important;
+}
+nav a[aria-current="page"] svg {
+  color: var(--fg-interactive) !important;
+}
 /* Sidebar store badge → NARAN sun mark. Targets the store-header button's first
    (24px avatar) cell via its distinctive arbitrary grid template. Best-effort:
    if Medusa changes this structure the rule simply no-ops. A white sun sits over
