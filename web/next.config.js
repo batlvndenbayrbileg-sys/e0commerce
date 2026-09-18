@@ -51,9 +51,8 @@ const nextConfig = {
     // Content Security Policy — the strongest mitigation against XSS/data
     // exfiltration. 'unsafe-inline' stays for scripts/styles because Next.js
     // hydration and framer-motion inject inline; everything else is allowlisted.
-    // Shipped as Report-Only first so it CANNOT break the live store — check the
-    // browser console for violations, then rename the header below to
-    // "Content-Security-Policy" to enforce it.
+    // ENFORCED (validated against a production build). 'unsafe-eval' is added in
+    // development only (webpack/HMR needs it); production bundles don't eval.
     const csp = [
       "default-src 'self'",
       "base-uri 'self'",
@@ -62,7 +61,7 @@ const nextConfig = {
       "img-src 'self' data: blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net",
+      `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : ""} https://www.googletagmanager.com https://connect.facebook.net`.replace(/\s+/g, " ").trim(),
       `connect-src 'self' ${medusaOrigin} https://www.google-analytics.com https://region1.google-analytics.com https://*.ingest.sentry.io https://connect.facebook.net`.replace(/\s+/g, " ").trim(),
       "frame-src 'self'",
       "form-action 'self'",
@@ -80,8 +79,8 @@ const nextConfig = {
       { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
       // Turn off powerful features the store doesn't use.
       { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
-      // Report-only CSP (see note above) — observe, then promote to enforce.
-      { key: "Content-Security-Policy-Report-Only", value: csp },
+      // Enforced CSP (see note above).
+      { key: "Content-Security-Policy", value: csp },
     ];
 
     return [{ source: "/:path*", headers: securityHeaders }];

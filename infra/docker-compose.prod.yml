@@ -206,6 +206,10 @@ services:
     environment:
       # Runtime: the storefront proxies /api/* to the Express gateway.
       API_URL: http://api:4000
+      # Needed at RUNTIME by next.config headers() to allowlist the Medusa origin
+      # in the CSP connect-src (the browser calls Medusa directly). Without it the
+      # enforced CSP would block store API calls in production.
+      NEXT_PUBLIC_MEDUSA_URL: ${NEXT_PUBLIC_MEDUSA_URL:?set NEXT_PUBLIC_MEDUSA_URL in infra/.env}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
       interval: 20s

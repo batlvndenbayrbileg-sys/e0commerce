@@ -164,6 +164,9 @@ services:
       api: { condition: service_started }
     environment:
       API_URL: http://api:4000
+      # Runtime CSP (next.config headers()) allowlists this Medusa origin in
+      # connect-src — required or the enforced CSP blocks store API calls in prod.
+      NEXT_PUBLIC_MEDUSA_URL: ${NEXT_PUBLIC_MEDUSA_URL:?set NEXT_PUBLIC_MEDUSA_URL in infra/.env}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
       interval: 20s
