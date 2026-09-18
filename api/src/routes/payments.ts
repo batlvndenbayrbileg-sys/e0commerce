@@ -132,6 +132,14 @@ async function completeMedusaCart(cartId: string, shippingMethod: "standard" | "
   };
 }
 
+// Trim an order for the UNAUTHENTICATED status poll: drop the line items so a
+// leaked/guessed intent or invoice id can't reveal what a customer bought. The
+// storefront renders items from its own local cart, so this omits nothing it
+// needs (id/total/email/ETA are still returned).
+function publicOrder(o?: Record["order"]) {
+  return o ? { id: o.id, total: o.total, email: o.email, estimatedDelivery: o.estimatedDelivery } : null;
+}
+
 function settle(intentId: string): Promise<Record | null> {
   const cached = intents.get(intentId);
   if (cached?.status === "paid") return Promise.resolve(cached);
@@ -318,7 +326,7 @@ router.get("/intent", async (req, res) => {
     // your order" message instead of spinning until timeout.
     const exhausted = rec.status === "needs_review" && (rec.attempts ?? 0) >= MAX_SETTLE_ATTEMPTS;
     const status = rec.status === "paid" ? "succeeded" : exhausted ? "review" : "pending";
-    res.json({ data: { status, order: rec.order ?? null } });
+    res.json({ data: { status, order: publicOrder(rec.order) } });
   } catch (e: any) {
     console.error("wire settle error:", e.message);
     res.status(502).json({ error: "Could not verify payment" });
@@ -378,7 +386,7 @@ router.get("/botxon/invoice", async (req, res) => {
       rec.status === "paid" ? "succeeded" :
       rec.status === "failed" ? "failed" :
       exhausted ? "review" : "pending";
-    res.json({ data: { status, order: rec.order ?? null, invoice: rec.invoice ?? null } });
+    res.json({ data: { status, order: publicOrder(rec.order), invoice: rec.invoice ?? null } });
   } catch (e: any) {
     console.error("botxon settle error:", e.message);
     res.status(502).json({ error: "Could not verify payment" });

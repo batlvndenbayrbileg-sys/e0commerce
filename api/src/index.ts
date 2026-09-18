@@ -3,6 +3,7 @@ import "./instrument.js"; // Sentry.init — must run before other imports
 import * as Sentry from "@sentry/node";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import productsRouter from "./routes/products.js";
 import authRouter from "./routes/auth.js";
 import paymentsRouter, { wireWebhook, botxonWebhook } from "./routes/payments.js";
@@ -27,6 +28,12 @@ if (IS_PROD && (!webOrigins || webOrigins.length === 0)) {
   throw new Error("WEB_ORIGIN is required in production (allowed CORS origins).");
 }
 app.use(cors({ origin: webOrigins && webOrigins.length ? webOrigins : true, credentials: true }));
+
+// Security response headers (nosniff, no-referrer-when-downgrade, HSTS in prod,
+// frameguard, etc.). CSP + COEP are disabled here: this service returns JSON
+// only, and those directives are enforced on the storefront (next.config) where
+// HTML is served.
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 
 // Payment webhooks need the RAW body for signature verification — mount BEFORE json.
 app.post("/api/webhooks/wire", express.raw({ type: "*/*" }), wireWebhook);

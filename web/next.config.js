@@ -42,6 +42,50 @@ const nextConfig = {
       },
     ];
   },
+  async headers() {
+    // Origin the browser calls Medusa on (needed in connect-src so store API
+    // fetches aren't blocked once CSP is enforced).
+    let medusaOrigin = "";
+    try { if (process.env.NEXT_PUBLIC_MEDUSA_URL) medusaOrigin = new URL(process.env.NEXT_PUBLIC_MEDUSA_URL).origin; } catch { /* ignore */ }
+
+    // Content Security Policy — the strongest mitigation against XSS/data
+    // exfiltration. 'unsafe-inline' stays for scripts/styles because Next.js
+    // hydration and framer-motion inject inline; everything else is allowlisted.
+    // Shipped as Report-Only first so it CANNOT break the live store — check the
+    // browser console for violations, then rename the header below to
+    // "Content-Security-Policy" to enforce it.
+    const csp = [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net",
+      `connect-src 'self' ${medusaOrigin} https://www.google-analytics.com https://region1.google-analytics.com https://*.ingest.sentry.io https://connect.facebook.net`.replace(/\s+/g, " ").trim(),
+      "frame-src 'self'",
+      "form-action 'self'",
+      "upgrade-insecure-requests",
+    ].join("; ");
+
+    const securityHeaders = [
+      // Force HTTPS for 2 years incl. subdomains (only sent over https).
+      { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+      // Anti-clickjacking — the storefront is never meant to be framed.
+      { key: "X-Frame-Options", value: "DENY" },
+      // Stop MIME sniffing (drive-by content-type attacks).
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      // Don't leak full URLs (with query) to other origins.
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      // Turn off powerful features the store doesn't use.
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), interest-cohort=()" },
+      // Report-only CSP (see note above) — observe, then promote to enforce.
+      { key: "Content-Security-Policy-Report-Only", value: csp },
+    ];
+
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
 };
 
 // Wrap with Sentry only when a DSN is configured, so builds without Sentry are
