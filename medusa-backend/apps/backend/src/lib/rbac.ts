@@ -49,3 +49,23 @@ export function can(role: string | undefined | null, perm: Permission): boolean 
   const p = isRole(role) ? PERMS.get(role)! : ["*" as const];
   return p[0] === "*" || (p as Permission[]).includes(perm);
 }
+
+// Bootstrap super-admins from env (comma-separated emails), lower-cased.
+function bootstrapEmails(): string[] {
+  return (process.env.SUPER_ADMIN_EMAILS || "")
+    .split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+}
+
+// Enforcement decision for a specific acting user — closes M2 (a newly-invited,
+// role-less admin silently getting super_admin) WITHOUT risking lockout:
+//   • role set        → normal `can()` check.
+//   • role-less + SUPER_ADMIN_EMAILS configured → allow ONLY if the user's email
+//     is on that bootstrap allowlist, else DENY (deny-by-default).
+//   • role-less + env unset → legacy behaviour (allow), so no existing admin is
+//     ever locked out until the deployer opts in.
+export function canActor(actor: { role?: string | null; email?: string | null }, perm: Permission): boolean {
+  if (isRole(actor.role)) return can(actor.role, perm);
+  const bootstrap = bootstrapEmails();
+  if (bootstrap.length === 0) return true; // not configured → no lockout
+  return bootstrap.includes((actor.email || "").toLowerCase());
+}

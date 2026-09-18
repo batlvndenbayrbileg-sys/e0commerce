@@ -1,6 +1,6 @@
 import { defineMiddlewares, MedusaNextFunction, MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { Modules } from "@medusajs/framework/utils";
-import { can, Permission } from "../lib/rbac";
+import { canActor, Permission } from "../lib/rbac";
 import { rateLimit } from "../lib/rate-limit";
 
 // Auth throttles (H9): brute-force / credential-stuffing on login, and spam on
@@ -26,9 +26,11 @@ function requirePermission(perm: Permission) {
     }
     try {
       const userModule = req.scope.resolve(Modules.USER);
-      const user: any = await userModule.retrieveUser(userId, { select: ["id", "metadata"] as any });
+      const user: any = await userModule.retrieveUser(userId, { select: ["id", "email", "metadata"] as any });
       const role = user?.metadata?.role;
-      if (!can(role, perm)) {
+      // canActor enforces deny-by-default for role-less users when
+      // SUPER_ADMIN_EMAILS is configured; otherwise keeps the no-lockout default.
+      if (!canActor({ role, email: user?.email }, perm)) {
         res.status(403).json({ message: `Эрх хүрэлцэхгүй (${perm})` });
         return;
       }

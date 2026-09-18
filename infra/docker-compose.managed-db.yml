@@ -23,6 +23,8 @@ x-medusa-env: &medusa-env
   MEILISEARCH_API_KEY: ${MEILISEARCH_API_KEY}
   JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in infra/.env}
   COOKIE_SECRET: ${COOKIE_SECRET:?set COOKIE_SECRET in infra/.env}
+  # RBAC deny-by-default for role-less admins when set (blank → no lockout).
+  SUPER_ADMIN_EMAILS: ${SUPER_ADMIN_EMAILS:-}
   STORE_CORS: ${STORE_CORS}
   ADMIN_CORS: ${ADMIN_CORS}
   AUTH_CORS: ${AUTH_CORS}

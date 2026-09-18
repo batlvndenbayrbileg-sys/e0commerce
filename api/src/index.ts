@@ -56,8 +56,10 @@ app.use("/api/payments", paymentsRouter);
 if (process.env.SENTRY_DSN) Sentry.setupExpressErrorHandler(app);
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  // Log the full error server-side, but never leak internal details (stack, DB
+  // errors, file paths) to clients in production — return a generic message.
   console.error(err);
-  res.status(500).json({ error: err.message || "Server error" });
+  res.status(500).json({ error: IS_PROD ? "Server error" : (err.message || "Server error") });
 });
 
 const server = app.listen(PORT, () => {

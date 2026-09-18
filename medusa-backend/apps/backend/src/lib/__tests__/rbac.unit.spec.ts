@@ -1,4 +1,4 @@
-import { can, isRole, ROLES } from "../rbac";
+import { can, canActor, isRole, ROLES } from "../rbac";
 
 describe("rbac.isRole", () => {
   it("accepts every defined role value", () => {
@@ -63,5 +63,33 @@ describe("rbac.can", () => {
       if (r.value === "super_admin") continue;
       expect(can(r.value, "team.manage")).toBe(false);
     }
+  });
+});
+
+describe("rbac.canActor (M2 deny-by-default)", () => {
+  const saved = process.env.SUPER_ADMIN_EMAILS;
+  afterEach(() => {
+    if (saved === undefined) delete process.env.SUPER_ADMIN_EMAILS;
+    else process.env.SUPER_ADMIN_EMAILS = saved;
+  });
+
+  it("honours an assigned role regardless of the allowlist", () => {
+    process.env.SUPER_ADMIN_EMAILS = "boss@naran.mn";
+    expect(canActor({ role: "report_viewer", email: "x@naran.mn" }, "reports.read")).toBe(true);
+    expect(canActor({ role: "report_viewer", email: "x@naran.mn" }, "catalog.write")).toBe(false);
+  });
+
+  it("role-less + allowlist UNSET → allowed (no lockout, legacy default)", () => {
+    delete process.env.SUPER_ADMIN_EMAILS;
+    expect(canActor({ role: null, email: "anyone@naran.mn" }, "team.manage")).toBe(true);
+    expect(canActor({ role: undefined, email: null }, "catalog.write")).toBe(true);
+  });
+
+  it("role-less + allowlist SET → allowed only for listed emails (deny-by-default)", () => {
+    process.env.SUPER_ADMIN_EMAILS = "boss@naran.mn, owner@naran.mn";
+    expect(canActor({ role: null, email: "boss@naran.mn" }, "team.manage")).toBe(true);
+    expect(canActor({ role: null, email: "OWNER@NARAN.MN" }, "team.manage")).toBe(true); // case-insensitive
+    expect(canActor({ role: null, email: "intern@naran.mn" }, "reports.read")).toBe(false);
+    expect(canActor({ role: null, email: null }, "reports.read")).toBe(false);
   });
 });

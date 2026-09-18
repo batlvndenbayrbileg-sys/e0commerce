@@ -26,6 +26,9 @@ x-medusa-env: &medusa-env
   MEILISEARCH_API_KEY: ${MEILISEARCH_API_KEY}
   JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in infra/.env}
   COOKIE_SECRET: ${COOKIE_SECRET:?set COOKIE_SECRET in infra/.env}
+  # RBAC: emails that stay super-admin without a role; when set, other role-less
+  # admins are denied custom admin routes (deny-by-default). Blank → no lockout.
+  SUPER_ADMIN_EMAILS: ${SUPER_ADMIN_EMAILS:-}
   # Public origins allowed to call Medusa (your real domains).
   STORE_CORS: ${STORE_CORS}
   ADMIN_CORS: ${ADMIN_CORS}
